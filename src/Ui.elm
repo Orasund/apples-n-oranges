@@ -86,6 +86,19 @@ view arg1 =
                 , Html.Style.leftPx (2 * View.Field.size)
                 ]
                 View.Fruit.orange
+          , Html.div
+                (Layout.asButton
+                    { onPress = Nothing
+                    , label = "Test"
+                    }
+                    ++ [ Html.Style.aspectRatio "1"
+                       , Html.Style.widthPx View.Field.size
+                       , Html.Style.positionAbsolute
+                       , Html.Style.topPx View.Field.size
+                       , Html.Style.leftPx (2 * View.Field.size)
+                       ]
+                )
+                []
           ]
             |> Html.div [ Html.Style.positionRelative ]
         ]
@@ -93,23 +106,6 @@ view arg1 =
                 [ Html.Style.displayFlex
                 , Html.Style.flexDirectionRow
                 ]
-      , [ View.Field.single
-            [ View.Field.dark ]
-            []
-        , View.Fruit.toHtml
-            [ Html.Style.positionAbsolute
-            , Html.Style.topPx 0
-            , View.Fruit.rocking
-            ]
-            View.Fruit.apple
-        ]
-            |> View.Field.single
-                (Layout.asButton
-                    { onPress = Nothing
-                    , label = "Test"
-                    }
-                    ++ [ Html.Style.positionRelative ]
-                )
       ]
         |> Html.div
             [ Html.Style.displayFlex
