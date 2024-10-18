@@ -3,20 +3,18 @@ module Main exposing (..)
 import Browser
 import Dict exposing (Dict)
 import Game exposing (Fruit, FruitId, Game)
+import Generator
 import Html exposing (Html)
 import Html.Style
 import Layout
-import Level
+import Level exposing (Level)
 import Maths
 import Process
+import Random
 import Stylesheet
 import Task
 import View.Field
 import View.Fruit
-
-
-type Event
-    = Join ( Int, Int ) ( Int, Int )
 
 
 type alias Entity =
@@ -30,14 +28,22 @@ type alias Entity =
 type alias Model =
     { game : Game
     , entities : Dict FruitId Entity
-    , events : List Event
     , level : Int
+    , levelDef : Level
+    , history : List ( Game, Dict FruitId Entity )
     }
 
 
 type Msg
     = Click ( Int, Int )
-    | LoadLevel Int
+    | LoadLevel ( Int, Level )
+    | GenerateLevel
+    | Undo
+
+
+shouldGenerateLevel : Bool
+shouldGenerateLevel =
+    True
 
 
 newEntity : ( Int, Int ) -> Entity
@@ -51,15 +57,14 @@ newEntity ( x, y ) =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { game =
-            Game.empty { columns = 3, rows = 2 }
-      , entities = Dict.empty
-      , events = []
-      , level = 0
-      }
-        |> loadLevel 1
-    , Cmd.none
-    )
+    { game =
+        Game.empty { columns = 3, rows = 2 }
+    , entities = Dict.empty
+    , level = 0
+    , levelDef = Level.fromStrings []
+    , history = []
+    }
+        |> checkWinCondition
 
 
 addFruit : ( Int, Int ) -> Fruit -> Model -> Model
@@ -81,15 +86,14 @@ clearLevel model =
     { model
         | game = Game.empty { columns = 0, rows = 0 }
         , entities = Dict.empty
-        , events = []
     }
 
 
-loadLevel : Int -> Model -> Model
-loadLevel id model =
+loadLevel : Int -> Level -> Model -> Model
+loadLevel id level model =
     let
         { columns, rows, fruits } =
-            Level.toList id
+            level
     in
     fruits
         |> List.foldl
@@ -98,6 +102,7 @@ loadLevel id model =
             )
             { model
                 | level = id
+                , levelDef = level
                 , game = Game.empty { columns = columns, rows = rows }
             }
 
@@ -197,9 +202,14 @@ view model =
             )
     , [ Html.button
             (Layout.asButton
-                { onPress = Just (LoadLevel model.level), label = "Reset" }
+                { onPress = Just (LoadLevel ( model.level, model.levelDef )), label = "Reset" }
             )
             [ Html.text "Reset" ]
+      , Html.button
+            (Layout.asButton
+                { onPress = Just Undo, label = "Undo" }
+            )
+            [ Html.text "Undo" ]
       , Stylesheet.stylesheet
       ]
     ]
@@ -235,7 +245,7 @@ join p1 p2 model =
                                     { entity | x = x, y = y, shrink = True }
                                 )
                             )
-                , events = Join p1 p2 :: model.events
+                , history = ( model.game, model.entities ) :: model.history
             }
         )
         (Dict.get p1 model.game.fields)
@@ -247,7 +257,14 @@ checkWinCondition model =
     ( model
     , if Dict.isEmpty model.game.fields then
         Process.sleep 500
-            |> Task.perform (\() -> LoadLevel (model.level + 1))
+            |> Task.perform
+                (\() ->
+                    if shouldGenerateLevel then
+                        GenerateLevel
+
+                    else
+                        LoadLevel ( model.level + 1, Level.toList (model.level + 1) )
+                )
 
       else
         Cmd.none
@@ -276,8 +293,32 @@ update msg model =
                         , Cmd.none
                         )
 
-        LoadLevel id ->
-            ( model |> clearLevel |> loadLevel id, Cmd.none )
+        LoadLevel ( id, def ) ->
+            ( model |> clearLevel |> loadLevel id def, Cmd.none )
+
+        GenerateLevel ->
+            ( model
+            , Generator.generate
+                { pairs = model.level + 1
+                , columns = (model.level + 1) // 3 + 2
+                , rows = (model.level + 1) // 3 + 2
+                }
+                |> Random.generate (\def -> LoadLevel ( model.level + 1, def ))
+            )
+
+        Undo ->
+            case model.history of
+                ( game, entities ) :: tail ->
+                    ( { model
+                        | game = game |> Game.setSelected Nothing
+                        , entities = entities
+                        , history = tail
+                      }
+                    , Cmd.none
+                    )
+
+                [] ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
