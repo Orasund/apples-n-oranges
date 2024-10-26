@@ -1,12 +1,12 @@
 module Level exposing (..)
 
-import Game exposing (Fruit)
+import Game exposing (Block(..), Fruit(..))
 
 
 type alias Level =
     { columns : Int
     , rows : Int
-    , fruits : List ( ( Int, Int ), Fruit )
+    , fruits : List ( ( Int, Int ), Block )
     }
 
 
@@ -72,10 +72,10 @@ fromStrings list =
                                 (\x string ->
                                     case string of
                                         '🍊' ->
-                                            Just ( ( x, y ), Game.Orange )
+                                            Just ( ( x, y ), FruitBlock Orange )
 
                                         '🍎' ->
-                                            Just ( ( x, y ), Game.Apple )
+                                            Just ( ( x, y ), FruitBlock Apple )
 
                                         _ ->
                                             Nothing

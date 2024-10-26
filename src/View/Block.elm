@@ -1,4 +1,4 @@
-module View.Fruit exposing (..)
+module View.Block exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
@@ -12,6 +12,31 @@ apple =
 orange : String
 orange =
     "🍊"
+
+
+stone : String
+stone =
+    "🪨"
+
+
+pig : String
+pig =
+    "🐖"
+
+
+cow : String
+cow =
+    "🐄"
+
+
+sheep : String
+sheep =
+    "🐑"
+
+
+chicken : String
+chicken =
+    "🐓"
 
 
 rocking : Attribute msg

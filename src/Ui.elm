@@ -5,8 +5,8 @@ import Html exposing (Html)
 import Html.Style
 import Layout
 import Stylesheet
+import View.Block
 import View.Field
-import View.Fruit
 
 
 type alias Model =
@@ -18,42 +18,42 @@ type Msg
 
 
 init : () -> ( Model, Cmd Msg )
-init arg1 =
+init () =
     ( {}, Cmd.none )
 
 
 view : Model -> Html Msg
-view arg1 =
-    [ [ [ View.Fruit.toHtml []
-            View.Fruit.apple
-        , View.Fruit.toHtml []
-            View.Fruit.orange
-        , View.Fruit.toHtml
-            [ View.Fruit.rocking
+view _ =
+    [ [ [ View.Block.toHtml []
+            View.Block.apple
+        , View.Block.toHtml []
+            View.Block.orange
+        , View.Block.toHtml
+            [ View.Block.rocking
             ]
-            View.Fruit.apple
-        , View.Fruit.toHtml
-            [ View.Fruit.rocking
+            View.Block.apple
+        , View.Block.toHtml
+            [ View.Block.rocking
             ]
-            View.Fruit.orange
-        , View.Fruit.toHtml
-            [ View.Fruit.small
+            View.Block.orange
+        , View.Block.toHtml
+            [ View.Block.small
             ]
-            View.Fruit.apple
-        , View.Fruit.toHtml
-            [ View.Fruit.small
+            View.Block.apple
+        , View.Block.toHtml
+            [ View.Block.small
             ]
-            View.Fruit.orange
-        , View.Fruit.toHtml
-            [ View.Fruit.small
-            , View.Fruit.rocking
+            View.Block.orange
+        , View.Block.toHtml
+            [ View.Block.small
+            , View.Block.rocking
             ]
-            View.Fruit.apple
-        , View.Fruit.toHtml
-            [ View.Fruit.small
-            , View.Fruit.rocking
+            View.Block.apple
+        , View.Block.toHtml
+            [ View.Block.small
+            , View.Block.rocking
             ]
-            View.Fruit.orange
+            View.Block.orange
         ]
             |> Html.div
                 [ Html.Style.displayFlex
@@ -62,30 +62,30 @@ view arg1 =
       , [ [ View.Field.toHtml
                 [ View.Field.light ]
                 { columns = 3, rows = 2 }
-          , View.Fruit.toHtml
+          , View.Block.toHtml
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx 0
                 , Html.Style.leftPx View.Field.size
                 ]
-                View.Fruit.apple
-          , View.Fruit.toHtml
+                View.Block.apple
+          , View.Block.toHtml
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx 0
                 , Html.Style.leftPx (2 * View.Field.size)
                 ]
-                View.Fruit.apple
-          , View.Fruit.toHtml
+                View.Block.apple
+          , View.Block.toHtml
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx View.Field.size
                 , Html.Style.leftPx View.Field.size
                 ]
-                View.Fruit.orange
-          , View.Fruit.toHtml
+                View.Block.orange
+          , View.Block.toHtml
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx View.Field.size
                 , Html.Style.leftPx (2 * View.Field.size)
                 ]
-                View.Fruit.orange
+                View.Block.orange
           , Html.div
                 (Layout.asButton
                     { onPress = Nothing
@@ -124,7 +124,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions arg1 =
+subscriptions _ =
     Sub.none
 
 

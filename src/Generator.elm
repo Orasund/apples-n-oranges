@@ -1,7 +1,7 @@
 module Generator exposing (..)
 
 import Dict exposing (Dict)
-import Game exposing (Fruit(..))
+import Game exposing (Block(..), Fruit(..), Solid(..))
 import Level exposing (Level)
 import Random exposing (Generator)
 import Set exposing (Set)
@@ -12,7 +12,7 @@ type alias Random a =
 
 
 type alias Builder =
-    { fruits : Dict ( Int, Int ) Fruit
+    { fruits : Dict ( Int, Int ) Block
     , remaining : Set ( Int, Int )
     , columns : Int
     , rows : Int
@@ -43,12 +43,43 @@ build builder =
     }
 
 
-generate : { pairs : Int, columns : Int, rows : Int } -> Random Level
+randomSolid : Random Solid
+randomSolid =
+    [ Stone ]
+        |> randomFromList
+        |> Maybe.withDefault (Random.constant Stone)
+
+
+generate : { pairs : Int, columns : Int, rows : Int, solids : Int } -> Random Level
 generate args =
     List.range 0 (args.pairs - 1)
         |> List.foldl (\_ -> Random.andThen addPair)
-            (new { columns = args.columns, rows = args.rows } |> Random.constant)
+            (Random.list args.solids randomSolid
+                |> Random.andThen
+                    (List.foldl
+                        (\solid ->
+                            Random.andThen (addSolid solid)
+                        )
+                        (new { columns = args.columns, rows = args.rows } |> Random.constant)
+                    )
+            )
         |> Random.map build
+
+
+addSolid : Solid -> Builder -> Random Builder
+addSolid solid builder =
+    Set.toList builder.remaining
+        |> randomFromList
+        |> Maybe.map
+            (Random.map
+                (\p1 ->
+                    { builder
+                        | remaining = builder.remaining |> Set.remove p1
+                        , fruits = builder.fruits |> Dict.insert p1 (SolidBlock solid)
+                    }
+                )
+            )
+        |> Maybe.withDefault (Random.constant builder)
 
 
 addPair : Builder -> Random Builder
@@ -61,14 +92,7 @@ addPair builder =
                     builder.remaining
                         |> Set.remove p1
                         |> Set.toList
-                        |> List.filter
-                            (\( x2, y2 ) ->
-                                let
-                                    ( x1, y1 ) =
-                                        p1
-                                in
-                                x1 == x2 || y1 == y2
-                            )
+                        |> List.filter (isValidPair builder p1)
                         |> randomFromList
                         |> Maybe.map
                             (Random.map
@@ -80,8 +104,8 @@ addPair builder =
                                                 |> Set.remove p2
                                         , fruits =
                                             builder.fruits
-                                                |> Dict.insert p1 Apple
-                                                |> Dict.insert p2 Orange
+                                                |> Dict.insert p1 (FruitBlock Apple)
+                                                |> Dict.insert p2 (FruitBlock Orange)
                                     }
                                 )
                             )
@@ -92,6 +116,41 @@ addPair builder =
                 )
             )
         |> Maybe.withDefault (Random.constant builder)
+
+
+isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
+isValidPair builder ( x1, y1 ) ( x2, y2 ) =
+    let
+        validBlock block =
+            case block of
+                FruitBlock _ ->
+                    True
+
+                SolidBlock _ ->
+                    False
+    in
+    ((x1 == x2)
+        && (List.range (min y1 y2) (max y1 y2)
+                |> List.all
+                    (\y ->
+                        builder.fruits
+                            |> Dict.get ( x1, y )
+                            |> Maybe.map validBlock
+                            |> Maybe.withDefault True
+                    )
+           )
+    )
+        || ((y1 == y2)
+                && (List.range (min x1 x2) (max x1 x2)
+                        |> List.all
+                            (\x ->
+                                builder.fruits
+                                    |> Dict.get ( x, y1 )
+                                    |> Maybe.map validBlock
+                                    |> Maybe.withDefault True
+                            )
+                   )
+           )
 
 
 randomFromList : List a -> Maybe (Random a)

@@ -2,19 +2,22 @@ module Main exposing (..)
 
 import Browser
 import Dict exposing (Dict)
-import Game exposing (Fruit, FruitId, Game)
+import Game exposing (Block(..), BlockId, Game, Solid(..))
 import Generator
 import Html exposing (Html)
+import Html.Attributes
+import Html.Keyed
 import Html.Style
 import Layout
 import Level exposing (Level)
 import Maths
 import Process
 import Random
+import Set exposing (Set)
 import Stylesheet
 import Task
+import View.Block
 import View.Field
-import View.Fruit
 
 
 type alias Entity =
@@ -25,20 +28,40 @@ type alias Entity =
     }
 
 
+type alias Coin =
+    { x : Float, y : Float, shrink : Bool }
+
+
+type alias CoinId =
+    Int
+
+
 type alias Model =
     { game : Game
-    , entities : Dict FruitId Entity
+    , entities : Dict BlockId Entity
+    , coins : Dict CoinId Coin
+    , solids : List Solid
+    , money : Set CoinId
+    , nextCoinId : CoinId
     , level : Int
     , levelDef : Level
-    , history : List ( Game, Dict FruitId Entity )
+    , history :
+        List
+            { game : Game
+            , entities : Dict BlockId Entity
+            , coins : Dict CoinId Coin
+            , nextCoinId : CoinId
+            }
     }
 
 
 type Msg
     = Click ( Int, Int )
     | LoadLevel ( Int, Level )
+    | CollectCoin CoinId
     | GenerateLevel
     | Undo
+    | Won
 
 
 shouldGenerateLevel : Bool
@@ -58,8 +81,12 @@ newEntity ( x, y ) =
 init : () -> ( Model, Cmd Msg )
 init () =
     { game =
-        Game.empty { columns = 3, rows = 2 }
+        Game.empty { columns = 2, rows = 2 }
     , entities = Dict.empty
+    , solids = []
+    , coins = Dict.empty
+    , money = Set.empty
+    , nextCoinId = 0
     , level = 0
     , levelDef = Level.fromStrings []
     , history = []
@@ -67,11 +94,11 @@ init () =
         |> checkWinCondition
 
 
-addFruit : ( Int, Int ) -> Fruit -> Model -> Model
-addFruit ( x, y ) fruit model =
+addBlock : ( Int, Int ) -> Block -> Model -> Model
+addBlock ( x, y ) block model =
     let
         ( game, fruitId ) =
-            model.game |> Game.addFruit ( x, y ) fruit
+            model.game |> Game.addBlock ( x, y ) block
     in
     { model
         | game = game
@@ -86,6 +113,7 @@ clearLevel model =
     { model
         | game = Game.empty { columns = 0, rows = 0 }
         , entities = Dict.empty
+        , coins = Dict.empty
     }
 
 
@@ -98,7 +126,7 @@ loadLevel id level model =
     fruits
         |> List.foldl
             (\( pos, fruit ) ->
-                addFruit pos fruit
+                addBlock pos fruit
             )
             { model
                 | level = id
@@ -107,24 +135,24 @@ loadLevel id level model =
             }
 
 
-viewFruit : { fruitId : FruitId, entity : Entity } -> Model -> String -> Html Msg
+viewFruit : { blockId : BlockId, entity : Entity } -> Model -> String -> Html Msg
 viewFruit args model =
-    View.Fruit.toHtml
+    View.Block.toHtml
         ([ Html.Style.topPx (args.entity.y * View.Field.size)
          , Html.Style.leftPx (args.entity.x * View.Field.size)
          ]
             ++ (if args.entity.shrink then
-                    [ View.Fruit.shrink ]
+                    [ View.Block.shrink ]
 
                 else
                     model.game.selected
                         |> Maybe.map
                             (\selected ->
                                 if selected == args.entity.pos then
-                                    [ View.Fruit.small ]
+                                    [ View.Block.small ]
 
                                 else if Game.isValidPair args.entity.pos selected model.game then
-                                    [ View.Fruit.rocking ]
+                                    [ View.Block.rocking ]
 
                                 else
                                     []
@@ -134,87 +162,159 @@ viewFruit args model =
         )
 
 
+viewMoney : Coin -> Html msg
+viewMoney money =
+    View.Block.toHtml
+        ([ Html.Style.topPx (money.y * View.Field.size)
+         , Html.Style.leftPx (money.x * View.Field.size)
+         ]
+            ++ (if money.shrink then
+                    [ View.Block.shrink ]
+
+                else
+                    []
+               )
+        )
+        "🪙"
+
+
 view : Model -> Html Msg
 view model =
-    [ [ View.Field.toHtml
+    [ [ [ View.Field.toHtml
             [ View.Field.light ]
             { columns = model.game.columns, rows = model.game.rows }
-      ]
-    , model.entities
-        |> Dict.toList
-        |> List.filterMap
-            (\( fruitId, entity ) ->
-                model.game.fruits
-                    |> Dict.get fruitId
-                    |> Maybe.map
-                        (\fruit ->
-                            { fruitId = fruitId, entity = entity, fruit = fruit }
+        , [ model.entities
+                |> Dict.toList
+                |> List.filterMap
+                    (\( blockId, entity ) ->
+                        model.game.blocks
+                            |> Dict.get blockId
+                            |> Maybe.map
+                                (\block ->
+                                    { blockId = blockId, entity = entity, block = block }
+                                )
+                    )
+                |> List.map
+                    (\{ blockId, entity, block } ->
+                        ( "block_" ++ String.fromInt blockId
+                        , viewFruit { blockId = blockId, entity = entity }
+                            model
+                            (case block of
+                                Game.FruitBlock Game.Apple ->
+                                    View.Block.apple
+
+                                Game.FruitBlock Game.Orange ->
+                                    View.Block.orange
+
+                                Game.SolidBlock Game.Pig ->
+                                    View.Block.pig
+
+                                Game.SolidBlock Game.Chicken ->
+                                    View.Block.chicken
+
+                                Game.SolidBlock Game.Cow ->
+                                    View.Block.cow
+
+                                Game.SolidBlock Game.Sheep ->
+                                    View.Block.sheep
+
+                                Game.SolidBlock Game.Stone ->
+                                    View.Block.stone
+                            )
                         )
-            )
-        |> List.map
-            (\{ fruitId, entity, fruit } ->
-                viewFruit { fruitId = fruitId, entity = entity }
-                    model
-                    (case fruit of
-                        Game.Apple ->
-                            View.Fruit.apple
-
-                        Game.Orange ->
-                            View.Fruit.orange
                     )
-            )
-    , model.game.fields
-        |> Dict.toList
-        |> List.filterMap
-            (\( p, fruitId ) ->
-                model.game.fruits
-                    |> Dict.get fruitId
-                    |> Maybe.map (Tuple.pair p)
-            )
-        |> List.map
-            (\( ( x, y ), fruit ) ->
-                Html.div
-                    (Layout.asButton
-                        { onPress = Just (Click ( x, y ))
-                        , label =
-                            [ "Select "
-                            , case fruit of
-                                Game.Apple ->
-                                    "Apple"
-
-                                Game.Orange ->
-                                    "Orange"
-                            , " at "
-                            , String.fromInt x
-                            , ", "
-                            , String.fromInt y
-                            ]
-                                |> String.concat
-                        }
-                        ++ [ Html.Style.aspectRatio "1"
-                           , Html.Style.widthPx View.Field.size
-                           , Html.Style.positionAbsolute
-                           , Html.Style.topPx (toFloat y * View.Field.size)
-                           , Html.Style.leftPx (toFloat x * View.Field.size)
-                           ]
+          , [ model.coins
+                |> Dict.toList
+            , model.money
+                |> Set.toList
+                |> List.indexedMap
+                    (\i coinId ->
+                        ( coinId
+                        , { x = toFloat i * 0.05
+                          , y = -1
+                          , shrink = False
+                          }
+                        )
                     )
-                    []
-            )
-    , [ Html.button
-            (Layout.asButton
-                { onPress = Just (LoadLevel ( model.level, model.levelDef )), label = "Reset" }
-            )
-            [ Html.text "Reset" ]
-      , Html.button
-            (Layout.asButton
-                { onPress = Just Undo, label = "Undo" }
-            )
-            [ Html.text "Undo" ]
-      , Stylesheet.stylesheet
+            ]
+                |> List.concat
+                |> List.sortBy Tuple.first
+                |> List.map
+                    (\( id, coin ) ->
+                        ( "coin_" ++ String.fromInt id
+                        , viewMoney coin
+                        )
+                    )
+          ]
+            |> List.concat
+            |> Html.Keyed.node "div"
+                [ Html.Style.positionAbsolute
+                , Html.Style.topPx 0
+                , Html.Style.leftPx 0
+                ]
+        ]
+      , model.game.fields
+            |> Dict.toList
+            |> List.filterMap
+                (\( p, fruitId ) ->
+                    model.game.blocks
+                        |> Dict.get fruitId
+                        |> Maybe.map (Tuple.pair p)
+                )
+            |> List.map
+                (\( ( x, y ), block ) ->
+                    Html.div
+                        (Layout.asButton
+                            { onPress = Just (Click ( x, y ))
+                            , label =
+                                [ "Select "
+                                , case block of
+                                    Game.FruitBlock Game.Apple ->
+                                        "Apple"
+
+                                    Game.FruitBlock Game.Orange ->
+                                        "Orange"
+
+                                    Game.SolidBlock _ ->
+                                        "Solid Block"
+                                , " at "
+                                , String.fromInt x
+                                , ", "
+                                , String.fromInt y
+                                ]
+                                    |> String.concat
+                            }
+                            ++ [ Html.Style.aspectRatio "1"
+                               , Html.Style.widthPx View.Field.size
+                               , Html.Style.positionAbsolute
+                               , Html.Style.topPx (toFloat y * View.Field.size)
+                               , Html.Style.leftPx (toFloat x * View.Field.size)
+                               ]
+                        )
+                        []
+                )
       ]
-    ]
         |> List.concat
         |> Html.div [ Html.Style.positionRelative ]
+    , Html.button
+        (Layout.asButton
+            { onPress = Just (LoadLevel ( model.level, model.levelDef )), label = "Reset" }
+            ++ [ Html.Attributes.class "button"
+               , Html.Style.padding "8px 16px"
+               ]
+        )
+        [ Html.text "Reset" ]
+    , Html.button
+        (Layout.asButton
+            { onPress = Just Undo, label = "Undo" }
+            ++ [ Html.Attributes.class "button"
+               , Html.Style.padding "8px 16px"
+               ]
+        )
+        [ Html.text "🪙 Undo" ]
+    , Stylesheet.stylesheet
+    ]
+        |> Html.div [ Html.Style.paddingTopPx 80 ]
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
@@ -245,7 +345,18 @@ join p1 p2 model =
                                     { entity | x = x, y = y, shrink = True }
                                 )
                             )
-                , history = ( model.game, model.entities ) :: model.history
+                , coins =
+                    model.coins
+                        |> Dict.insert model.nextCoinId
+                            { x = x, y = y, shrink = True }
+                , nextCoinId = model.nextCoinId + 1
+                , history =
+                    { game = model.game
+                    , entities = model.entities
+                    , coins = model.coins
+                    , nextCoinId = model.nextCoinId
+                    }
+                        :: model.history
             }
         )
         (Dict.get p1 model.game.fields)
@@ -254,20 +365,36 @@ join p1 p2 model =
 
 checkWinCondition : Model -> ( Model, Cmd Msg )
 checkWinCondition model =
+    let
+        hasWon =
+            Dict.toList model.game.fields
+                |> List.all
+                    (\( _, blockId ) ->
+                        case model.game.blocks |> Dict.get blockId of
+                            Just (FruitBlock _) ->
+                                False
+
+                            Just (SolidBlock _) ->
+                                True
+
+                            Nothing ->
+                                True
+                    )
+    in
     ( model
-    , if Dict.isEmpty model.game.fields then
-        Process.sleep 500
-            |> Task.perform
-                (\() ->
-                    if shouldGenerateLevel then
-                        GenerateLevel
+    , [ Process.sleep 100
+            |> Task.perform (\() -> CollectCoin (model.nextCoinId - 1))
+      , if hasWon then
+            Process.sleep 500
+                |> Task.perform
+                    (\() ->
+                        Won
+                    )
 
-                    else
-                        LoadLevel ( model.level + 1, Level.toList (model.level + 1) )
-                )
-
-      else
-        Cmd.none
+        else
+            Cmd.none
+      ]
+        |> Cmd.batch
     )
 
 
@@ -300,6 +427,7 @@ update msg model =
             ( model
             , Generator.generate
                 { pairs = model.level + 1
+                , solids = (model.level + 1) // 2
                 , columns = (model.level + 1) // 3 + 2
                 , rows = (model.level + 1) // 3 + 2
                 }
@@ -308,17 +436,60 @@ update msg model =
 
         Undo ->
             case model.history of
-                ( game, entities ) :: tail ->
-                    ( { model
-                        | game = game |> Game.setSelected Nothing
-                        , entities = entities
-                        , history = tail
-                      }
-                    , Cmd.none
-                    )
+                history :: tail ->
+                    case model.money |> Set.toList of
+                        _ :: money ->
+                            ( { model
+                                | game = history.game |> Game.setSelected Nothing
+                                , entities = history.entities
+                                , coins = history.coins
+                                , history = tail
+                                , money = Set.fromList money
+                                , nextCoinId = history.nextCoinId
+                              }
+                            , Cmd.none
+                            )
+
+                        [] ->
+                            ( model, Cmd.none )
 
                 [] ->
                     ( model, Cmd.none )
+
+        CollectCoin coinId ->
+            ( { model
+                | coins =
+                    model.coins
+                        |> Dict.update coinId
+                            (Maybe.map
+                                (\coin ->
+                                    { coin
+                                        | shrink = False
+                                    }
+                                )
+                            )
+              }
+            , Cmd.none
+            )
+
+        Won ->
+            ( { model
+                | money =
+                    model.coins
+                        |> Dict.keys
+                        |> Set.fromList
+                        |> Set.union model.money
+              }
+            , Task.succeed ()
+                |> Task.perform
+                    (\() ->
+                        if shouldGenerateLevel then
+                            GenerateLevel
+
+                        else
+                            LoadLevel ( model.level + 1, Level.toList (model.level + 1) )
+                    )
+            )
 
 
 subscriptions : Model -> Sub Msg

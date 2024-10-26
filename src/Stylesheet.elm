@@ -11,6 +11,21 @@ stylesheet =
         50% { rotate:15deg }
         to { rotate:-15deg }
     }
+
+    .button {
+        border-radius: 16px;
+        border: 2px solid black;
+        padding: 8px 4px;
+        background-color: transparent;
+    }
+
+    .button:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+
+    .button:active {
+        background-color: rgba(0,0,0,0.3);
+    }
     """
         |> Html.text
         |> List.singleton

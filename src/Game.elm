@@ -3,7 +3,7 @@ module Game exposing (..)
 import Dict exposing (Dict)
 
 
-type alias FruitId =
+type alias BlockId =
     Int
 
 
@@ -12,11 +12,24 @@ type Fruit
     | Orange
 
 
+type Solid
+    = Stone
+    | Pig
+    | Cow
+    | Sheep
+    | Chicken
+
+
+type Block
+    = FruitBlock Fruit
+    | SolidBlock Solid
+
+
 type alias Game =
     { columns : Int
     , rows : Int
-    , fruits : Dict FruitId Fruit
-    , fields : Dict ( Int, Int ) FruitId
+    , blocks : Dict BlockId Block
+    , fields : Dict ( Int, Int ) BlockId
     , selected : Maybe ( Int, Int )
     }
 
@@ -25,33 +38,33 @@ empty : { columns : Int, rows : Int } -> Game
 empty args =
     { columns = args.columns
     , rows = args.rows
-    , fruits = Dict.empty
+    , blocks = Dict.empty
     , fields = Dict.empty
     , selected = Nothing
     }
 
 
-addFruit : ( Int, Int ) -> Fruit -> Game -> ( Game, FruitId )
-addFruit ( x, y ) fruit game =
+addBlock : ( Int, Int ) -> Block -> Game -> ( Game, BlockId )
+addBlock ( x, y ) block game =
     let
         fruitId =
-            Dict.size game.fruits
+            Dict.size game.blocks
     in
     ( { game
-        | fruits = Dict.insert fruitId fruit game.fruits
+        | blocks = Dict.insert fruitId block game.blocks
         , fields = game.fields |> Dict.insert ( x, y ) fruitId
       }
     , fruitId
     )
 
 
-getFruitAt : ( Int, Int ) -> Game -> Maybe Fruit
-getFruitAt pos game =
+getBlockAt : ( Int, Int ) -> Game -> Maybe Block
+getBlockAt pos game =
     game.fields
         |> Dict.get pos
         |> Maybe.andThen
             (\fruitId ->
-                Dict.get fruitId game.fruits
+                Dict.get fruitId game.blocks
             )
 
 
@@ -67,6 +80,15 @@ removeField pos game =
 
 isValidPair : ( Int, Int ) -> ( Int, Int ) -> Game -> Bool
 isValidPair ( x1, y1 ) ( x2, y2 ) game =
+    let
+        isValidBlock p =
+            case p of
+                FruitBlock _ ->
+                    True
+
+                SolidBlock _ ->
+                    False
+    in
     (((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
                 |> List.all
@@ -84,4 +106,6 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                    )
            )
     )
-        && (getFruitAt ( x1, y1 ) game /= getFruitAt ( x2, y2 ) game)
+        && (getBlockAt ( x1, y1 ) game /= getBlockAt ( x2, y2 ) game)
+        && (getBlockAt ( x1, y1 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
+        && (getBlockAt ( x2, y2 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
