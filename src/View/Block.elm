@@ -54,8 +54,8 @@ shrink =
     Html.Style.scale "0"
 
 
-toHtml : List (Attribute msg) -> String -> Html msg
-toHtml attrs string =
+withContent : List (Attribute msg) -> List (Html msg) -> Html msg
+withContent attrs =
     Html.div
         ([ Html.Style.fontSizeRem 4
          , Html.Style.widthMinContent
@@ -66,4 +66,3 @@ toHtml attrs string =
          ]
             ++ attrs
         )
-        [ Html.text string ]

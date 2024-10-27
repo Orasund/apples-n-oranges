@@ -68,6 +68,17 @@ getBlockAt pos game =
             )
 
 
+getBlockAndIdAt : ( Int, Int ) -> Game -> Maybe ( BlockId, Block )
+getBlockAndIdAt pos game =
+    game.fields
+        |> Dict.get pos
+        |> Maybe.andThen
+            (\blockId ->
+                Dict.get blockId game.blocks
+                    |> Maybe.map (Tuple.pair blockId)
+            )
+
+
 setSelected : Maybe ( Int, Int ) -> Game -> Game
 setSelected selected game =
     { game | selected = selected }

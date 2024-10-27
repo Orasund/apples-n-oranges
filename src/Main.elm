@@ -135,9 +135,9 @@ loadLevel id level model =
             }
 
 
-viewFruit : { blockId : BlockId, entity : Entity } -> Model -> String -> Html Msg
+viewFruit : { blockId : BlockId, entity : Entity } -> Model -> List (Html Msg) -> Html Msg
 viewFruit args model =
-    View.Block.toHtml
+    View.Block.withContent
         ([ Html.Style.topPx (args.entity.y * View.Field.size)
          , Html.Style.leftPx (args.entity.x * View.Field.size)
          ]
@@ -164,7 +164,7 @@ viewFruit args model =
 
 viewMoney : Coin -> Html msg
 viewMoney money =
-    View.Block.toHtml
+    View.Block.withContent
         ([ Html.Style.topPx (money.y * View.Field.size)
          , Html.Style.leftPx (money.x * View.Field.size)
          ]
@@ -175,7 +175,7 @@ viewMoney money =
                     []
                )
         )
-        "🪙"
+        [ Html.text "🪙" ]
 
 
 view : Model -> Html Msg
@@ -201,25 +201,42 @@ view model =
                             model
                             (case block of
                                 Game.FruitBlock Game.Apple ->
-                                    View.Block.apple
+                                    [ Html.text View.Block.apple ]
 
                                 Game.FruitBlock Game.Orange ->
-                                    View.Block.orange
+                                    [ Html.text View.Block.orange ]
 
                                 Game.SolidBlock Game.Pig ->
-                                    View.Block.pig
+                                    [ Html.text View.Block.pig ]
 
                                 Game.SolidBlock Game.Chicken ->
-                                    View.Block.chicken
+                                    [ Html.text View.Block.chicken ]
 
                                 Game.SolidBlock Game.Cow ->
-                                    View.Block.cow
+                                    [ Html.text View.Block.cow ]
 
                                 Game.SolidBlock Game.Sheep ->
-                                    View.Block.sheep
+                                    [ Html.text View.Block.sheep ]
 
                                 Game.SolidBlock Game.Stone ->
-                                    View.Block.stone
+                                    [ Html.div
+                                        [ Html.Style.positionAbsolute
+                                        , Html.Style.bottomPx 8
+                                        , Html.Style.width "100%"
+                                        , Html.Style.displayFlex
+                                        , Html.Style.justifyContentCenter
+                                        , Html.Style.fontSizePx 10
+                                        ]
+                                        [ Html.div
+                                            [ Html.Style.background "white"
+                                            , Html.Style.border "2px solid black"
+                                            , Html.Style.borderRadiusPx 16
+                                            , Html.Style.padding "4px 8px"
+                                            ]
+                                            [ Html.text "🪙 Remove" ]
+                                        ]
+                                    , Html.div [] [ Html.text View.Block.stone ]
+                                    ]
                             )
                         )
                     )
@@ -404,7 +421,34 @@ update msg model =
         Click pos ->
             case model.game.selected of
                 Nothing ->
-                    ( { model | game = Game.setSelected (Just pos) model.game }, Cmd.none )
+                    case Game.getBlockAndIdAt pos model.game of
+                        Just ( blockId, SolidBlock _ ) ->
+                            if Set.isEmpty model.money |> not then
+                                ( { model
+                                    | game = Game.removeField pos model.game
+                                    , entities =
+                                        model.entities
+                                            |> Dict.update blockId
+                                                (Maybe.map
+                                                    (\entity ->
+                                                        { entity | shrink = True }
+                                                    )
+                                                )
+                                    , money =
+                                        model.money
+                                            |> Set.toList
+                                            |> List.tail
+                                            |> Maybe.withDefault []
+                                            |> Set.fromList
+                                  }
+                                , Cmd.none
+                                )
+
+                            else
+                                ( model, Cmd.none )
+
+                        _ ->
+                            ( { model | game = Game.setSelected (Just pos) model.game }, Cmd.none )
 
                 Just p ->
                     if p == pos then
@@ -427,9 +471,9 @@ update msg model =
             ( model
             , Generator.generate
                 { pairs = model.level + 1
-                , solids = (model.level + 1) // 2
-                , columns = (model.level + 1) // 3 + 2
-                , rows = (model.level + 1) // 3 + 2
+                , solids = model.level + 1
+                , columns = 6 --(model.level + 1) // 2 + 2
+                , rows = 6 --(model.level + 1) // 2 + 2
                 }
                 |> Random.generate (\def -> LoadLevel ( model.level + 1, def ))
             )
