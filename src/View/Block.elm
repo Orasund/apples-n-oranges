@@ -63,6 +63,9 @@ withContent attrs =
          , Html.Style.rotate "0deg"
          , Html.Style.positionAbsolute
          , Html.Style.transition "top 0.2s ease-in, left 0.2s ease-in, scale 0.2s ease-in"
+         , Html.Style.displayFlex
+         , Html.Style.justifyContentCenter
+         , Html.Style.alignItemsCenter
          ]
             ++ attrs
         )

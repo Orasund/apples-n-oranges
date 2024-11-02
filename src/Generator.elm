@@ -50,36 +50,41 @@ randomSolid =
         |> Maybe.withDefault (Random.constant Stone)
 
 
-generate : { pairs : Int, columns : Int, rows : Int, solids : Int } -> Random Level
-generate args =
-    List.range 0 (args.pairs - 1)
+generatePairs : Int -> Builder -> Random Builder
+generatePairs pairs builder =
+    List.range 0 (pairs - 1)
         |> List.foldl (\_ -> Random.andThen addPair)
-            (Random.list args.solids randomSolid
-                |> Random.andThen
-                    (List.foldl
-                        (\solid ->
-                            Random.andThen (addSolid solid)
-                        )
-                        (new { columns = args.columns, rows = args.rows } |> Random.constant)
-                    )
+            (builder |> Random.constant)
+
+
+addSolids : List ( ( Int, Int ), Solid ) -> Builder -> Builder
+addSolids solids builder =
+    solids
+        |> List.foldl
+            (\( pos, solid ) ->
+                addSolid pos solid
             )
-        |> Random.map build
+            builder
 
 
-addSolid : Solid -> Builder -> Random Builder
-addSolid solid builder =
-    Set.toList builder.remaining
+addRandomSolid : Solid -> Builder -> Random ( Builder, ( Int, Int ) )
+addRandomSolid solid builder =
+    builder.remaining
+        |> Set.toList
         |> randomFromList
-        |> Maybe.map
-            (Random.map
-                (\p1 ->
-                    { builder
-                        | remaining = builder.remaining |> Set.remove p1
-                        , fruits = builder.fruits |> Dict.insert p1 (SolidBlock solid)
-                    }
-                )
+        |> Maybe.withDefault (Random.constant ( -1, -1 ))
+        |> Random.map
+            (\pos ->
+                ( addSolid pos solid builder, pos )
             )
-        |> Maybe.withDefault (Random.constant builder)
+
+
+addSolid : ( Int, Int ) -> Solid -> Builder -> Builder
+addSolid pos solid builder =
+    { builder
+        | remaining = builder.remaining |> Set.remove pos
+        , fruits = builder.fruits |> Dict.insert pos (SolidBlock solid)
+    }
 
 
 addPair : Builder -> Random Builder
