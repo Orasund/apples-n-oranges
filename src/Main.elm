@@ -69,9 +69,11 @@ type Msg
 
 priceToRemoveStone : ( Int, Int ) -> Int
 priceToRemoveStone ( x, y ) =
-    10
+    (7
         - round (abs (toFloat x - 2.5))
         - round (abs (toFloat y - 2.5))
+    )
+        ^ 2
 
 
 shouldGenerateLevel : Bool
@@ -286,7 +288,7 @@ view model =
             , Html.Style.heightPx 100
             , Html.Style.borderWidthPx 8
             ]
-            (Set.size model.money)
+            (Set.size model.money |> min 999)
         , Html.button
             (Layout.asButton
                 { onPress = Just Undo, label = "Undo" }
@@ -449,7 +451,8 @@ join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
 join p1 p2 model =
     let
         ( x, y ) =
-            Maths.intersect p1 p2
+            fromPolar ( 0.1, Maths.length p1 p2 )
+                |> Maths.plus (Maths.intersect p1 p2)
     in
     Maybe.map2
         (\fruit1 fruit2 ->
