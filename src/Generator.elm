@@ -72,7 +72,8 @@ generateLevel args =
             )
         |> Random.constant
         |> andThenRepeat args.newStone (addRandomSolid Stone)
-        |> andThenRepeat args.newSprouts addSproutPair
+        |> andThenRepeat args.newSprouts (addRandomSolid Sprout)
+        --addRandomSproutPair
         |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
         |> andThenRepeat args.newFruitPairs (addRandomPair FruitBlock)
         |> Random.map build
@@ -84,21 +85,6 @@ build builder =
     , rows = builder.rows
     , blocks = builder.blocks |> Dict.toList
     }
-
-
-randomSolid : Random Solid
-randomSolid =
-    [ Stone ]
-        |> randomFromList
-        |> Maybe.withDefault (Random.constant Stone)
-
-
-generatePairs : Int -> (Fruit -> Block) -> Builder -> Random Builder
-generatePairs pairs toBlock builder =
-    List.range 0 (pairs - 1)
-        |> List.foldl
-            (\_ -> Random.andThen (addRandomPair toBlock))
-            (builder |> Random.constant)
 
 
 addSolids : List ( ( Int, Int ), Solid ) -> Builder -> Builder
@@ -135,14 +121,20 @@ addFruitPairFromOldSprout : Builder -> Random Builder
 addFruitPairFromOldSprout builder =
     case builder.remainingOldSprouts |> Set.toList of
         head :: tail ->
-            case findValidPair builder head (Set.fromList tail) of
+            case findValidPair builder head builder.remainingPositions of
                 Just randomPos ->
                     randomPos
-                        |> Random.map
+                        |> Random.andThen
                             (\pos ->
-                                { builder | remainingOldSprouts = tail |> Set.fromList |> Set.remove pos }
-                                    |> addFruit head Lemon
-                                    |> addFruit pos Orange
+                                Random.uniform ( Lemon, Apple )
+                                    []
+                                    --[ ( Pear, Orange ) ]
+                                    |> Random.map
+                                        (\( a, b ) ->
+                                            { builder | remainingOldSprouts = tail |> Set.fromList }
+                                                |> addFruit head a
+                                                |> addFruit pos b
+                                        )
                             )
 
                 Nothing ->
@@ -156,8 +148,8 @@ addFruitPairFromOldSprout builder =
             Random.constant builder
 
 
-addSproutPair : Builder -> Random Builder
-addSproutPair builder =
+addRandomSproutPair : Builder -> Random Builder
+addRandomSproutPair builder =
     randomPair builder
         |> Random.map
             (\list ->
@@ -205,7 +197,7 @@ addRandomPair toBlock builder =
                             , blocks =
                                 builder.blocks
                                     |> Dict.insert p1 (toBlock Apple)
-                                    |> Dict.insert p2 (toBlock Pear)
+                                    |> Dict.insert p2 (toBlock Orange)
                         }
 
                     [ p1 ] ->

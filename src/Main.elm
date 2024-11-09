@@ -563,8 +563,8 @@ generateLevel model =
         { columns = 6
         , rows = 6
         , oldBlocks = model.game |> Game.getBlocks |> Dict.fromList
-        , newSprouts = 1 --model.level // 8 + 1
-        , newFruitPairs = model.level // 8 + 1
+        , newSprouts = model.level // 8
+        , newFruitPairs = model.level // 4 + 1
         , newStone = model.level |> modBy 2
         }
         |> (\gen -> Random.step gen model.seed)
