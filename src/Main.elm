@@ -456,7 +456,7 @@ view model =
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"
-        , Html.Attributes.attribute "content" "width=480, initial-scale=1"
+        , Html.Attributes.attribute "content" "width=480, initial-scale=1,user-scalable=no"
         ]
         []
     ]
