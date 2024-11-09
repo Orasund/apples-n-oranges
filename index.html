@@ -7439,6 +7439,12 @@ var $Orasund$elm_html_style$Html$Style$background = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background', value);
 };
 var $author$project$View$Field$light = $Orasund$elm_html_style$Html$Style$background('#399E5A');
+var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
+var $elm$virtual_dom$VirtualDom$node = function (tag) {
+	return _VirtualDom_node(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 	return _VirtualDom_keyedNode(
 		_VirtualDom_noScript(tag));
@@ -7462,11 +7468,6 @@ var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_styl
 var $Orasund$elm_html_style$Html$Style$positionRelative = $Orasund$elm_html_style$Html$Style$position('relative');
 var $author$project$View$Field$size = 80;
 var $elm$core$List$sortBy = _List_sortBy;
-var $elm$virtual_dom$VirtualDom$node = function (tag) {
-	return _VirtualDom_node(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
@@ -8070,7 +8071,16 @@ var $author$project$Main$view = function (model) {
 								},
 								$elm$core$Dict$toList(model.game.fields)))
 						]))),
-				$author$project$Stylesheet$stylesheet
+				$author$project$Stylesheet$stylesheet,
+				A3(
+				$elm$html$Html$node,
+				'meta',
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$name('viewport'),
+						A2($elm$html$Html$Attributes$attribute, 'content', 'width=480, initial-scale=1')
+					]),
+				_List_Nil)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(

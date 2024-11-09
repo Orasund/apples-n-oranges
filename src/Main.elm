@@ -454,6 +454,11 @@ view model =
         |> List.concat
         |> Html.div [ Html.Style.positionRelative ]
     , Stylesheet.stylesheet
+    , Html.node "meta"
+        [ Html.Attributes.name "viewport"
+        , Html.Attributes.attribute "content" "width=480, initial-scale=1"
+        ]
+        []
     ]
         |> Html.div [ Html.Style.widthPx 480 ]
 
