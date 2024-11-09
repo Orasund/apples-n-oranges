@@ -19,24 +19,9 @@ stone =
     "🪨"
 
 
-pig : String
-pig =
-    "🐖"
-
-
-cow : String
-cow =
-    "🐄"
-
-
-sheep : String
-sheep =
-    "🐑"
-
-
-chicken : String
-chicken =
-    "🐓"
+sprout : String
+sprout =
+    "🌱"
 
 
 rocking : Attribute msg

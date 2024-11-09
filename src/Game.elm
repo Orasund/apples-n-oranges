@@ -14,10 +14,7 @@ type Fruit
 
 type Solid
     = Stone
-    | Pig
-    | Cow
-    | Sheep
-    | Chicken
+    | Sprout
 
 
 type Block
@@ -120,3 +117,17 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
         && (getBlockAt ( x1, y1 ) game /= getBlockAt ( x2, y2 ) game)
         && (getBlockAt ( x1, y1 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
         && (getBlockAt ( x2, y2 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
+
+
+getBlocks : Game -> List ( ( Int, Int ), Block )
+getBlocks game =
+    game.fields
+        |> Dict.map
+            (\_ id ->
+                game.blocks |> Dict.get id
+            )
+        |> Dict.toList
+        |> List.filterMap
+            (\( pos, maybeBlock ) ->
+                maybeBlock |> Maybe.map (Tuple.pair pos)
+            )

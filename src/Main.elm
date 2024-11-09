@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Dict exposing (Dict)
-import Game exposing (Block(..), BlockId, Game, Solid(..))
+import Game exposing (Block(..), BlockId, Fruit(..), Game, Solid(..))
 import Generator
 import Html exposing (Html)
 import Html.Attributes
@@ -13,7 +13,6 @@ import Level exposing (Level)
 import Maths
 import Process
 import Random exposing (Seed)
-import Set exposing (Set)
 import Stylesheet
 import Task
 import View.Block
@@ -42,7 +41,7 @@ type alias Model =
     , entities : Dict BlockId Entity
     , coins : Dict CoinId Coin
     , solids : Dict ( Int, Int ) Solid
-    , money : Set CoinId
+    , money : Int
     , nextCoinId : CoinId
     , level : Int
     , levelDef : Level
@@ -59,7 +58,6 @@ type alias Model =
 
 type Msg
     = Click ( Int, Int )
-    | LoadLevel ( Int, Level )
     | CollectCoin CoinId
     | GenerateLevel
     | Undo
@@ -76,11 +74,6 @@ priceToRemoveStone ( x, y ) =
         ^ 2
 
 
-shouldGenerateLevel : Bool
-shouldGenerateLevel =
-    True
-
-
 newEntity : ( Int, Int ) -> Entity
 newEntity ( x, y ) =
     { x = toFloat x
@@ -92,25 +85,20 @@ newEntity ( x, y ) =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { game = Game.empty { columns = 6, rows = 6 }
+    ( { game =
+            Game.empty { columns = 6, rows = 6 }
       , entities = Dict.empty
-      , solids =
-            {--List.range 0 5
-                |> List.concatMap
-                    (\x ->
-                        [ ( 0, x ), ( x, 0 ), ( 5, x ), ( x, 5 ) ]
-                    )
-                |> List.map (\p -> ( p, Stone ))
-                |> Dict.fromList-}
-            Dict.empty
+      , solids = Dict.empty
       , coins = Dict.empty
-      , money = Set.empty
+      , money = 0
       , nextCoinId = 0
       , level = 0
       , levelDef = Level.fromStrings []
       , history = []
       , seed = Random.initialSeed 42
       }
+      --|> addBlock ( 2, 2 ) (SolidBlock Sprout)
+      --|> addBlock ( 2, 3 ) (SolidBlock Sprout)
     , [ Task.perform
             (\() ->
                 Won
@@ -147,16 +135,17 @@ clearLevel model =
         | game = Game.empty { columns = 0, rows = 0 }
         , entities = Dict.empty
         , coins = Dict.empty
+        , history = []
     }
 
 
 loadLevel : Int -> Level -> Model -> Model
 loadLevel id level model =
     let
-        { columns, rows, fruits } =
+        { columns, rows, blocks } =
             level
     in
-    fruits
+    blocks
         |> List.foldl
             (\( pos, fruit ) ->
                 addBlock pos fruit
@@ -165,6 +154,18 @@ loadLevel id level model =
                 | level = id
                 , levelDef = level
                 , game = Game.empty { columns = columns, rows = rows }
+                , solids =
+                    blocks
+                        |> List.filterMap
+                            (\( pos, block ) ->
+                                case block of
+                                    SolidBlock solid ->
+                                        Just ( pos, solid )
+
+                                    FruitBlock _ ->
+                                        Nothing
+                            )
+                        |> Dict.fromList
             }
 
 
@@ -224,31 +225,43 @@ viewSolid args model =
             , Html.Style.justifyContentCenter
             , Html.Style.fontSizePx 10
             ]
-            (if Set.size model.money >= priceToRemoveStone ( args.x, args.y ) then
-                [ Html.div
-                    [ Html.Style.background "white"
-                    , Html.Style.border "2px solid black"
-                    , Html.Style.borderRadiusPx 16
-                    , Html.Style.displayFlex
-                    , Html.Style.alignItemsCenter
-                    , Html.Style.paddingPx 2
-                    ]
-                    [ View.Coin.toHtml
-                        [ Html.Style.fontSizePx 10
-                        , Html.Style.heightPx 16
+            (case args.solid of
+                Stone ->
+                    if model.money >= priceToRemoveStone ( args.x, args.y ) then
+                        [ Html.div
+                            [ Html.Style.background "white"
+                            , Html.Style.border "2px solid black"
+                            , Html.Style.borderRadiusPx 16
+                            , Html.Style.displayFlex
+                            , Html.Style.alignItemsCenter
+                            , Html.Style.paddingPx 2
+                            ]
+                            [ View.Coin.toHtml
+                                [ Html.Style.fontSizePx 10
+                                , Html.Style.heightPx 16
+                                ]
+                                (priceToRemoveStone ( args.x, args.y ))
+                            , Html.div
+                                [ Html.Style.padding "2px 4px"
+                                ]
+                                [ Html.text "Remove" ]
+                            ]
                         ]
-                        (priceToRemoveStone ( args.x, args.y ))
-                    , Html.div
-                        [ Html.Style.padding "2px 4px"
-                        ]
-                        [ Html.text "Remove" ]
-                    ]
-                ]
 
-             else
-                []
+                    else
+                        []
+
+                Sprout ->
+                    []
             )
-        , Html.div [] [ Html.text View.Block.stone ]
+        , Html.div []
+            (case args.solid of
+                Stone ->
+                    [ Html.text View.Block.stone ]
+
+                Sprout ->
+                    [ Html.text View.Block.sprout ]
+            )
         ]
 
 
@@ -281,14 +294,33 @@ view model =
     [ Html.div
         [ Html.Style.displayFlex
         , Html.Style.alignItemsCenter
-        , Html.Style.gapPx 16
+        , Html.Style.justifyContentCenter
+        , Html.Style.gapPx 4
         ]
-        [ View.Coin.toHtml
+        [ Html.button
+            (Layout.asButton
+                { onPress = Just Undo, label = "Undo" }
+                ++ [ Html.Attributes.class "button"
+                   , Html.Style.paddingPx 2
+                   , Html.Style.displayFlex
+                   , Html.Style.alignItemsCenter
+                   ]
+            )
+            [ View.Coin.toHtml
+                [ Html.Style.fontSizePx 14
+                , Html.Style.heightPx 26
+                , Html.Style.borderWidthPx 3
+                ]
+                1
+            , Html.div [ Html.Style.padding "4px 8px" ]
+                [ Html.text "Undo" ]
+            ]
+        , View.Coin.toHtml
             [ Html.Style.fontSizePx 48
             , Html.Style.heightPx 100
             , Html.Style.borderWidthPx 8
             ]
-            (Set.size model.money |> min 999)
+            (model.money |> min 999 |> max -99)
         , Html.button
             (Layout.asButton
                 { onPress = Just Undo, label = "Undo" }
@@ -333,20 +365,8 @@ view model =
                                 Game.FruitBlock Game.Orange ->
                                     [ Html.text View.Block.orange ]
 
-                                Game.SolidBlock Game.Pig ->
-                                    [ Html.text View.Block.pig ]
-
-                                Game.SolidBlock Game.Chicken ->
-                                    [ Html.text View.Block.chicken ]
-
-                                Game.SolidBlock Game.Cow ->
-                                    [ Html.text View.Block.cow ]
-
-                                Game.SolidBlock Game.Sheep ->
-                                    [ Html.text View.Block.sheep ]
-
-                                Game.SolidBlock Game.Stone ->
-                                    [ Html.text View.Block.stone ]
+                                Game.SolidBlock _ ->
+                                    []
                             )
                         )
                     )
@@ -433,18 +453,9 @@ view model =
       ]
         |> List.concat
         |> Html.div [ Html.Style.positionRelative ]
-
-    {--, Html.button
-        (Layout.asButton
-            { onPress = Just (LoadLevel ( model.level, model.levelDef )), label = "Reset" }
-            ++ [ Html.Attributes.class "button"
-               , Html.Style.padding "8px 16px"
-               ]
-        )
-        [ Html.text "Reset" ]--}
     , Stylesheet.stylesheet
     ]
-        |> Html.div [ Html.Style.paddingTopPx 80 ]
+        |> Html.div [ Html.Style.widthPx 480 ]
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
@@ -529,52 +540,20 @@ checkWinCondition model =
     )
 
 
-generateSolidAndThen : Solid -> ( Generator.Builder, List ( Int, Int ) ) -> Random.Generator ( Generator.Builder, List ( Int, Int ) )
-generateSolidAndThen solid ( builder, positions ) =
-    builder
-        |> Generator.addRandomSolid solid
-        |> Random.map
-            (\( b, p ) ->
-                ( b, p :: positions )
-            )
-
-
 generateLevel : Model -> Model
 generateLevel model =
-    let
-        solid =
-            Stone
-    in
-    ( Generator.new
+    Generator.generateLevel
         { columns = 6
         , rows = 6
+        , oldBlocks = model.game |> Game.getBlocks |> Dict.fromList
+        , newSprouts = 1 --model.level // 8 + 1
+        , newFruitPairs = model.level // 8 + 1
+        , newStone = model.level |> modBy 2
         }
-        |> Generator.addSolids (Dict.toList model.solids)
-    , []
-    )
-        |> generateSolidAndThen solid
-        --|> Random.andThen (generateSolidAndThen solid)
-        |> Random.andThen
-            (\( builder, positions ) ->
-                builder
-                    |> Generator.generatePairs (model.level // 2 + 1)
-                    --(round (sqrt (toFloat model.level + 1)))
-                    |> Random.map (Tuple.pair positions)
-            )
-        |> Random.map
-            (\( positions, builder ) ->
-                ( Generator.build builder
-                , positions
-                )
-            )
         |> (\gen -> Random.step gen model.seed)
-        |> (\( ( level, positions ), seed ) ->
+        |> (\( level, seed ) ->
                 { model
                     | seed = seed
-                    , solids =
-                        positions
-                            |> List.foldl (\pos -> Dict.insert pos solid)
-                                model.solids
                 }
                     |> clearAndloadLevel (model.level + 1) level
            )
@@ -592,23 +571,21 @@ update msg model =
             case model.game.selected of
                 Nothing ->
                     case Game.getBlockAndIdAt pos model.game of
-                        Just ( _, SolidBlock _ ) ->
-                            if Set.size model.money >= priceToRemoveStone pos then
+                        Just ( _, SolidBlock Stone ) ->
+                            if model.money >= priceToRemoveStone pos then
                                 ( { model
                                     | game = Game.removeField pos model.game
-                                    , solids =
-                                        model.solids |> Dict.remove pos
-                                    , money =
-                                        model.money
-                                            |> Set.toList
-                                            |> List.drop (priceToRemoveStone pos)
-                                            |> Set.fromList
+                                    , solids = model.solids |> Dict.remove pos
+                                    , money = model.money - priceToRemoveStone pos
                                   }
                                 , Cmd.none
                                 )
 
                             else
                                 ( model, Cmd.none )
+
+                        Just ( _, SolidBlock Sprout ) ->
+                            ( model, Cmd.none )
 
                         _ ->
                             ( { model | game = Game.setSelected (Just pos) model.game }, Cmd.none )
@@ -627,9 +604,6 @@ update msg model =
                         , Cmd.none
                         )
 
-        LoadLevel ( id, def ) ->
-            ( model |> clearAndloadLevel id def, Cmd.none )
-
         GenerateLevel ->
             ( generateLevel model
             , Cmd.none
@@ -638,21 +612,16 @@ update msg model =
         Undo ->
             case model.history of
                 history :: tail ->
-                    case model.money |> Set.toList of
-                        _ :: money ->
-                            ( { model
-                                | game = history.game |> Game.setSelected Nothing
-                                , entities = history.entities
-                                , coins = history.coins
-                                , history = tail
-                                , money = Set.fromList money
-                                , nextCoinId = history.nextCoinId
-                              }
-                            , Cmd.none
-                            )
-
-                        [] ->
-                            ( model, Cmd.none )
+                    ( { model
+                        | game = history.game |> Game.setSelected Nothing
+                        , entities = history.entities
+                        , coins = history.coins
+                        , history = tail
+                        , money = model.money - 1
+                        , nextCoinId = history.nextCoinId
+                      }
+                    , Cmd.none
+                    )
 
                 [] ->
                     ( model, Cmd.none )
@@ -675,21 +644,9 @@ update msg model =
 
         Won ->
             ( { model
-                | money =
-                    model.coins
-                        |> Dict.keys
-                        |> Set.fromList
-                        |> Set.union model.money
+                | money = Dict.size model.coins + model.money
               }
-            , Task.succeed ()
-                |> Task.perform
-                    (\() ->
-                        if shouldGenerateLevel then
-                            GenerateLevel
-
-                        else
-                            LoadLevel ( model.level + 1, Level.toList (model.level + 1) )
-                    )
+            , Task.succeed () |> Task.perform (\() -> GenerateLevel)
             )
 
         SetSeed seed ->

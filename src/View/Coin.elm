@@ -16,7 +16,7 @@ toHtml attrs n =
         |> List.singleton
         |> Html.div
             ([ Html.Style.borderRadius "100%"
-             , Html.Style.border "2px solid black"
+             , Html.Style.border "2px solid #eae649"
              , Html.Style.aspectRatio "1"
              , Html.Style.displayFlex
              , Html.Style.justifyContentCenter

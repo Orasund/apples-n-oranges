@@ -6,7 +6,7 @@ import Game exposing (Block(..), Fruit(..))
 type alias Level =
     { columns : Int
     , rows : Int
-    , fruits : List ( ( Int, Int ), Block )
+    , blocks : List ( ( Int, Int ), Block )
     }
 
 
@@ -84,4 +84,4 @@ fromStrings list =
                     )
                 |> List.concat
     in
-    { columns = columns, rows = rows, fruits = fruits }
+    { columns = columns, rows = rows, blocks = fruits }

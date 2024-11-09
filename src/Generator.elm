@@ -1,4 +1,4 @@
-module Generator exposing (..)
+module Generator exposing (Builder, generateLevel)
 
 import Dict exposing (Dict)
 import Game exposing (Block(..), Fruit(..), Solid(..))
@@ -12,17 +12,18 @@ type alias Random a =
 
 
 type alias Builder =
-    { fruits : Dict ( Int, Int ) Block
-    , remaining : Set ( Int, Int )
+    { blocks : Dict ( Int, Int ) Block
+    , remainingPositions : Set ( Int, Int )
+    , remainingOldSprouts : Set ( Int, Int )
     , columns : Int
     , rows : Int
     }
 
 
-new : { columns : Int, rows : Int } -> Builder
+new : { columns : Int, rows : Int, oldSprouts : Set ( Int, Int ) } -> Builder
 new args =
-    { fruits = Dict.empty
-    , remaining =
+    { blocks = Dict.empty
+    , remainingPositions =
         List.range 0 (args.columns - 1)
             |> List.concatMap
                 (\x ->
@@ -30,16 +31,58 @@ new args =
                         |> List.map (Tuple.pair x)
                 )
             |> Set.fromList
+    , remainingOldSprouts = args.oldSprouts
     , columns = args.columns
     , rows = args.rows
     }
+
+
+generateLevel :
+    { columns : Int
+    , rows : Int
+    , oldBlocks : Dict ( Int, Int ) Block
+    , newSprouts : Int
+    , newStone : Int
+    , newFruitPairs : Int
+    }
+    -> Random Level
+generateLevel args =
+    let
+        oldSprouts =
+            args.oldBlocks
+                |> Dict.filter (\_ block -> block == SolidBlock Sprout)
+                |> Dict.keys
+                |> Set.fromList
+    in
+    new
+        { columns = args.columns
+        , rows = args.rows
+        , oldSprouts = oldSprouts
+        }
+        |> addSolids
+            (oldSprouts
+                |> Set.toList
+                |> List.map (\pos -> ( pos, Sprout ))
+            )
+        |> addSolids
+            (args.oldBlocks
+                |> Dict.filter (\_ block -> block == SolidBlock Stone)
+                |> Dict.keys
+                |> List.map (\pos -> ( pos, Stone ))
+            )
+        |> Random.constant
+        |> andThenRepeat args.newStone (addRandomSolid Stone)
+        |> andThenRepeat args.newSprouts addSproutPair
+        |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
+        |> andThenRepeat args.newFruitPairs (addRandomPair FruitBlock)
+        |> Random.map build
 
 
 build : Builder -> Level
 build builder =
     { columns = builder.columns
     , rows = builder.rows
-    , fruits = builder.fruits |> Dict.toList
+    , blocks = builder.blocks |> Dict.toList
     }
 
 
@@ -50,10 +93,11 @@ randomSolid =
         |> Maybe.withDefault (Random.constant Stone)
 
 
-generatePairs : Int -> Builder -> Random Builder
-generatePairs pairs builder =
+generatePairs : Int -> (Fruit -> Block) -> Builder -> Random Builder
+generatePairs pairs toBlock builder =
     List.range 0 (pairs - 1)
-        |> List.foldl (\_ -> Random.andThen addPair)
+        |> List.foldl
+            (\_ -> Random.andThen (addRandomPair toBlock))
             (builder |> Random.constant)
 
 
@@ -67,60 +111,117 @@ addSolids solids builder =
             builder
 
 
-addRandomSolid : Solid -> Builder -> Random ( Builder, ( Int, Int ) )
+addRandomSolid : Solid -> Builder -> Random Builder
 addRandomSolid solid builder =
-    builder.remaining
+    builder.remainingPositions
         |> Set.toList
         |> randomFromList
         |> Maybe.withDefault (Random.constant ( -1, -1 ))
         |> Random.map
             (\pos ->
-                ( addSolid pos solid builder, pos )
+                addSolid pos solid builder
             )
 
 
 addSolid : ( Int, Int ) -> Solid -> Builder -> Builder
 addSolid pos solid builder =
     { builder
-        | remaining = builder.remaining |> Set.remove pos
-        , fruits = builder.fruits |> Dict.insert pos (SolidBlock solid)
+        | remainingPositions = builder.remainingPositions |> Set.remove pos
+        , blocks = builder.blocks |> Dict.insert pos (SolidBlock solid)
     }
 
 
-addPair : Builder -> Random Builder
-addPair builder =
-    Set.toList builder.remaining
+addFruitPairFromOldSprout : Builder -> Random Builder
+addFruitPairFromOldSprout builder =
+    case builder.remainingOldSprouts |> Set.toList of
+        head :: tail ->
+            case findValidPair builder head (Set.fromList tail) of
+                Just randomPos ->
+                    randomPos
+                        |> Random.map
+                            (\pos ->
+                                { builder | remainingOldSprouts = tail |> Set.fromList |> Set.remove pos }
+                                    |> addFruit head Apple
+                                    |> addFruit pos Orange
+                            )
+
+                Nothing ->
+                    { builder
+                        | remainingOldSprouts = Set.fromList tail
+                    }
+                        |> addSolid head Sprout
+                        |> Random.constant
+
+        [] ->
+            Random.constant builder
+
+
+addSproutPair : Builder -> Random Builder
+addSproutPair builder =
+    randomPair builder
+        |> Random.map
+            (\list ->
+                list |> List.foldl (\pos -> addSolid pos Sprout) builder
+            )
+
+
+randomPair : Builder -> Random (List ( Int, Int ))
+randomPair builder =
+    Set.toList builder.remainingPositions
         |> randomFromList
         |> Maybe.map
             (Random.andThen
                 (\p1 ->
-                    builder.remaining
+                    builder.remainingPositions
                         |> Set.remove p1
-                        |> Set.toList
-                        |> List.filter (isValidPair builder p1)
-                        |> randomFromList
-                        |> Maybe.map
-                            (Random.map
-                                (\p2 ->
-                                    { builder
-                                        | remaining =
-                                            builder.remaining
-                                                |> Set.remove p1
-                                                |> Set.remove p2
-                                        , fruits =
-                                            builder.fruits
-                                                |> Dict.insert p1 (FruitBlock Apple)
-                                                |> Dict.insert p2 (FruitBlock Orange)
-                                    }
-                                )
-                            )
-                        |> Maybe.withDefault
-                            ({ builder | remaining = Set.remove p1 builder.remaining }
-                                |> Random.constant
-                            )
+                        |> findValidPair builder p1
+                        |> Maybe.map (Random.map (\p2 -> [ p1, p2 ]))
+                        |> Maybe.withDefault (Random.constant [ p1 ])
                 )
             )
-        |> Maybe.withDefault (Random.constant builder)
+        |> Maybe.withDefault (Random.constant [])
+
+
+addFruit : ( Int, Int ) -> Fruit -> Builder -> Builder
+addFruit pos fruit builder =
+    { builder
+        | remainingPositions = builder.remainingPositions |> Set.remove pos
+        , blocks = builder.blocks |> Dict.insert pos (FruitBlock fruit)
+    }
+
+
+addRandomPair : (Fruit -> Block) -> Builder -> Random Builder
+addRandomPair toBlock builder =
+    randomPair builder
+        |> Random.map
+            (\list ->
+                case list of
+                    p1 :: p2 :: _ ->
+                        { builder
+                            | remainingPositions =
+                                builder.remainingPositions
+                                    |> Set.remove p1
+                                    |> Set.remove p2
+                            , blocks =
+                                builder.blocks
+                                    |> Dict.insert p1 (toBlock Apple)
+                                    |> Dict.insert p2 (toBlock Orange)
+                        }
+
+                    [ p1 ] ->
+                        { builder | remainingPositions = Set.remove p1 builder.remainingPositions }
+
+                    [] ->
+                        builder
+            )
+
+
+findValidPair : Builder -> ( Int, Int ) -> Set ( Int, Int ) -> Maybe (Random ( Int, Int ))
+findValidPair builder pos candidates =
+    candidates
+        |> Set.toList
+        |> List.filter (isValidPair builder pos)
+        |> randomFromList
 
 
 isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
@@ -135,10 +236,10 @@ isValidPair builder ( x1, y1 ) ( x2, y2 ) =
                     False
     in
     ((x1 == x2)
-        && (List.range (min y1 y2) (max y1 y2)
+        && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
                 |> List.all
                     (\y ->
-                        builder.fruits
+                        builder.blocks
                             |> Dict.get ( x1, y )
                             |> Maybe.map validBlock
                             |> Maybe.withDefault True
@@ -146,10 +247,10 @@ isValidPair builder ( x1, y1 ) ( x2, y2 ) =
            )
     )
         || ((y1 == y2)
-                && (List.range (min x1 x2) (max x1 x2)
+                && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
                             (\x ->
-                                builder.fruits
+                                builder.blocks
                                     |> Dict.get ( x, y1 )
                                     |> Maybe.map validBlock
                                     |> Maybe.withDefault True
@@ -166,3 +267,10 @@ randomFromList list =
 
         [] ->
             Nothing
+
+
+andThenRepeat : Int -> (a -> Random a) -> Random a -> Random a
+andThenRepeat n fun rand =
+    List.repeat n ()
+        |> List.foldl (\() -> Random.andThen fun)
+            rand
