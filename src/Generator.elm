@@ -141,7 +141,7 @@ addFruitPairFromOldSprout builder =
                         |> Random.map
                             (\pos ->
                                 { builder | remainingOldSprouts = tail |> Set.fromList |> Set.remove pos }
-                                    |> addFruit head Apple
+                                    |> addFruit head Lemon
                                     |> addFruit pos Orange
                             )
 
@@ -205,7 +205,7 @@ addRandomPair toBlock builder =
                             , blocks =
                                 builder.blocks
                                     |> Dict.insert p1 (toBlock Apple)
-                                    |> Dict.insert p2 (toBlock Orange)
+                                    |> Dict.insert p2 (toBlock Pear)
                         }
 
                     [ p1 ] ->

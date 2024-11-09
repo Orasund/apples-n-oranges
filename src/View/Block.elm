@@ -14,6 +14,16 @@ orange =
     "🍊"
 
 
+lemon : String
+lemon =
+    "🍋"
+
+
+pear : String
+pear =
+    "🍐"
+
+
 stone : String
 stone =
     "🪨"

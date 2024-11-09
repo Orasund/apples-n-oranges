@@ -365,6 +365,12 @@ view model =
                                 Game.FruitBlock Game.Orange ->
                                     [ Html.text View.Block.orange ]
 
+                                Game.FruitBlock Game.Lemon ->
+                                    [ Html.text View.Block.lemon ]
+
+                                Game.FruitBlock Game.Pear ->
+                                    [ Html.text View.Block.pear ]
+
                                 Game.SolidBlock _ ->
                                     []
                             )
@@ -431,6 +437,12 @@ view model =
 
                                     Game.FruitBlock Game.Orange ->
                                         "Orange"
+
+                                    Game.FruitBlock Game.Lemon ->
+                                        "Lemon"
+
+                                    Game.FruitBlock Game.Pear ->
+                                        "Pear"
 
                                     Game.SolidBlock _ ->
                                         "Solid Block"

@@ -10,6 +10,8 @@ type alias BlockId =
 type Fruit
     = Apple
     | Orange
+    | Lemon
+    | Pear
 
 
 type Solid

@@ -5946,6 +5946,7 @@ var $author$project$Game$SolidBlock = function (a) {
 };
 var $author$project$Game$Sprout = {$: 'Sprout'};
 var $author$project$Game$Stone = {$: 'Stone'};
+var $author$project$Game$Lemon = {$: 'Lemon'};
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -6546,7 +6547,7 @@ var $author$project$Generator$addFruitPairFromOldSprout = function (builder) {
 						A3(
 							$author$project$Generator$addFruit,
 							head,
-							$author$project$Game$Apple,
+							$author$project$Game$Lemon,
 							_Utils_update(
 								builder,
 								{
@@ -6573,6 +6574,7 @@ var $author$project$Generator$addFruitPairFromOldSprout = function (builder) {
 		return $elm$random$Random$constant(builder);
 	}
 };
+var $author$project$Game$Pear = {$: 'Pear'};
 var $elm$random$Random$andThen = F2(
 	function (callback, _v0) {
 		var genA = _v0.a;
@@ -6631,7 +6633,7 @@ var $author$project$Generator$addRandomPair = F2(
 								blocks: A3(
 									$elm$core$Dict$insert,
 									p2,
-									toBlock($author$project$Game$Orange),
+									toBlock($author$project$Game$Pear),
 									A3(
 										$elm$core$Dict$insert,
 										p1,
@@ -7435,6 +7437,7 @@ var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
+var $author$project$View$Block$lemon = '🍋';
 var $Orasund$elm_html_style$Html$Style$background = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background', value);
 };
@@ -7461,6 +7464,7 @@ var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
+var $author$project$View$Block$pear = '🍐';
 var $Orasund$elm_html_style$Html$Style$position = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'position', value);
 };
@@ -7946,18 +7950,31 @@ var $author$project$Main$view = function (model) {
 														model,
 														function () {
 															if (block.$ === 'FruitBlock') {
-																if (block.a.$ === 'Apple') {
-																	var _v3 = block.a;
-																	return _List_fromArray(
-																		[
-																			$elm$html$Html$text($author$project$View$Block$apple)
-																		]);
-																} else {
-																	var _v4 = block.a;
-																	return _List_fromArray(
-																		[
-																			$elm$html$Html$text($author$project$View$Block$orange)
-																		]);
+																switch (block.a.$) {
+																	case 'Apple':
+																		var _v3 = block.a;
+																		return _List_fromArray(
+																			[
+																				$elm$html$Html$text($author$project$View$Block$apple)
+																			]);
+																	case 'Orange':
+																		var _v4 = block.a;
+																		return _List_fromArray(
+																			[
+																				$elm$html$Html$text($author$project$View$Block$orange)
+																			]);
+																	case 'Lemon':
+																		var _v5 = block.a;
+																		return _List_fromArray(
+																			[
+																				$elm$html$Html$text($author$project$View$Block$lemon)
+																			]);
+																	default:
+																		var _v6 = block.a;
+																		return _List_fromArray(
+																			[
+																				$elm$html$Html$text($author$project$View$Block$pear)
+																			]);
 																}
 															} else {
 																return _List_Nil;
@@ -7979,9 +7996,9 @@ var $author$project$Main$view = function (model) {
 												$elm$core$Dict$toList(model.entities))),
 											A2(
 											$elm$core$List$map,
-											function (_v5) {
-												var id = _v5.a;
-												var coin = _v5.b;
+											function (_v7) {
+												var id = _v7.a;
+												var coin = _v7.b;
 												return _Utils_Tuple2(
 													'coin_' + $elm$core$String$fromInt(id),
 													$author$project$Main$viewMoney(coin));
@@ -7996,11 +8013,11 @@ var $author$project$Main$view = function (model) {
 														])))),
 											A2(
 											$elm$core$List$map,
-											function (_v6) {
-												var _v7 = _v6.a;
-												var x = _v7.a;
-												var y = _v7.b;
-												var solid = _v6.b;
+											function (_v8) {
+												var _v9 = _v8.a;
+												var x = _v9.a;
+												var y = _v9.b;
+												var solid = _v8.b;
 												return _Utils_Tuple2(
 													'solid_' + ($elm$core$String$fromInt(x) + ('_' + $elm$core$String$fromInt(y))),
 													A2(
@@ -8013,11 +8030,11 @@ var $author$project$Main$view = function (model) {
 							]),
 							A2(
 							$elm$core$List$map,
-							function (_v9) {
-								var _v10 = _v9.a;
-								var x = _v10.a;
-								var y = _v10.b;
-								var block = _v9.b;
+							function (_v11) {
+								var _v12 = _v11.a;
+								var x = _v12.a;
+								var y = _v12.b;
+								var block = _v11.b;
 								return A2(
 									$elm$html$Html$div,
 									_Utils_ap(
@@ -8029,12 +8046,19 @@ var $author$project$Main$view = function (model) {
 															'Select ',
 															function () {
 															if (block.$ === 'FruitBlock') {
-																if (block.a.$ === 'Apple') {
-																	var _v12 = block.a;
-																	return 'Apple';
-																} else {
-																	var _v13 = block.a;
-																	return 'Orange';
+																switch (block.a.$) {
+																	case 'Apple':
+																		var _v14 = block.a;
+																		return 'Apple';
+																	case 'Orange':
+																		var _v15 = block.a;
+																		return 'Orange';
+																	case 'Lemon':
+																		var _v16 = block.a;
+																		return 'Lemon';
+																	default:
+																		var _v17 = block.a;
+																		return 'Pear';
 																}
 															} else {
 																return 'Solid Block';
@@ -8061,9 +8085,9 @@ var $author$project$Main$view = function (model) {
 							},
 							A2(
 								$elm$core$List$filterMap,
-								function (_v8) {
-									var p = _v8.a;
-									var fruitId = _v8.b;
+								function (_v10) {
+									var p = _v10.a;
+									var fruitId = _v10.b;
 									return A2(
 										$elm$core$Maybe$map,
 										$elm$core$Tuple$pair(p),
