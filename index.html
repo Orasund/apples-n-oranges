@@ -7020,6 +7020,42 @@ var $author$project$Game$isValidPair = F3(
 					_Utils_Tuple2(x2, y2),
 					game)))));
 	});
+var $author$project$Main$coinsEarnedFromMatching = F2(
+	function (block1, block2) {
+		var coinsEarned = function (block) {
+			if (block.$ === 'FruitBlock') {
+				switch (block.a.$) {
+					case 'Apple':
+						var _v1 = block.a;
+						return 1;
+					case 'Orange':
+						var _v2 = block.a;
+						return 1;
+					default:
+						var _v3 = block.a;
+						return 3;
+				}
+			} else {
+				return 0;
+			}
+		};
+		return ((coinsEarned(block1) + coinsEarned(block2)) / 2) | 0;
+	});
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Maths$length = function (_v0) {
+	var x = _v0.a;
+	var y = _v0.b;
+	return $elm$core$Basics$sqrt((x * x) + (y * y));
+};
+var $author$project$Maths$distance = F2(
+	function (_v0, _v1) {
+		var x1 = _v0.a;
+		var y1 = _v0.b;
+		var x2 = _v1.a;
+		var y2 = _v1.b;
+		return $author$project$Maths$length(
+			_Utils_Tuple2(x1 - x2, y1 - y2));
+	});
 var $elm$core$Basics$cos = _Basics_cos;
 var $elm$core$Basics$sin = _Basics_sin;
 var $elm$core$Basics$fromPolar = function (_v0) {
@@ -7036,17 +7072,6 @@ var $author$project$Maths$intersect = F2(
 		var x2 = _v1.a;
 		var y2 = _v1.b;
 		return _Utils_Tuple2((x1 + x2) / 2, (y1 + y2) / 2);
-	});
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$Maths$length = F2(
-	function (_v0, _v1) {
-		var x1 = _v0.a;
-		var y1 = _v0.b;
-		var x2 = _v1.a;
-		var y2 = _v1.b;
-		var y = y1 - y2;
-		var x = x1 - x2;
-		return $elm$core$Basics$sqrt((x * x) + (y * y));
 	});
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
@@ -7104,20 +7129,29 @@ var $author$project$Main$join = F3(
 			$elm$core$Basics$fromPolar(
 				_Utils_Tuple2(
 					0.1,
-					A2($author$project$Maths$length, p1, p2))));
+					A2($author$project$Maths$distance, p1, p2))));
 		var x = _v0.a;
 		var y = _v0.b;
 		return A3(
 			$elm$core$Maybe$map2,
 			F2(
-				function (fruit1, fruit2) {
+				function (_v1, _v2) {
+					var fruit1 = _v1.a;
+					var block1 = _v1.b;
+					var fruit2 = _v2.a;
+					var block2 = _v2.b;
 					return _Utils_update(
 						model,
 						{
 							coins: A3(
 								$elm$core$Dict$insert,
 								model.nextCoinId,
-								{shrink: true, x: x, y: y},
+								{
+									shrink: true,
+									value: A2($author$project$Main$coinsEarnedFromMatching, block1, block2),
+									x: x,
+									y: y
+								},
 								model.coins),
 							entities: A3(
 								$elm$core$Dict$update,
@@ -7152,8 +7186,8 @@ var $author$project$Main$join = F3(
 							nextCoinId: model.nextCoinId + 1
 						});
 				}),
-			A2($elm$core$Dict$get, p1, model.game.fields),
-			A2($elm$core$Dict$get, p2, model.game.fields));
+			A2($author$project$Game$getBlockAndIdAt, p1, model.game),
+			A2($author$project$Game$getBlockAndIdAt, p2, model.game));
 	});
 var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$Basics$round = _Basics_round;
@@ -7166,6 +7200,16 @@ var $author$project$Main$priceToRemoveStone = function (_v0) {
 			$elm$core$Basics$abs(x - 2.5))) - $elm$core$Basics$round(
 			$elm$core$Basics$abs(y - 2.5)),
 		2);
+};
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -7274,7 +7318,13 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							money: $elm$core$Dict$size(model.coins) + model.money
+							money: model.money + $elm$core$List$sum(
+								A2(
+									$elm$core$List$map,
+									function ($) {
+										return $.value;
+									},
+									$elm$core$Dict$values(model.coins)))
 						}),
 					A2(
 						$elm$core$Task$perform,
@@ -7294,7 +7344,6 @@ var $author$project$Main$update = F2(
 var $author$project$Main$Click = function (a) {
 	return {$: 'Click', a: a};
 };
-var $author$project$Main$Undo = {$: 'Undo'};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $Orasund$elm_html_style$Html$Style$alignItems = function (value) {
@@ -7351,28 +7400,6 @@ var $Orasund$elm_layout$Layout$asButton = function (args) {
 var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
 };
-var $elm$core$String$append = _String_append;
-var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-width', value);
-};
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderWidth(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
 };
@@ -7381,16 +7408,12 @@ var $Orasund$elm_html_style$Html$Style$display = function (value) {
 };
 var $Orasund$elm_html_style$Html$Style$displayFlex = $Orasund$elm_html_style$Html$Style$display('flex');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'font-size', value);
+var $Orasund$elm_html_style$Html$Style$flexDirection = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex-direction', value);
 };
-var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$fontSize(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
+var $Orasund$elm_html_style$Html$Style$flexDirectionColumn = $Orasund$elm_html_style$Html$Style$flexDirection('column');
+var $elm$core$String$append = _String_append;
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $Orasund$elm_html_style$Html$Style$gap = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'gap', value);
 };
@@ -7401,20 +7424,6 @@ var $Orasund$elm_html_style$Html$Style$gapPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$height = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'height', value);
-};
-var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$height(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$justifyContent = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'justify-content', value);
-};
-var $Orasund$elm_html_style$Html$Style$justifyContentCenter = $Orasund$elm_html_style$Html$Style$justifyContent('center');
 var $Orasund$elm_html_style$Html$Style$left = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'left', value);
 };
@@ -7430,6 +7439,14 @@ var $Orasund$elm_html_style$Html$Style$background = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background', value);
 };
 var $author$project$View$Field$light = $Orasund$elm_html_style$Html$Style$background('#399E5A');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
 	return _VirtualDom_node(
@@ -7442,23 +7459,12 @@ var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 };
 var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
 var $author$project$View$Block$orange = '🍊';
-var $Orasund$elm_html_style$Html$Style$padding = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'padding', value);
-};
-var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$padding(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$Block$pear = '🍐';
 var $Orasund$elm_html_style$Html$Style$position = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'position', value);
 };
 var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
 var $Orasund$elm_html_style$Html$Style$positionRelative = $Orasund$elm_html_style$Html$Style$position('relative');
-var $author$project$View$Field$size = 80;
+var $author$project$View$Field$size = 60;
 var $elm$core$List$sortBy = _List_sortBy;
 var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
@@ -7471,55 +7477,10 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: transparent;\n    }\n\n    .button:hover {\n        background-color: rgba(0,0,0,0.1);\n    }\n\n    .button:active {\n        background-color: rgba(0,0,0,0.3);\n    }\n    ')));
-var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'align-content', value);
-};
-var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
-var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-color', value);
-};
-var $Orasund$elm_html_style$Html$Style$border = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border', value);
-};
+		$elm$html$Html$text('\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: transparent;\n    }\n\n    .button:hover {\n        background-color: rgba(0,0,0,0.1);\n    }\n\n    .button:active {\n        background-color: rgba(0,0,0,0.3);\n    }\n    ')));
 var $Orasund$elm_html_style$Html$Style$borderRadius = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-radius', value);
 };
-var $Orasund$elm_html_style$Html$Style$boxSizing = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'box-sizing', value);
-};
-var $Orasund$elm_html_style$Html$Style$boxSizingBorderBox = $Orasund$elm_html_style$Html$Style$boxSizing('border-box');
-var $Orasund$elm_html_style$Html$Style$fontWeight = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'font-weight', value);
-};
-var $Orasund$elm_html_style$Html$Style$fontWeightBold = $Orasund$elm_html_style$Html$Style$fontWeight('bold');
-var $author$project$View$Coin$toHtml = F2(
-	function (attrs, n) {
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-						$Orasund$elm_html_style$Html$Style$border('2px solid #eae649'),
-						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$alignContentCenter,
-						$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-						$Orasund$elm_html_style$Html$Style$fontWeightBold,
-						$Orasund$elm_html_style$Html$Style$backgroundColor('#d8d42a')
-					]),
-				attrs),
-			$elm$core$List$singleton(
-				A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$alignItemsCenter]),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(
-							$elm$core$String$fromInt(n))))));
-	});
 var $Orasund$elm_html_style$Html$Style$borderRadiusPx = function (value) {
 	return $Orasund$elm_html_style$Html$Style$borderRadius(
 		A2(
@@ -7528,10 +7489,6 @@ var $Orasund$elm_html_style$Html$Style$borderRadiusPx = function (value) {
 			'px'));
 };
 var $author$project$View$Field$dark = $Orasund$elm_html_style$Html$Style$background('#2D6233');
-var $Orasund$elm_html_style$Html$Style$flexDirection = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'flex-direction', value);
-};
-var $Orasund$elm_html_style$Html$Style$flexDirectionColumn = $Orasund$elm_html_style$Html$Style$flexDirection('column');
 var $Orasund$elm_html_style$Html$Style$flexDirectionRow = $Orasund$elm_html_style$Html$Style$flexDirection('row');
 var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'overflow', value);
@@ -7605,13 +7562,20 @@ var $Orasund$elm_html_style$Html$Style$scale = function (value) {
 };
 var $author$project$View$Block$shrink = $Orasund$elm_html_style$Html$Style$scale('0');
 var $author$project$View$Block$small = $Orasund$elm_html_style$Html$Style$scale('0.5');
-var $Orasund$elm_html_style$Html$Style$fontSizeRem = function (value) {
+var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'font-size', value);
+};
+var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
 	return $Orasund$elm_html_style$Html$Style$fontSize(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
-			'rem'));
+			'px'));
 };
+var $Orasund$elm_html_style$Html$Style$justifyContent = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'justify-content', value);
+};
+var $Orasund$elm_html_style$Html$Style$justifyContentCenter = $Orasund$elm_html_style$Html$Style$justifyContent('center');
 var $Orasund$elm_html_style$Html$Style$rotate = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'rotate', value);
 };
@@ -7623,7 +7587,7 @@ var $author$project$View$Block$withContent = function (attrs) {
 		_Utils_ap(
 			_List_fromArray(
 				[
-					$Orasund$elm_html_style$Html$Style$fontSizeRem(4),
+					$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size * 0.8),
 					$Orasund$elm_html_style$Html$Style$widthMinContent,
 					$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
 					$Orasund$elm_html_style$Html$Style$rotate('0deg'),
@@ -7657,6 +7621,174 @@ var $author$project$Main$viewFruit = F2(
 						},
 						model.game.selected))));
 	});
+var $author$project$Main$Undo = {$: 'Undo'};
+var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-width', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderWidth(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $Orasund$elm_html_style$Html$Style$flex = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex', value);
+};
+var $Orasund$elm_html_style$Html$Style$height = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'height', value);
+};
+var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$height(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$padding = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'padding', value);
+};
+var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$padding(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'align-content', value);
+};
+var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
+var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-color', value);
+};
+var $Orasund$elm_html_style$Html$Style$border = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border', value);
+};
+var $Orasund$elm_html_style$Html$Style$boxSizing = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'box-sizing', value);
+};
+var $Orasund$elm_html_style$Html$Style$boxSizingBorderBox = $Orasund$elm_html_style$Html$Style$boxSizing('border-box');
+var $Orasund$elm_html_style$Html$Style$fontWeight = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'font-weight', value);
+};
+var $Orasund$elm_html_style$Html$Style$fontWeightBold = $Orasund$elm_html_style$Html$Style$fontWeight('bold');
+var $author$project$View$Coin$toHtml = F2(
+	function (attrs, n) {
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+						$Orasund$elm_html_style$Html$Style$border('2px solid #eae649'),
+						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+						$Orasund$elm_html_style$Html$Style$alignContentCenter,
+						$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+						$Orasund$elm_html_style$Html$Style$fontWeightBold,
+						$Orasund$elm_html_style$Html$Style$backgroundColor('#d8d42a')
+					]),
+				attrs),
+			$elm$core$List$singleton(
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$alignItemsCenter]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(
+							$elm$core$String$fromInt(n))))));
+	});
+var $author$project$Main$viewHeader = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+				$Orasund$elm_html_style$Html$Style$gapPx(4),
+				$Orasund$elm_html_style$Html$Style$width('100%')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$flex('1')
+					]),
+				$elm$core$List$singleton(
+					A2(
+						$elm$html$Html$button,
+						_Utils_ap(
+							$Orasund$elm_layout$Layout$asButton(
+								{
+									label: 'Undo',
+									onPress: $elm$core$Maybe$Just($author$project$Main$Undo)
+								}),
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button'),
+									$Orasund$elm_html_style$Html$Style$paddingPx(2),
+									$Orasund$elm_html_style$Html$Style$displayFlex,
+									$Orasund$elm_html_style$Html$Style$alignItemsCenter
+								])),
+						_List_fromArray(
+							[
+								A2(
+								$author$project$View$Coin$toHtml,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$fontSizePx(14),
+										$Orasund$elm_html_style$Html$Style$heightPx(26),
+										$Orasund$elm_html_style$Html$Style$borderWidthPx(3)
+									]),
+								1),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$padding('4px 8px')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Undo')
+									]))
+							])))),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$flex('1'),
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$justifyContentCenter
+					]),
+				$elm$core$List$singleton(
+					A2(
+						$author$project$View$Coin$toHtml,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$fontSizePx(48),
+								$Orasund$elm_html_style$Html$Style$heightPx(100),
+								$Orasund$elm_html_style$Html$Style$borderWidthPx(8)
+							]),
+						A2(
+							$elm$core$Basics$max,
+							-99,
+							A2($elm$core$Basics$min, 999, model.money))))),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$flex('1')
+					]),
+				_List_Nil)
+			]));
+};
 var $author$project$Main$viewMoney = function (money) {
 	return A2(
 		$author$project$View$Block$withContent,
@@ -7675,12 +7807,12 @@ var $author$project$Main$viewMoney = function (money) {
 				$author$project$View$Coin$toHtml,
 				_List_fromArray(
 					[
-						$Orasund$elm_html_style$Html$Style$fontSizePx(24),
-						$Orasund$elm_html_style$Html$Style$heightPx(40),
+						$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size / 4),
+						$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$Field$size / 2),
 						$Orasund$elm_html_style$Html$Style$borderWidthPx(4),
 						$Orasund$elm_html_style$Html$Style$displayFlex
 					]),
-				1)
+				money.value)
 			]));
 };
 var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
@@ -7805,99 +7937,14 @@ var $author$project$Main$view = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$Orasund$elm_html_style$Html$Style$widthPx(480)
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$gapPx(16)
 			]),
 		_List_fromArray(
 			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$gapPx(4)
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_Utils_ap(
-							$Orasund$elm_layout$Layout$asButton(
-								{
-									label: 'Undo',
-									onPress: $elm$core$Maybe$Just($author$project$Main$Undo)
-								}),
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('button'),
-									$Orasund$elm_html_style$Html$Style$paddingPx(2),
-									$Orasund$elm_html_style$Html$Style$displayFlex,
-									$Orasund$elm_html_style$Html$Style$alignItemsCenter
-								])),
-						_List_fromArray(
-							[
-								A2(
-								$author$project$View$Coin$toHtml,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$fontSizePx(14),
-										$Orasund$elm_html_style$Html$Style$heightPx(26),
-										$Orasund$elm_html_style$Html$Style$borderWidthPx(3)
-									]),
-								1),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$padding('4px 8px')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Undo')
-									]))
-							])),
-						A2(
-						$author$project$View$Coin$toHtml,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$fontSizePx(48),
-								$Orasund$elm_html_style$Html$Style$heightPx(100),
-								$Orasund$elm_html_style$Html$Style$borderWidthPx(8)
-							]),
-						A2(
-							$elm$core$Basics$max,
-							-99,
-							A2($elm$core$Basics$min, 999, model.money))),
-						A2(
-						$elm$html$Html$button,
-						_Utils_ap(
-							$Orasund$elm_layout$Layout$asButton(
-								{
-									label: 'Undo',
-									onPress: $elm$core$Maybe$Just($author$project$Main$Undo)
-								}),
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('button'),
-									$Orasund$elm_html_style$Html$Style$padding('8px 16px'),
-									$Orasund$elm_html_style$Html$Style$displayFlex,
-									$Orasund$elm_html_style$Html$Style$gapPx(8),
-									$Orasund$elm_html_style$Html$Style$alignItemsCenter
-								])),
-						_List_fromArray(
-							[
-								A2(
-								$author$project$View$Coin$toHtml,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$fontSizePx(10),
-										$Orasund$elm_html_style$Html$Style$heightPx(14)
-									]),
-								1),
-								$elm$html$Html$text('Undo')
-							]))
-					])),
+				$author$project$Main$viewHeader(model),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -7951,17 +7998,11 @@ var $author$project$Main$view = function (model) {
 																			[
 																				$elm$html$Html$text($author$project$View$Block$orange)
 																			]);
-																	case 'Lemon':
+																	default:
 																		var _v5 = block.a;
 																		return _List_fromArray(
 																			[
 																				$elm$html$Html$text($author$project$View$Block$lemon)
-																			]);
-																	default:
-																		var _v6 = block.a;
-																		return _List_fromArray(
-																			[
-																				$elm$html$Html$text($author$project$View$Block$pear)
 																			]);
 																}
 															} else {
@@ -7984,9 +8025,9 @@ var $author$project$Main$view = function (model) {
 												$elm$core$Dict$toList(model.entities))),
 											A2(
 											$elm$core$List$map,
-											function (_v7) {
-												var id = _v7.a;
-												var coin = _v7.b;
+											function (_v6) {
+												var id = _v6.a;
+												var coin = _v6.b;
 												return _Utils_Tuple2(
 													'coin_' + $elm$core$String$fromInt(id),
 													$author$project$Main$viewMoney(coin));
@@ -8001,11 +8042,11 @@ var $author$project$Main$view = function (model) {
 														])))),
 											A2(
 											$elm$core$List$map,
-											function (_v8) {
-												var _v9 = _v8.a;
-												var x = _v9.a;
-												var y = _v9.b;
-												var solid = _v8.b;
+											function (_v7) {
+												var _v8 = _v7.a;
+												var x = _v8.a;
+												var y = _v8.b;
+												var solid = _v7.b;
 												return _Utils_Tuple2(
 													'solid_' + ($elm$core$String$fromInt(x) + ('_' + $elm$core$String$fromInt(y))),
 													A2(
@@ -8018,11 +8059,11 @@ var $author$project$Main$view = function (model) {
 							]),
 							A2(
 							$elm$core$List$map,
-							function (_v11) {
-								var _v12 = _v11.a;
-								var x = _v12.a;
-								var y = _v12.b;
-								var block = _v11.b;
+							function (_v10) {
+								var _v11 = _v10.a;
+								var x = _v11.a;
+								var y = _v11.b;
+								var block = _v10.b;
 								return A2(
 									$elm$html$Html$div,
 									_Utils_ap(
@@ -8036,17 +8077,14 @@ var $author$project$Main$view = function (model) {
 															if (block.$ === 'FruitBlock') {
 																switch (block.a.$) {
 																	case 'Apple':
-																		var _v14 = block.a;
+																		var _v13 = block.a;
 																		return 'Apple';
 																	case 'Orange':
-																		var _v15 = block.a;
+																		var _v14 = block.a;
 																		return 'Orange';
-																	case 'Lemon':
-																		var _v16 = block.a;
-																		return 'Lemon';
 																	default:
-																		var _v17 = block.a;
-																		return 'Pear';
+																		var _v15 = block.a;
+																		return 'Lemon';
 																}
 															} else {
 																return 'Solid Block';
@@ -8073,9 +8111,9 @@ var $author$project$Main$view = function (model) {
 							},
 							A2(
 								$elm$core$List$filterMap,
-								function (_v10) {
-									var p = _v10.a;
-									var fruitId = _v10.b;
+								function (_v9) {
+									var p = _v9.a;
+									var fruitId = _v9.b;
 									return A2(
 										$elm$core$Maybe$map,
 										$elm$core$Tuple$pair(p),
@@ -8090,7 +8128,7 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$name('viewport'),
-						A2($elm$html$Html$Attributes$attribute, 'content', 'width=480, initial-scale=1,user-scalable=no')
+						A2($elm$html$Html$Attributes$attribute, 'content', 'width=400, initial-scale=1,user-scalable=no')
 					]),
 				_List_Nil)
 			]));

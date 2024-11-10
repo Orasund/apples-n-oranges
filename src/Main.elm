@@ -29,7 +29,7 @@ type alias Entity =
 
 
 type alias Coin =
-    { x : Float, y : Float, shrink : Bool }
+    { x : Float, y : Float, shrink : Bool, value : Int }
 
 
 type alias CoinId =
@@ -280,65 +280,63 @@ viewMoney money =
                )
         )
         [ View.Coin.toHtml
-            [ Html.Style.fontSizePx 24
-            , Html.Style.heightPx 40
+            [ Html.Style.fontSizePx (View.Field.size / 4)
+            , Html.Style.heightPx (View.Field.size / 2)
             , Html.Style.borderWidthPx 4
             , Html.Style.displayFlex
             ]
-            1
+            money.value
         ]
 
 
-view : Model -> Html Msg
-view model =
-    [ Html.div
+viewHeader : Model -> Html Msg
+viewHeader model =
+    Html.div
         [ Html.Style.displayFlex
         , Html.Style.alignItemsCenter
         , Html.Style.justifyContentCenter
         , Html.Style.gapPx 4
+        , Html.Style.width "100%"
         ]
-        [ Html.button
-            (Layout.asButton
-                { onPress = Just Undo, label = "Undo" }
-                ++ [ Html.Attributes.class "button"
-                   , Html.Style.paddingPx 2
-                   , Html.Style.displayFlex
-                   , Html.Style.alignItemsCenter
-                   ]
-            )
-            [ View.Coin.toHtml
+        [ [ View.Coin.toHtml
                 [ Html.Style.fontSizePx 14
                 , Html.Style.heightPx 26
                 , Html.Style.borderWidthPx 3
                 ]
                 1
-            , Html.div [ Html.Style.padding "4px 8px" ]
+          , Html.div [ Html.Style.padding "4px 8px" ]
                 [ Html.text "Undo" ]
-            ]
+          ]
+            |> Html.button
+                (Layout.asButton
+                    { onPress = Just Undo, label = "Undo" }
+                    ++ [ Html.Attributes.class "button"
+                       , Html.Style.paddingPx 2
+                       , Html.Style.displayFlex
+                       , Html.Style.alignItemsCenter
+                       ]
+                )
+            |> List.singleton
+            |> Html.div [ Html.Style.flex "1" ]
         , View.Coin.toHtml
             [ Html.Style.fontSizePx 48
             , Html.Style.heightPx 100
             , Html.Style.borderWidthPx 8
             ]
             (model.money |> min 999 |> max -99)
-        , Html.button
-            (Layout.asButton
-                { onPress = Just Undo, label = "Undo" }
-                ++ [ Html.Attributes.class "button"
-                   , Html.Style.padding "8px 16px"
-                   , Html.Style.displayFlex
-                   , Html.Style.gapPx 8
-                   , Html.Style.alignItemsCenter
-                   ]
-            )
-            [ View.Coin.toHtml
-                [ Html.Style.fontSizePx 10
-                , Html.Style.heightPx 14
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
                 ]
-                1
-            , Html.text "Undo"
-            ]
+        , Html.div [ Html.Style.flex "1" ] []
         ]
+
+
+view : Model -> Html Msg
+view model =
+    [ viewHeader model
     , [ [ View.Field.toHtml
             [ View.Field.light ]
             { columns = model.game.columns, rows = model.game.rows }
@@ -367,9 +365,6 @@ view model =
 
                                 Game.FruitBlock Game.Lemon ->
                                     [ Html.text View.Block.lemon ]
-
-                                Game.FruitBlock Game.Pear ->
-                                    [ Html.text View.Block.pear ]
 
                                 Game.SolidBlock _ ->
                                     []
@@ -441,9 +436,6 @@ view model =
                                     Game.FruitBlock Game.Lemon ->
                                         "Lemon"
 
-                                    Game.FruitBlock Game.Pear ->
-                                        "Pear"
-
                                     Game.SolidBlock _ ->
                                         "Solid Block"
                                 , " at "
@@ -468,22 +460,47 @@ view model =
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"
-        , Html.Attributes.attribute "content" "width=480, initial-scale=1,user-scalable=no"
+        , Html.Attributes.attribute "content" "width=400, initial-scale=1,user-scalable=no"
         ]
         []
     ]
-        |> Html.div [ Html.Style.widthPx 480 ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.alignItemsCenter
+            , Html.Style.gapPx 16
+            ]
+
+
+coinsEarnedFromMatching : Block -> Block -> Int
+coinsEarnedFromMatching block1 block2 =
+    let
+        coinsEarned block =
+            case block of
+                FruitBlock Apple ->
+                    1
+
+                FruitBlock Orange ->
+                    1
+
+                FruitBlock Lemon ->
+                    3
+
+                SolidBlock _ ->
+                    0
+    in
+    (coinsEarned block1 + coinsEarned block2) // 2
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
 join p1 p2 model =
     let
         ( x, y ) =
-            fromPolar ( 0.1, Maths.length p1 p2 )
+            fromPolar ( 0.1, Maths.distance p1 p2 )
                 |> Maths.plus (Maths.intersect p1 p2)
     in
     Maybe.map2
-        (\fruit1 fruit2 ->
+        (\( fruit1, block1 ) ( fruit2, block2 ) ->
             { model
                 | game =
                     model.game
@@ -507,7 +524,11 @@ join p1 p2 model =
                 , coins =
                     model.coins
                         |> Dict.insert model.nextCoinId
-                            { x = x, y = y, shrink = True }
+                            { x = x
+                            , y = y
+                            , shrink = True
+                            , value = coinsEarnedFromMatching block1 block2
+                            }
                 , nextCoinId = model.nextCoinId + 1
                 , history =
                     { game = model.game
@@ -518,8 +539,8 @@ join p1 p2 model =
                         :: model.history
             }
         )
-        (Dict.get p1 model.game.fields)
-        (Dict.get p2 model.game.fields)
+        (model.game |> Game.getBlockAndIdAt p1)
+        (model.game |> Game.getBlockAndIdAt p2)
 
 
 checkWinCondition : Model -> ( Model, Cmd Msg )
@@ -661,7 +682,12 @@ update msg model =
 
         Won ->
             ( { model
-                | money = Dict.size model.coins + model.money
+                | money =
+                    model.coins
+                        |> Dict.values
+                        |> List.map .value
+                        |> List.sum
+                        |> (+) model.money
               }
             , Task.succeed () |> Task.perform (\() -> GenerateLevel)
             )

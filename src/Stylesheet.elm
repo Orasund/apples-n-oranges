@@ -6,6 +6,18 @@ import Html exposing (Html)
 stylesheet : Html msg
 stylesheet =
     """
+    html {
+        height: 100%
+    }
+
+    body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
     @keyframes rocking {
         from { rotate:-15deg }
         50% { rotate:15deg }

@@ -8,16 +8,14 @@ intersect ( x1, y1 ) ( x2, y2 ) =
     )
 
 
-length : ( Int, Int ) -> ( Int, Int ) -> Float
-length ( x1, y1 ) ( x2, y2 ) =
-    let
-        x =
-            x1 - x2
-
-        y =
-            y1 - y2
-    in
+length : ( Int, Int ) -> Float
+length ( x, y ) =
     sqrt (toFloat (x * x + y * y))
+
+
+distance : ( Int, Int ) -> ( Int, Int ) -> Float
+distance ( x1, y1 ) ( x2, y2 ) =
+    length ( x1 - x2, y1 - y2 )
 
 
 plus : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )

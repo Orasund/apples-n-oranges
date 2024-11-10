@@ -2,6 +2,7 @@ module View.Block exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
+import View.Field
 
 
 apple : String
@@ -52,7 +53,7 @@ shrink =
 withContent : List (Attribute msg) -> List (Html msg) -> Html msg
 withContent attrs =
     Html.div
-        ([ Html.Style.fontSizeRem 4
+        ([ Html.Style.fontSizePx (View.Field.size * 0.8)
          , Html.Style.widthMinContent
          , Html.Style.aspectRatio "1"
          , Html.Style.rotate "0deg"
