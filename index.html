@@ -6909,7 +6909,7 @@ var $author$project$Main$generateLevel = function (model) {
 			$author$project$Generator$generateLevel(
 				{
 					columns: 6,
-					newFruitPairs: ((model.level / 4) | 0) + 1,
+					newFruitPairs: ((model.level / 2) | 0) + 1,
 					newSprouts: (model.level / 8) | 0,
 					newStone: A2($elm$core$Basics$modBy, 2, model.level),
 					oldBlocks: $elm$core$Dict$fromList(
