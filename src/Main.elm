@@ -67,7 +67,7 @@ type Msg
 
 priceToRemoveStone : ( Int, Int ) -> Int
 priceToRemoveStone ( x, y ) =
-    (7
+    (8
         - round (abs (toFloat x - 2.5))
         - round (abs (toFloat y - 2.5))
     )
@@ -584,9 +584,15 @@ generateLevel model =
         { columns = 6
         , rows = 6
         , oldBlocks = model.game |> Game.getBlocks |> Dict.fromList
-        , newSprouts = model.level // 8
-        , newFruitPairs = model.level // 2 + 1
-        , newStone = model.level |> modBy 2
+        , newSprouts = 0 --model.level // 8
+        , newFruitPairs = modBy 4 model.level + (model.level // 4) + 1
+        , newStone =
+            if Dict.size model.solids < 8 then
+                model.level |> modBy 2
+
+            else
+                0
+        , newLemonPairs = model.level // 8
         }
         |> (\gen -> Random.step gen model.seed)
         |> (\( level, seed ) ->

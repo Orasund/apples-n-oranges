@@ -5941,12 +5941,12 @@ var $author$project$Main$clearAndloadLevel = F3(
 			def,
 			$author$project$Main$clearLevel(model));
 	});
+var $author$project$Game$Lemon = {$: 'Lemon'};
 var $author$project$Game$SolidBlock = function (a) {
 	return {$: 'SolidBlock', a: a};
 };
 var $author$project$Game$Sprout = {$: 'Sprout'};
 var $author$project$Game$Stone = {$: 'Stone'};
-var $author$project$Game$Lemon = {$: 'Lemon'};
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -6619,8 +6619,8 @@ var $author$project$Generator$randomPair = function (builder) {
 			$author$project$Generator$randomFromList(
 				$elm$core$Set$toList(builder.remainingPositions))));
 };
-var $author$project$Generator$addRandomPair = F2(
-	function (toBlock, builder) {
+var $author$project$Generator$addRandomPair = F3(
+	function (b1, b2, builder) {
 		return A2(
 			$elm$random$Random$map,
 			function (list) {
@@ -6635,12 +6635,8 @@ var $author$project$Generator$addRandomPair = F2(
 								blocks: A3(
 									$elm$core$Dict$insert,
 									p2,
-									toBlock($author$project$Game$Orange),
-									A3(
-										$elm$core$Dict$insert,
-										p1,
-										toBlock($author$project$Game$Apple),
-										builder.blocks)),
+									b2,
+									A3($elm$core$Dict$insert, p1, b1, builder.blocks)),
 								remainingPositions: A2(
 									$elm$core$Set$remove,
 									p2,
@@ -6808,48 +6804,58 @@ var $author$project$Generator$generateLevel = function (args) {
 		$author$project$Generator$build,
 		A3(
 			$author$project$Generator$andThenRepeat,
-			args.newFruitPairs,
-			$author$project$Generator$addRandomPair($author$project$Game$FruitBlock),
+			args.newLemonPairs,
+			A2(
+				$author$project$Generator$addRandomPair,
+				$author$project$Game$FruitBlock($author$project$Game$Apple),
+				$author$project$Game$FruitBlock($author$project$Game$Lemon)),
 			A3(
 				$author$project$Generator$andThenRepeat,
-				$elm$core$Set$size(oldSprouts),
-				$author$project$Generator$addFruitPairFromOldSprout,
+				args.newFruitPairs,
+				A2(
+					$author$project$Generator$addRandomPair,
+					$author$project$Game$FruitBlock($author$project$Game$Apple),
+					$author$project$Game$FruitBlock($author$project$Game$Orange)),
 				A3(
 					$author$project$Generator$andThenRepeat,
-					args.newSprouts,
-					$author$project$Generator$addRandomSolid($author$project$Game$Sprout),
+					$elm$core$Set$size(oldSprouts),
+					$author$project$Generator$addFruitPairFromOldSprout,
 					A3(
 						$author$project$Generator$andThenRepeat,
-						args.newStone,
-						$author$project$Generator$addRandomSolid($author$project$Game$Stone),
-						$elm$random$Random$constant(
-							A2(
-								$author$project$Generator$addSolids,
-								A2(
-									$elm$core$List$map,
-									function (pos) {
-										return _Utils_Tuple2(pos, $author$project$Game$Stone);
-									},
-									$elm$core$Dict$keys(
-										A2(
-											$elm$core$Dict$filter,
-											F2(
-												function (_v0, block) {
-													return _Utils_eq(
-														block,
-														$author$project$Game$SolidBlock($author$project$Game$Stone));
-												}),
-											args.oldBlocks))),
+						args.newSprouts,
+						$author$project$Generator$addRandomSolid($author$project$Game$Sprout),
+						A3(
+							$author$project$Generator$andThenRepeat,
+							args.newStone,
+							$author$project$Generator$addRandomSolid($author$project$Game$Stone),
+							$elm$random$Random$constant(
 								A2(
 									$author$project$Generator$addSolids,
 									A2(
 										$elm$core$List$map,
 										function (pos) {
-											return _Utils_Tuple2(pos, $author$project$Game$Sprout);
+											return _Utils_Tuple2(pos, $author$project$Game$Stone);
 										},
-										$elm$core$Set$toList(oldSprouts)),
-									$author$project$Generator$new(
-										{columns: args.columns, oldSprouts: oldSprouts, rows: args.rows})))))))));
+										$elm$core$Dict$keys(
+											A2(
+												$elm$core$Dict$filter,
+												F2(
+													function (_v0, block) {
+														return _Utils_eq(
+															block,
+															$author$project$Game$SolidBlock($author$project$Game$Stone));
+													}),
+												args.oldBlocks))),
+									A2(
+										$author$project$Generator$addSolids,
+										A2(
+											$elm$core$List$map,
+											function (pos) {
+												return _Utils_Tuple2(pos, $author$project$Game$Sprout);
+											},
+											$elm$core$Set$toList(oldSprouts)),
+										$author$project$Generator$new(
+											{columns: args.columns, oldSprouts: oldSprouts, rows: args.rows}))))))))));
 };
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
@@ -6909,9 +6915,10 @@ var $author$project$Main$generateLevel = function (model) {
 			$author$project$Generator$generateLevel(
 				{
 					columns: 6,
-					newFruitPairs: ((model.level / 2) | 0) + 1,
-					newSprouts: (model.level / 8) | 0,
-					newStone: A2($elm$core$Basics$modBy, 2, model.level),
+					newFruitPairs: (A2($elm$core$Basics$modBy, 4, model.level) + ((model.level / 4) | 0)) + 1,
+					newLemonPairs: (model.level / 8) | 0,
+					newSprouts: 0,
+					newStone: ($elm$core$Dict$size(model.solids) < 8) ? A2($elm$core$Basics$modBy, 2, model.level) : 0,
 					oldBlocks: $elm$core$Dict$fromList(
 						$author$project$Game$getBlocks(model.game)),
 					rows: 6
@@ -7196,7 +7203,7 @@ var $author$project$Main$priceToRemoveStone = function (_v0) {
 	var y = _v0.b;
 	return A2(
 		$elm$core$Basics$pow,
-		(7 - $elm$core$Basics$round(
+		(8 - $elm$core$Basics$round(
 			$elm$core$Basics$abs(x - 2.5))) - $elm$core$Basics$round(
 			$elm$core$Basics$abs(y - 2.5)),
 		2);

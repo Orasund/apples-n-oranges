@@ -44,6 +44,7 @@ generateLevel :
     , newSprouts : Int
     , newStone : Int
     , newFruitPairs : Int
+    , newLemonPairs : Int
     }
     -> Random Level
 generateLevel args =
@@ -75,7 +76,8 @@ generateLevel args =
         |> andThenRepeat args.newSprouts (addRandomSolid Sprout)
         --addRandomSproutPair
         |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
-        |> andThenRepeat args.newFruitPairs (addRandomPair FruitBlock)
+        |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
+        |> andThenRepeat args.newLemonPairs (addRandomPair (FruitBlock Apple) (FruitBlock Lemon))
         |> Random.map build
 
 
@@ -182,8 +184,8 @@ addFruit pos fruit builder =
     }
 
 
-addRandomPair : (Fruit -> Block) -> Builder -> Random Builder
-addRandomPair toBlock builder =
+addRandomPair : Block -> Block -> Builder -> Random Builder
+addRandomPair b1 b2 builder =
     randomPair builder
         |> Random.map
             (\list ->
@@ -196,8 +198,8 @@ addRandomPair toBlock builder =
                                     |> Set.remove p2
                             , blocks =
                                 builder.blocks
-                                    |> Dict.insert p1 (toBlock Apple)
-                                    |> Dict.insert p2 (toBlock Orange)
+                                    |> Dict.insert p1 b1
+                                    |> Dict.insert p2 b2
                         }
 
                     [ p1 ] ->
