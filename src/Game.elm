@@ -11,6 +11,7 @@ type Fruit
     = Apple
     | Orange
     | Lemon
+    | Grapes
 
 
 type Solid

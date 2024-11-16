@@ -40,6 +40,11 @@ dynamite =
     "💣"
 
 
+grapes : String
+grapes =
+    "🍇"
+
+
 rocking : Attribute msg
 rocking =
     Html.Style.animation "1s rocking ease-in-out infinite"

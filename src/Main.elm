@@ -84,8 +84,7 @@ newEntity ( x, y ) =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { game =
-            Game.empty { columns = 6, rows = 6 }
+    ( { game = Game.empty { columns = 6, rows = 6 }
       , entities = Dict.empty
       , coins = Dict.empty
       , money = 0
@@ -145,19 +144,6 @@ loadLevel id level model =
                 | level = id
                 , levelDef = level
                 , game = Game.empty { columns = columns, rows = rows }
-
-                {--, solids =
-                    blocks
-                        |> List.filterMap
-                            (\( pos, block ) ->
-                                case block of
-                                    SolidBlock solid ->
-                                        Just ( pos, solid )
-
-                                    FruitBlock _ ->
-                                        Nothing
-                            )
-                        |> Dict.fromList--}
             }
 
 
@@ -345,6 +331,9 @@ view model =
                                     Game.FruitBlock Game.Lemon ->
                                         View.Block.lemon
 
+                                    Game.FruitBlock Game.Grapes ->
+                                        View.Block.grapes
+
                                     Game.SolidBlock Stone ->
                                         View.Block.stone
 
@@ -429,14 +418,11 @@ coinsEarnedFromMatching block1 block2 =
     let
         coinsEarned block =
             case block of
-                FruitBlock Apple ->
+                FruitBlock _ ->
                     1
 
-                FruitBlock Orange ->
-                    1
-
-                FruitBlock Lemon ->
-                    3
+                SolidBlock Stone ->
+                    4
 
                 SolidBlock _ ->
                     0
@@ -535,27 +521,56 @@ generateLevel model =
     let
         oldBlocks =
             model.game |> Game.getBlocks |> Dict.fromList
+
+        beginnerFriendly =
+            min (model.level // 2 + 1)
     in
-    Generator.generateLevel
-        { columns = 6
-        , rows = 6
-        , oldBlocks = oldBlocks
-        , newSprouts = 0 --model.level // 8
-        , newFruitPairs = modBy 4 model.level + (model.level // 4) + 1
-        , newStone =
-            if Dict.size oldBlocks < 8 then
-                model.level |> modBy 2
-
-            else
-                0
-        , newDynamite =
-            if Dict.size oldBlocks > 4 then
-                1
-
-            else
-                0
-        , newLemonPairs = model.level // 8
+    Random.uniform
+        { newFruitPairs = 5 |> beginnerFriendly
+        , newStone = 1 |> min (Dict.size oldBlocks - 8)
+        , newDynamite = 1
+        , newLemonPairs = 1 |> beginnerFriendly
+        , newGrapePairs = 0
         }
+        [ { newFruitPairs = 10 |> beginnerFriendly
+          , newStone = 1 |> min (Dict.size oldBlocks - 8)
+          , newDynamite = 1
+          , newLemonPairs = 0
+          , newGrapePairs = 0
+          }
+        , { newFruitPairs = 0
+          , newStone = 1 |> min (Dict.size oldBlocks - 8)
+          , newDynamite = 1
+          , newLemonPairs = 10 |> beginnerFriendly
+          , newGrapePairs = 0
+          }
+        , { newFruitPairs = 4 |> beginnerFriendly
+          , newStone = 10 |> beginnerFriendly
+          , newDynamite = 8 |> beginnerFriendly
+          , newLemonPairs = 0 |> beginnerFriendly
+          , newGrapePairs = 0
+          }
+        , { newFruitPairs = 1 |> beginnerFriendly
+          , newStone = 0
+          , newDynamite = 0
+          , newLemonPairs = 4 |> beginnerFriendly
+          , newGrapePairs = 5 |> beginnerFriendly
+          }
+        ]
+        |> Random.andThen
+            (\args ->
+                Generator.generateLevel
+                    { columns = 6
+                    , rows = 6
+                    , oldBlocks = oldBlocks
+                    , newSprouts = 0
+                    , newFruitPairs = args.newFruitPairs
+                    , newStone = args.newStone
+                    , newDynamite = args.newDynamite
+                    , newLemonPairs = args.newLemonPairs
+                    , newGrapePairs = args.newGrapePairs
+                    }
+            )
         |> (\gen -> Random.step gen model.seed)
         |> (\( level, seed ) ->
                 { model
