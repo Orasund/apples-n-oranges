@@ -40,7 +40,6 @@ type alias Model =
     { game : Game
     , entities : Dict BlockId Entity
     , coins : Dict CoinId Coin
-    , solids : Dict ( Int, Int ) Solid
     , money : Int
     , nextCoinId : CoinId
     , level : Int
@@ -88,7 +87,6 @@ init () =
     ( { game =
             Game.empty { columns = 6, rows = 6 }
       , entities = Dict.empty
-      , solids = Dict.empty
       , coins = Dict.empty
       , money = 0
       , nextCoinId = 0
@@ -97,8 +95,6 @@ init () =
       , history = []
       , seed = Random.initialSeed 42
       }
-      --|> addBlock ( 2, 2 ) (SolidBlock Sprout)
-      --|> addBlock ( 2, 3 ) (SolidBlock Sprout)
     , [ Task.perform
             (\() ->
                 Won
@@ -119,13 +115,8 @@ addBlock ( x, y ) block model =
     { model
         | game = game
         , entities =
-            case block of
-                SolidBlock _ ->
-                    model.entities
-
-                _ ->
-                    model.entities
-                        |> Dict.insert fruitId (newEntity ( x, y ))
+            model.entities
+                |> Dict.insert fruitId (newEntity ( x, y ))
     }
 
 
@@ -154,7 +145,8 @@ loadLevel id level model =
                 | level = id
                 , levelDef = level
                 , game = Game.empty { columns = columns, rows = rows }
-                , solids =
+
+                {--, solids =
                     blocks
                         |> List.filterMap
                             (\( pos, block ) ->
@@ -165,7 +157,7 @@ loadLevel id level model =
                                     FruitBlock _ ->
                                         Nothing
                             )
-                        |> Dict.fromList
+                        |> Dict.fromList--}
             }
 
 
@@ -227,28 +219,6 @@ viewSolid args model =
             ]
             (case args.solid of
                 Stone ->
-                    {--if model.money >= priceToRemoveStone ( args.x, args.y ) then
-                        [ Html.div
-                            [ Html.Style.background "white"
-                            , Html.Style.border "2px solid black"
-                            , Html.Style.borderRadiusPx 16
-                            , Html.Style.displayFlex
-                            , Html.Style.alignItemsCenter
-                            , Html.Style.paddingPx 2
-                            ]
-                            [ View.Coin.toHtml
-                                [ Html.Style.fontSizePx 10
-                                , Html.Style.heightPx 16
-                                ]
-                                (priceToRemoveStone ( args.x, args.y ))
-                            , Html.div
-                                [ Html.Style.padding "2px 4px"
-                                ]
-                                [ Html.text "Remove" ]
-                            ]
-                        ]
-
-                    else--}
                     []
 
                 Sprout ->
@@ -364,51 +334,38 @@ view model =
                         ( "block_" ++ String.fromInt blockId
                         , viewFruit { blockId = blockId, entity = entity }
                             model
-                            (case block of
-                                Game.FruitBlock Game.Apple ->
-                                    [ Html.text View.Block.apple ]
+                            [ Html.text
+                                (case block of
+                                    Game.FruitBlock Game.Apple ->
+                                        View.Block.apple
 
-                                Game.FruitBlock Game.Orange ->
-                                    [ Html.text View.Block.orange ]
+                                    Game.FruitBlock Game.Orange ->
+                                        View.Block.orange
 
-                                Game.FruitBlock Game.Lemon ->
-                                    [ Html.text View.Block.lemon ]
+                                    Game.FruitBlock Game.Lemon ->
+                                        View.Block.lemon
 
-                                Game.SolidBlock _ ->
-                                    []
-                            )
+                                    Game.SolidBlock Stone ->
+                                        View.Block.stone
+
+                                    Game.SolidBlock Sprout ->
+                                        View.Block.sprout
+
+                                    Game.SolidBlock Dynamite ->
+                                        View.Block.dynamite
+                                )
+                            ]
                         )
                     )
-          , [ model.coins
+          , model.coins
                 |> Dict.toList
-
-            {--,
-              model.money
-                |> Set.toList
-                |> List.indexedMap
-                    (\i coinId ->
-                        ( coinId
-                        , { x = toFloat i * 0.05
-                          , y = -1
-                          , shrink = False
-                          }
-                        )
-                    )--}
-            ]
+                |> List.singleton
                 |> List.concat
                 |> List.sortBy Tuple.first
                 |> List.map
                     (\( id, coin ) ->
                         ( "coin_" ++ String.fromInt id
                         , viewMoney coin
-                        )
-                    )
-          , model.solids
-                |> Dict.toList
-                |> List.map
-                    (\( ( x, y ), solid ) ->
-                        ( "solid_" ++ String.fromInt x ++ "_" ++ String.fromInt y
-                        , viewSolid { x = x, y = y, solid = solid } model
                         )
                     )
           ]
@@ -575,20 +532,24 @@ checkWinCondition model =
 
 generateLevel : Model -> Model
 generateLevel model =
+    let
+        oldBlocks =
+            model.game |> Game.getBlocks |> Dict.fromList
+    in
     Generator.generateLevel
         { columns = 6
         , rows = 6
-        , oldBlocks = model.game |> Game.getBlocks |> Dict.fromList
+        , oldBlocks = oldBlocks
         , newSprouts = 0 --model.level // 8
         , newFruitPairs = modBy 4 model.level + (model.level // 4) + 1
         , newStone =
-            if Dict.size model.solids < 8 then
+            if Dict.size oldBlocks < 8 then
                 model.level |> modBy 2
 
             else
                 0
         , newDynamite =
-            if Dict.size model.solids > 4 then
+            if Dict.size oldBlocks > 4 then
                 1
 
             else
@@ -616,18 +577,6 @@ update msg model =
             case model.game.selected of
                 Nothing ->
                     case Game.getBlockAndIdAt pos model.game of
-                        {--Just ( _, SolidBlock Stone ) ->
-                            if model.money >= priceToRemoveStone pos then
-                                ( { model
-                                    | game = Game.removeField pos model.game
-                                    , solids = model.solids |> Dict.remove pos
-                                    , money = model.money - priceToRemoveStone pos
-                                  }
-                                , Cmd.none
-                                )
-
-                            else
-                                ( model, Cmd.none )--}
                         Just ( _, SolidBlock Sprout ) ->
                             ( model, Cmd.none )
 

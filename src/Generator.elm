@@ -61,22 +61,11 @@ generateLevel args =
         , rows = args.rows
         , oldSprouts = oldSprouts
         }
-        |> addSolids
-            (oldSprouts
-                |> Set.toList
-                |> List.map (\pos -> ( pos, Sprout ))
-            )
-        |> addSolids
-            (args.oldBlocks
-                |> Dict.filter (\_ block -> block == SolidBlock Stone)
-                |> Dict.keys
-                |> List.map (\pos -> ( pos, Stone ))
-            )
+        |> addBlocks (args.oldBlocks |> Dict.toList)
         |> Random.constant
-        |> andThenRepeat args.newDynamite (addRandomSolid Dynamite)
+        |> andThenRepeat args.newDynamite addDynamiteNearStone
         |> andThenRepeat args.newStone (addRandomSolid Stone)
         |> andThenRepeat args.newSprouts (addRandomSolid Sprout)
-        --addRandomSproutPair
         |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
         |> andThenRepeat args.newLemonPairs (addRandomPair (FruitBlock Apple) (FruitBlock Lemon))
         |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
@@ -91,12 +80,12 @@ build builder =
     }
 
 
-addSolids : List ( ( Int, Int ), Solid ) -> Builder -> Builder
-addSolids solids builder =
+addBlocks : List ( ( Int, Int ), Block ) -> Builder -> Builder
+addBlocks solids builder =
     solids
         |> List.foldl
             (\( pos, solid ) ->
-                addSolid pos solid
+                addBlock pos solid
             )
             builder
 
@@ -109,15 +98,33 @@ addRandomSolid solid builder =
         |> Maybe.withDefault (Random.constant ( -1, -1 ))
         |> Random.map
             (\pos ->
-                addSolid pos solid builder
+                addBlock pos (SolidBlock solid) builder
             )
 
 
-addSolid : ( Int, Int ) -> Solid -> Builder -> Builder
-addSolid pos solid builder =
+addDynamiteNearStone : Builder -> Random Builder
+addDynamiteNearStone builder =
+    builder.blocks
+        |> Dict.filter (\_ b -> b == SolidBlock Stone)
+        |> Dict.keys
+        |> randomFromList
+        |> Maybe.map
+            (Random.andThen
+                (\p1 ->
+                    builder.remainingPositions
+                        |> findValidPair builder p1
+                        |> Maybe.map (Random.map (\p2 -> addBlock p2 (SolidBlock Dynamite) builder))
+                        |> Maybe.withDefault (Random.constant builder)
+                )
+            )
+        |> Maybe.withDefault (Random.constant builder)
+
+
+addBlock : ( Int, Int ) -> Block -> Builder -> Builder
+addBlock pos block builder =
     { builder
         | remainingPositions = builder.remainingPositions |> Set.remove pos
-        , blocks = builder.blocks |> Dict.insert pos (SolidBlock solid)
+        , blocks = builder.blocks |> Dict.insert pos block
     }
 
 
@@ -132,7 +139,6 @@ addFruitPairFromOldSprout builder =
                             (\pos ->
                                 Random.uniform ( Lemon, Apple )
                                     []
-                                    --[ ( Pear, Orange ) ]
                                     |> Random.map
                                         (\( a, b ) ->
                                             { builder | remainingOldSprouts = tail |> Set.fromList }
@@ -145,20 +151,11 @@ addFruitPairFromOldSprout builder =
                     { builder
                         | remainingOldSprouts = Set.fromList tail
                     }
-                        |> addSolid head Sprout
+                        |> addBlock head (SolidBlock Sprout)
                         |> Random.constant
 
         [] ->
             Random.constant builder
-
-
-addRandomSproutPair : Builder -> Random Builder
-addRandomSproutPair builder =
-    randomPair builder
-        |> Random.map
-            (\list ->
-                list |> List.foldl (\pos -> addSolid pos Sprout) builder
-            )
 
 
 randomPair : Builder -> Random (List ( Int, Int ))

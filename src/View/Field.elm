@@ -6,21 +6,17 @@ import Html.Style
 
 light : Attribute msg
 light =
-    Html.Style.background "#399E5A"
+    Html.Style.background "#61bb6b"
 
 
 dark : Attribute msg
 dark =
-    Html.Style.background "#2D6233"
+    Html.Style.background "#399E5A"
 
 
 size : Float
 size =
     60
-
-
-
---80
 
 
 toHtml : List (Attribute msg) -> { rows : Int, columns : Int } -> Html msg
