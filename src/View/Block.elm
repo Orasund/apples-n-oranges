@@ -35,6 +35,11 @@ sprout =
     "🌱"
 
 
+dynamite : String
+dynamite =
+    "💣"
+
+
 rocking : Attribute msg
 rocking =
     Html.Style.animation "1s rocking ease-in-out infinite"

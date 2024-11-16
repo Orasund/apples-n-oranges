@@ -43,6 +43,7 @@ generateLevel :
     , oldBlocks : Dict ( Int, Int ) Block
     , newSprouts : Int
     , newStone : Int
+    , newDynamite : Int
     , newFruitPairs : Int
     , newLemonPairs : Int
     }
@@ -72,12 +73,13 @@ generateLevel args =
                 |> List.map (\pos -> ( pos, Stone ))
             )
         |> Random.constant
+        |> andThenRepeat args.newDynamite (addRandomSolid Dynamite)
         |> andThenRepeat args.newStone (addRandomSolid Stone)
         |> andThenRepeat args.newSprouts (addRandomSolid Sprout)
         --addRandomSproutPair
         |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
-        |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
         |> andThenRepeat args.newLemonPairs (addRandomPair (FruitBlock Apple) (FruitBlock Lemon))
+        |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
         |> Random.map build
 
 

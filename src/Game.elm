@@ -16,6 +16,7 @@ type Fruit
 type Solid
     = Stone
     | Sprout
+    | Dynamite
 
 
 type Block
@@ -90,12 +91,18 @@ removeField pos game =
 isValidPair : ( Int, Int ) -> ( Int, Int ) -> Game -> Bool
 isValidPair ( x1, y1 ) ( x2, y2 ) game =
     let
-        isValidBlock p =
-            case p of
-                FruitBlock _ ->
+        isValidBlock p1 p2 =
+            case ( p1, p2 ) of
+                ( FruitBlock _, FruitBlock _ ) ->
                     True
 
-                SolidBlock _ ->
+                ( SolidBlock Dynamite, SolidBlock Stone ) ->
+                    True
+
+                ( SolidBlock Stone, SolidBlock Dynamite ) ->
+                    True
+
+                _ ->
                     False
     in
     (((x1 == x2)
@@ -116,8 +123,11 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
            )
     )
         && (getBlockAt ( x1, y1 ) game /= getBlockAt ( x2, y2 ) game)
-        && (getBlockAt ( x1, y1 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
-        && (getBlockAt ( x2, y2 ) game |> Maybe.map isValidBlock |> Maybe.withDefault False)
+        && (Maybe.map2 isValidBlock
+                (getBlockAt ( x1, y1 ) game)
+                (getBlockAt ( x2, y2 ) game)
+                |> Maybe.withDefault False
+           )
 
 
 getBlocks : Game -> List ( ( Int, Int ), Block )

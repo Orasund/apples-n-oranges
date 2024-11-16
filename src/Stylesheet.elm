@@ -16,6 +16,7 @@ stylesheet =
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        background-color:#a4cc95;
     }
 
     @keyframes rocking {
@@ -28,7 +29,7 @@ stylesheet =
         border-radius: 16px;
         border: 2px solid black;
         padding: 8px 4px;
-        background-color: transparent;
+        background-color: white;
     }
 
     .button:hover {

@@ -227,7 +227,7 @@ viewSolid args model =
             ]
             (case args.solid of
                 Stone ->
-                    if model.money >= priceToRemoveStone ( args.x, args.y ) then
+                    {--if model.money >= priceToRemoveStone ( args.x, args.y ) then
                         [ Html.div
                             [ Html.Style.background "white"
                             , Html.Style.border "2px solid black"
@@ -248,20 +248,28 @@ viewSolid args model =
                             ]
                         ]
 
-                    else
-                        []
+                    else--}
+                    []
 
                 Sprout ->
                     []
+
+                Dynamite ->
+                    []
             )
         , Html.div []
-            (case args.solid of
-                Stone ->
-                    [ Html.text View.Block.stone ]
+            [ Html.text
+                (case args.solid of
+                    Stone ->
+                        View.Block.stone
 
-                Sprout ->
-                    [ Html.text View.Block.sprout ]
-            )
+                    Sprout ->
+                        View.Block.sprout
+
+                    Dynamite ->
+                        View.Block.dynamite
+                )
+            ]
         ]
 
 
@@ -420,25 +428,12 @@ view model =
                         |> Maybe.map (Tuple.pair p)
                 )
             |> List.map
-                (\( ( x, y ), block ) ->
+                (\( ( x, y ), _ ) ->
                     Html.div
                         (Layout.asButton
                             { onPress = Just (Click ( x, y ))
                             , label =
                                 [ "Select "
-                                , case block of
-                                    Game.FruitBlock Game.Apple ->
-                                        "Apple"
-
-                                    Game.FruitBlock Game.Orange ->
-                                        "Orange"
-
-                                    Game.FruitBlock Game.Lemon ->
-                                        "Lemon"
-
-                                    Game.SolidBlock _ ->
-                                        "Solid Block"
-                                , " at "
                                 , String.fromInt x
                                 , ", "
                                 , String.fromInt y
@@ -592,6 +587,12 @@ generateLevel model =
 
             else
                 0
+        , newDynamite =
+            if Dict.size model.solids > 4 then
+                1
+
+            else
+                0
         , newLemonPairs = model.level // 8
         }
         |> (\gen -> Random.step gen model.seed)
@@ -615,7 +616,7 @@ update msg model =
             case model.game.selected of
                 Nothing ->
                     case Game.getBlockAndIdAt pos model.game of
-                        Just ( _, SolidBlock Stone ) ->
+                        {--Just ( _, SolidBlock Stone ) ->
                             if model.money >= priceToRemoveStone pos then
                                 ( { model
                                     | game = Game.removeField pos model.game
@@ -626,8 +627,7 @@ update msg model =
                                 )
 
                             else
-                                ( model, Cmd.none )
-
+                                ( model, Cmd.none )--}
                         Just ( _, SolidBlock Sprout ) ->
                             ( model, Cmd.none )
 
