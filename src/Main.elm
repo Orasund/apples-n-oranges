@@ -3,13 +3,14 @@ module Main exposing (..)
 import Browser
 import Dict exposing (Dict)
 import Game exposing (Block(..), BlockId, Fruit(..), Game, Solid(..))
-import Generator
 import Html exposing (Html)
 import Html.Attributes
 import Html.Keyed
 import Html.Style
 import Layout
 import Level exposing (Level)
+import Level.Builder
+import Level.Generator exposing (Setting)
 import Maths
 import Process
 import Random exposing (Seed)
@@ -52,16 +53,18 @@ type alias Model =
             , coins : Dict CoinId Coin
             , nextCoinId : CoinId
             }
+    , shop : List Level.Generator.Setting
     }
 
 
 type Msg
     = Click ( Int, Int )
     | CollectCoin CoinId
-    | GenerateLevel
+    | GenerateLevel Setting
     | Undo
     | Won
     | SetSeed Seed
+    | CloseShop
 
 
 priceToRemoveStone : ( Int, Int ) -> Int
@@ -93,6 +96,7 @@ init () =
       , levelDef = Level.fromStrings []
       , history = []
       , seed = Random.initialSeed 42
+      , shop = []
       }
     , [ Task.perform
             (\() ->
@@ -281,7 +285,7 @@ viewHeader model =
                        ]
                 )
             |> List.singleton
-            |> Html.div [ Html.Style.flex "1" ]
+            |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
         , View.Coin.toHtml
             [ Html.Style.fontSizePx 48
             , Html.Style.heightPx 100
@@ -294,17 +298,90 @@ viewHeader model =
                 , Html.Style.displayFlex
                 , Html.Style.justifyContentCenter
                 ]
-        , Html.div [ Html.Style.flex "1" ] []
+        , []
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentFlexEnd
+                ]
         ]
+
+
+viewShop : Model -> Html Msg
+viewShop model =
+    [ Html.span [ Html.Style.fontSizePx 50 ]
+        [ Html.text "Next Level" ]
+    , View.Coin.toHtml
+        [ Html.Style.fontSizePx 48
+        , Html.Style.heightPx 100
+        , Html.Style.borderWidthPx 8
+        ]
+        (model.money |> min 999 |> max -99)
+        |> List.singleton
+        |> Html.div
+            [ Html.Style.flex "1"
+            , Html.Style.displayFlex
+            , Html.Style.justifyContentCenter
+            ]
+    ]
+        ++ (model.shop
+                |> List.map
+                    (\setting ->
+                        [ View.Coin.toHtml
+                            [ Html.Style.fontSizePx 14
+                            , Html.Style.heightPx 26
+                            , Html.Style.borderWidthPx 3
+                            ]
+                            (Level.Generator.priceForSetting setting)
+                        , Html.div [ Html.Style.padding "4px 8px" ]
+                            [ Html.text setting.name ]
+                        ]
+                            |> Html.button
+                                (Layout.asButton
+                                    { onPress = Just (GenerateLevel setting), label = setting.name }
+                                    ++ [ Html.Attributes.class "button"
+                                       , Html.Style.paddingPx 2
+                                       , Html.Style.displayFlex
+                                       , Html.Style.alignItemsCenter
+                                       , Html.Style.justifyContentCenter
+                                       ]
+                                )
+                    )
+           )
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 16
+            ]
+        |> List.singleton
+        |> Html.div
+            [ Html.Style.positionAbsolute
+            , Html.Style.backgroundImage
+                "linear-gradient(0deg, #998c5e 50%,#a79d7a 50%)"
+            , Html.Style.backgroundSize "100px 100px"
+            , Html.Style.height "100vh"
+            , Html.Style.width "100%"
+            , Html.Style.transition "bottom 1s"
+            , Html.Style.bottom
+                (if List.isEmpty model.shop then
+                    "100vh"
+
+                 else
+                    "0vh"
+                )
+            , Html.Style.displayFlex
+            , Html.Style.justifyContentCenter
+            , Html.Style.alignItemsCenter
+            ]
 
 
 view : Model -> Html Msg
 view model =
-    [ viewHeader model
-    , [ [ View.Field.toHtml
-            [ View.Field.light ]
-            { columns = model.game.columns, rows = model.game.rows }
-        , [ model.entities
+    [ [ viewHeader model
+      , [ [ View.Field.toHtml
+                [ View.Field.light ]
+                { columns = model.game.columns, rows = model.game.rows }
+          , [ model.entities
                 |> Dict.toList
                 |> List.filterMap
                     (\( blockId, entity ) ->
@@ -346,7 +423,7 @@ view model =
                             ]
                         )
                     )
-          , model.coins
+            , model.coins
                 |> Dict.toList
                 |> List.singleton
                 |> List.concat
@@ -357,15 +434,15 @@ view model =
                         , viewMoney coin
                         )
                     )
+            ]
+                |> List.concat
+                |> Html.Keyed.node "div"
+                    [ Html.Style.positionAbsolute
+                    , Html.Style.topPx 0
+                    , Html.Style.leftPx 0
+                    ]
           ]
-            |> List.concat
-            |> Html.Keyed.node "div"
-                [ Html.Style.positionAbsolute
-                , Html.Style.topPx 0
-                , Html.Style.leftPx 0
-                ]
-        ]
-      , model.game.fields
+        , model.game.fields
             |> Dict.toList
             |> List.filterMap
                 (\( p, fruitId ) ->
@@ -395,9 +472,16 @@ view model =
                         )
                         []
                 )
+        ]
+            |> List.concat
+            |> Html.div [ Html.Style.positionRelative ]
       ]
-        |> List.concat
-        |> Html.div [ Html.Style.positionRelative ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 16
+            ]
+    , viewShop model
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"
@@ -409,7 +493,11 @@ view model =
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter
+            , Html.Style.justifyContentCenter
+            , Html.Style.positionRelative
             , Html.Style.gapPx 16
+            , Html.Style.width "100%"
+            , Html.Style.height "100%"
             ]
 
 
@@ -516,61 +604,10 @@ checkWinCondition model =
     )
 
 
-generateLevel : Model -> Model
-generateLevel model =
-    let
-        oldBlocks =
-            model.game |> Game.getBlocks |> Dict.fromList
-
-        beginnerFriendly =
-            min (model.level // 2 + 1)
-    in
-    Random.uniform
-        { newFruitPairs = 5 |> beginnerFriendly
-        , newStone = 1 |> min (Dict.size oldBlocks - 8)
-        , newDynamite = 1
-        , newLemonPairs = 1 |> beginnerFriendly
-        , newGrapePairs = 0
-        }
-        [ { newFruitPairs = 10 |> beginnerFriendly
-          , newStone = 1 |> min (Dict.size oldBlocks - 8)
-          , newDynamite = 1
-          , newLemonPairs = 0
-          , newGrapePairs = 0
-          }
-        , { newFruitPairs = 0
-          , newStone = 1 |> min (Dict.size oldBlocks - 8)
-          , newDynamite = 1
-          , newLemonPairs = 10 |> beginnerFriendly
-          , newGrapePairs = 0
-          }
-        , { newFruitPairs = 4 |> beginnerFriendly
-          , newStone = 10 |> beginnerFriendly
-          , newDynamite = 8 |> beginnerFriendly
-          , newLemonPairs = 0 |> beginnerFriendly
-          , newGrapePairs = 0
-          }
-        , { newFruitPairs = 1 |> beginnerFriendly
-          , newStone = 0
-          , newDynamite = 0
-          , newLemonPairs = 4 |> beginnerFriendly
-          , newGrapePairs = 5 |> beginnerFriendly
-          }
-        ]
-        |> Random.andThen
-            (\args ->
-                Generator.generateLevel
-                    { columns = 6
-                    , rows = 6
-                    , oldBlocks = oldBlocks
-                    , newSprouts = 0
-                    , newFruitPairs = args.newFruitPairs
-                    , newStone = args.newStone
-                    , newDynamite = args.newDynamite
-                    , newLemonPairs = args.newLemonPairs
-                    , newGrapePairs = args.newGrapePairs
-                    }
-            )
+generateLevel : Setting -> Model -> Model
+generateLevel setting model =
+    setting
+        |> Level.Generator.generate model.game
         |> (\gen -> Random.step gen model.seed)
         |> (\( level, seed ) ->
                 { model
@@ -612,9 +649,10 @@ update msg model =
                         , Cmd.none
                         )
 
-        GenerateLevel ->
-            ( generateLevel model
-            , Cmd.none
+        GenerateLevel setting ->
+            ( generateLevel setting { model | money = model.money - Level.Generator.priceForSetting setting }
+            , Process.sleep 500
+                |> Task.perform (\() -> CloseShop)
             )
 
         Undo ->
@@ -651,6 +689,16 @@ update msg model =
             )
 
         Won ->
+            let
+                ( settings, newSeed ) =
+                    Random.step
+                        (Level.Generator.pickSettings
+                            { amount = 2
+                            , money = (model.money * 2) // 3
+                            }
+                        )
+                        model.seed
+            in
             ( { model
                 | money =
                     model.coins
@@ -658,12 +706,18 @@ update msg model =
                         |> List.map .value
                         |> List.sum
                         |> (+) model.money
+                , shop = settings |> List.sortBy (\s -> Level.Generator.priceForSetting s * -1)
+                , seed = newSeed
+                , coins = Dict.map (\_ coin -> { coin | x = 2.5, y = -1 }) model.coins
               }
-            , Task.succeed () |> Task.perform (\() -> GenerateLevel)
+            , Cmd.none
             )
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
+
+        CloseShop ->
+            ( { model | shop = [] }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

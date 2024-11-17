@@ -33,11 +33,11 @@ stylesheet =
     }
 
     .button:hover {
-        background-color: rgba(0,0,0,0.1);
+        background-color: rgba(255,255,255,0.9);
     }
 
     .button:active {
-        background-color: rgba(0,0,0,0.3);
+        background-color: rgba(255,255,255,0.7);
     }
     """
         |> Html.text

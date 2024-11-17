@@ -1,4 +1,4 @@
-module Generator exposing (Builder, generateLevel)
+module Level.Builder exposing (generateLevel)
 
 import Dict exposing (Dict)
 import Game exposing (Block(..), Fruit(..), Solid(..))
