@@ -13,6 +13,7 @@ import Process
 import Random exposing (Generator, Seed)
 import Stylesheet
 import Task
+import View.Background
 import View.Coin exposing (Coin, CoinId)
 import View.Game
 import View.Header
@@ -109,6 +110,7 @@ loadNextLevel model =
                             { model
                                 | level = head
                                 , game = Game.empty { columns = level.columns, rows = level.rows }
+                                , day = model.day + 1
                                 , entities = Dict.empty
                                 , coins = Dict.empty
                                 , nextLevels = tail
@@ -130,9 +132,14 @@ applyGenerator seed generator =
     { model | seed = newSeed }
 
 
-waitThenPerform : msg -> Cmd msg
-waitThenPerform msg =
-    Task.perform (\() -> msg) (Process.sleep 500)
+shortWaitThenPerform : msg -> Cmd msg
+shortWaitThenPerform msg =
+    Task.perform (\() -> msg) (Process.sleep 100)
+
+
+longWaitThenPerform : msg -> Cmd msg
+longWaitThenPerform msg =
+    Task.perform (\() -> msg) (Process.sleep 1000)
 
 
 
@@ -157,6 +164,10 @@ newEntity ( x, y ) =
 
 init : () -> ( Model, Cmd Msg )
 init () =
+    let
+        seed =
+            Random.initialSeed 42
+    in
     ( { game = Game.empty { columns = 6, rows = 6 }
       , entities = Dict.empty
       , coins = Dict.empty
@@ -166,17 +177,12 @@ init () =
       , level = Level.Generator.trainingGround1
       , nextLevels = Level.Generator.tutorials
       , history = []
-      , seed = Random.initialSeed 42
+      , seed = seed
       , openShop = False
       }
-    , [ Task.perform
-            (\() ->
-                Won
-            )
-            (Task.succeed ())
-      , Random.generate SetSeed Random.independentSeed
-      ]
-        |> Cmd.batch
+        |> loadNextLevel
+        |> applyGenerator seed
+    , Random.generate SetSeed Random.independentSeed
     )
 
 
@@ -361,7 +367,9 @@ update msg model =
             ( model
                 |> collectCoins
                 |> gotoShop
-            , waitThenPerform LoadNextLevel
+                |> generateAnotherSetting
+                |> applyGenerator model.seed
+            , longWaitThenPerform LoadNextLevel
             )
 
         SetSeed seed ->
@@ -369,10 +377,9 @@ update msg model =
 
         LoadNextLevel ->
             ( model
-                |> generateAnotherSetting
-                |> Random.andThen loadNextLevel
+                |> loadNextLevel
                 |> applyGenerator model.seed
-            , waitThenPerform NextDay
+            , longWaitThenPerform CloseShop
             )
 
         NextDay ->
@@ -407,7 +414,6 @@ view model =
         { money = model.money
         , currentLevel = model.level
         , nextLevels = model.nextLevels
-        , onGotoLevel = CloseShop
         , openShop = model.openShop
         , day = model.day
         }
@@ -418,7 +424,7 @@ view model =
         ]
         []
     ]
-        |> Html.div
+        |> View.Background.game
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter

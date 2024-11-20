@@ -16,13 +16,29 @@ stylesheet =
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background-color:#a4cc95;
+        
     }
 
     @keyframes rocking {
         from { rotate:-15deg }
         50% { rotate:15deg }
         to { rotate:-15deg }
+    }
+
+     .day {
+        background-color: rgba(171,188,246,1);
+    }
+
+    @keyframes toDay {
+        from {
+             background-color: rgba(96,114,175,1);
+        }
+        to {
+              background-color: rgba(171,188,246,1);
+        }
+        
+        //from {background: linear-gradient(0deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%); }
+        //to {background: linear-gradient(180deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%);}
     }
 
     .button {

@@ -37,7 +37,7 @@ trainingGround1 =
 trainingGround2 : Setting
 trainingGround2 =
     { name = "Training 2"
-    , symbol = FruitBlock Apple
+    , symbol = SolidBlock Stone
     , newFruitPairs = 3
     , newStone = 1
     , newDynamite = 0
@@ -49,11 +49,23 @@ trainingGround2 =
 trainingGround3 : Setting
 trainingGround3 =
     { name = "Training 3"
-    , symbol = FruitBlock Apple
+    , symbol = FruitBlock Lemon
     , newFruitPairs = 3
     , newStone = 1
     , newDynamite = 0
     , newLemonPairs = 1
+    , newGrapePairs = 0
+    }
+
+
+trainingGround4 : Setting
+trainingGround4 =
+    { name = "Training 3"
+    , symbol = SolidBlock Dynamite
+    , newFruitPairs = 3
+    , newStone = 1
+    , newDynamite = 2
+    , newLemonPairs = 0
     , newGrapePairs = 0
     }
 
@@ -159,6 +171,7 @@ tutorials =
     [ trainingGround1
     , trainingGround2
     , trainingGround3
+    , trainingGround4
     ]
 
 
