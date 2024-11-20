@@ -2,6 +2,40 @@ module View.Coin exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
+import View.Block
+import View.Field
+
+
+type alias CoinId =
+    Int
+
+
+type alias Coin =
+    { x : Float, y : Float, shrink : Bool, value : Int }
+
+
+asBlock : Coin -> Html msg
+asBlock money =
+    View.Block.withContent
+        ([ Html.Style.topPx (money.y * View.Field.size)
+         , Html.Style.leftPx (money.x * View.Field.size)
+         , Html.Style.heightPx View.Field.size
+         ]
+            ++ (if money.shrink then
+                    [ View.Block.shrink ]
+
+                else
+                    []
+               )
+        )
+        [ toHtml
+            [ Html.Style.fontSizePx (View.Field.size / 4)
+            , Html.Style.heightPx (View.Field.size / 2)
+            , Html.Style.borderWidthPx 4
+            , Html.Style.displayFlex
+            ]
+            money.value
+        ]
 
 
 toHtml : List (Attribute msg) -> Int -> Html msg

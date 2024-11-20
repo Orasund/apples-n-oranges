@@ -1,7 +1,7 @@
-module Level.Generator exposing (Setting, generate, pickSettings, priceForSetting)
+module Level.Generator exposing (Setting, generate, pickSetting, priceForSetting, trainingGround1, tutorials)
 
 import Dict
-import Game exposing (Block(..), Game, Solid(..))
+import Game exposing (Block(..), Fruit(..), Game, Solid(..))
 import Level exposing (Level)
 import Level.Builder
 import Random
@@ -13,6 +13,7 @@ type alias Random a =
 
 type alias Setting =
     { name : String
+    , symbol : Block
     , newFruitPairs : Int
     , newStone : Int
     , newDynamite : Int
@@ -24,6 +25,7 @@ type alias Setting =
 trainingGround1 : Setting
 trainingGround1 =
     { name = "Training 1"
+    , symbol = FruitBlock Apple
     , newFruitPairs = 2
     , newStone = 1
     , newDynamite = 0
@@ -35,10 +37,23 @@ trainingGround1 =
 trainingGround2 : Setting
 trainingGround2 =
     { name = "Training 2"
+    , symbol = FruitBlock Apple
     , newFruitPairs = 3
     , newStone = 1
-    , newDynamite = 1
+    , newDynamite = 0
     , newLemonPairs = 0
+    , newGrapePairs = 0
+    }
+
+
+trainingGround3 : Setting
+trainingGround3 =
+    { name = "Training 3"
+    , symbol = FruitBlock Apple
+    , newFruitPairs = 3
+    , newStone = 1
+    , newDynamite = 0
+    , newLemonPairs = 1
     , newGrapePairs = 0
     }
 
@@ -46,6 +61,7 @@ trainingGround2 =
 applesAndOrangesBasic : Setting
 applesAndOrangesBasic =
     { name = "Apple'n Oranges 1"
+    , symbol = FruitBlock Orange
     , newFruitPairs = 5
     , newStone = 1
     , newDynamite = 1
@@ -57,6 +73,7 @@ applesAndOrangesBasic =
 applesAndOranges : Setting
 applesAndOranges =
     { name = "Apple'n Oranges 2"
+    , symbol = FruitBlock Orange
     , newFruitPairs = 10
     , newStone = 1
     , newDynamite = 1
@@ -68,18 +85,8 @@ applesAndOranges =
 lifeGivesYouLemons : Setting
 lifeGivesYouLemons =
     { name = "Life gives Lemons 1"
-    , newFruitPairs = 0
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 10
-    , newGrapePairs = 0
-    }
-
-
-lifeGivesYouLemonsBasic : Setting
-lifeGivesYouLemonsBasic =
-    { name = "Life gives Lemons 2"
-    , newFruitPairs = 0
+    , symbol = FruitBlock Lemon
+    , newFruitPairs = 5
     , newStone = 1
     , newDynamite = 1
     , newLemonPairs = 5
@@ -87,13 +94,14 @@ lifeGivesYouLemonsBasic =
     }
 
 
-miningTime : Setting
-miningTime =
-    { name = "Mining Time 2"
-    , newFruitPairs = 4
-    , newStone = 8
-    , newDynamite = 8
-    , newLemonPairs = 0
+lifeGivesYouLemonsBasic : Setting
+lifeGivesYouLemonsBasic =
+    { name = "Life gives Lemons 2"
+    , symbol = FruitBlock Lemon
+    , newFruitPairs = 2
+    , newStone = 1
+    , newDynamite = 1
+    , newLemonPairs = 3
     , newGrapePairs = 0
     }
 
@@ -101,41 +109,62 @@ miningTime =
 miningTimeBasic : Setting
 miningTimeBasic =
     { name = "Mining Time 1"
-    , newFruitPairs = 2
-    , newStone = 4
-    , newDynamite = 4
+    , symbol = SolidBlock Dynamite
+    , newFruitPairs = 4
+    , newStone = 3
+    , newDynamite = 3
     , newLemonPairs = 0
     , newGrapePairs = 0
     }
 
 
-pleantyOfColor : Setting
-pleantyOfColor =
-    { name = "Pleanty of Color 2"
-    , newFruitPairs = 2
-    , newStone = 0
-    , newDynamite = 0
-    , newLemonPairs = 2
-    , newGrapePairs = 5
+miningTime : Setting
+miningTime =
+    { name = "Mining Time 2"
+    , symbol = SolidBlock Dynamite
+    , newFruitPairs = 6
+    , newStone = 6
+    , newDynamite = 6
+    , newLemonPairs = 0
+    , newGrapePairs = 0
     }
 
 
 pleantyOfColorBasic : Setting
 pleantyOfColorBasic =
     { name = "Pleanty of Color 1"
-    , newFruitPairs = 0
+    , symbol = FruitBlock Grapes
+    , newFruitPairs = 3
     , newStone = 0
     , newDynamite = 0
-    , newLemonPairs = 1
+    , newLemonPairs = 0
+    , newGrapePairs = 2
+    }
+
+
+pleantyOfColor : Setting
+pleantyOfColor =
+    { name = "Pleanty of Color 2"
+    , symbol = FruitBlock Grapes
+    , newFruitPairs = 6
+    , newStone = 0
+    , newDynamite = 0
+    , newLemonPairs = 0
     , newGrapePairs = 3
     }
 
 
-settings : List Setting
-settings =
+tutorials : List Setting
+tutorials =
     [ trainingGround1
     , trainingGround2
-    , applesAndOrangesBasic
+    , trainingGround3
+    ]
+
+
+settings : List Setting
+settings =
+    [ applesAndOrangesBasic
     , applesAndOranges
     , lifeGivesYouLemonsBasic
     , lifeGivesYouLemons
@@ -168,6 +197,26 @@ pickSettings args =
             )
 
 
+pickSetting : { money : Int } -> Random Setting
+pickSetting args =
+    let
+        validSettings =
+            settings
+                |> List.filter
+                    (\setting ->
+                        priceForSetting setting <= args.money
+                    )
+                |> List.reverse
+                |> List.take 3
+    in
+    case validSettings of
+        [] ->
+            Random.constant applesAndOranges
+
+        head :: tail ->
+            Random.uniform head tail
+
+
 priceForSetting : Setting -> Int
 priceForSetting setting =
     let
@@ -180,7 +229,7 @@ priceForSetting setting =
             + times 1.5 setting.newLemonPairs
             + setting.newStone
             + setting.newDynamite
-            - 3
+            - 10
         )
 
 

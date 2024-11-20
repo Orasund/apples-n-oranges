@@ -1,5 +1,6 @@
 module View.Block exposing (..)
 
+import Game exposing (Block)
 import Html exposing (Attribute, Html)
 import Html.Style
 import View.Field
@@ -43,6 +44,31 @@ dynamite =
 grapes : String
 grapes =
     "🍇"
+
+
+toString : Block -> String
+toString block =
+    case block of
+        Game.FruitBlock Game.Apple ->
+            apple
+
+        Game.FruitBlock Game.Orange ->
+            orange
+
+        Game.FruitBlock Game.Lemon ->
+            lemon
+
+        Game.FruitBlock Game.Grapes ->
+            grapes
+
+        Game.SolidBlock Game.Stone ->
+            stone
+
+        Game.SolidBlock Game.Sprout ->
+            sprout
+
+        Game.SolidBlock Game.Dynamite ->
+            dynamite
 
 
 rocking : Attribute msg

@@ -2,49 +2,36 @@ module Main exposing (..)
 
 import Browser
 import Dict exposing (Dict)
+import Entity exposing (Entity)
 import Game exposing (Block(..), BlockId, Fruit(..), Game, Solid(..))
 import Html exposing (Html)
 import Html.Attributes
-import Html.Keyed
 import Html.Style
-import Layout
-import Level exposing (Level)
-import Level.Builder
 import Level.Generator exposing (Setting)
 import Maths
 import Process
-import Random exposing (Seed)
+import Random exposing (Generator, Seed)
 import Stylesheet
 import Task
-import View.Block
-import View.Coin
-import View.Field
+import View.Coin exposing (Coin, CoinId)
+import View.Game
+import View.Header
+import View.Shop
 
 
-type alias Entity =
-    { x : Float
-    , y : Float
-    , pos : ( Int, Int )
-    , shrink : Bool
-    }
-
-
-type alias Coin =
-    { x : Float, y : Float, shrink : Bool, value : Int }
-
-
-type alias CoinId =
-    Int
+type alias Random a =
+    Generator a
 
 
 type alias Model =
     { game : Game
     , entities : Dict BlockId Entity
     , coins : Dict CoinId Coin
+    , day : Int
     , money : Int
     , nextCoinId : CoinId
-    , level : Int
-    , levelDef : Level
+    , level : Setting
+    , nextLevels : List Setting
     , seed : Seed
     , history :
         List
@@ -53,27 +40,110 @@ type alias Model =
             , coins : Dict CoinId Coin
             , nextCoinId : CoinId
             }
-    , shop : List Level.Generator.Setting
+    , openShop : Bool
     }
 
 
 type Msg
     = Click ( Int, Int )
     | CollectCoin CoinId
-    | GenerateLevel Setting
     | Undo
     | Won
     | SetSeed Seed
+    | NextDay
+    | LoadNextLevel
     | CloseShop
 
 
-priceToRemoveStone : ( Int, Int ) -> Int
-priceToRemoveStone ( x, y ) =
-    (8
-        - round (abs (toFloat x - 2.5))
-        - round (abs (toFloat y - 2.5))
-    )
-        ^ 2
+collectCoins : Model -> Model
+collectCoins model =
+    { model
+        | money =
+            model.coins
+                |> Dict.values
+                |> List.map .value
+                |> List.sum
+                |> (+) model.money
+        , coins = Dict.map (\_ coin -> { coin | x = 2.5, y = -1 }) model.coins
+    }
+
+
+generateAnotherSetting : Model -> Generator Model
+generateAnotherSetting model =
+    Level.Generator.pickSetting
+        { money = (model.money * 2) // 3
+        }
+        |> Random.map
+            (\generatedSetting ->
+                { model | nextLevels = model.nextLevels ++ [ generatedSetting ] }
+            )
+
+
+gotoShop : Model -> Model
+gotoShop model =
+    { model | openShop = True }
+
+
+gotoLevel : Model -> Model
+gotoLevel model =
+    { model | openShop = False }
+
+
+nextDay : Model -> Model
+nextDay model =
+    { model | day = model.day + 1 }
+
+
+loadNextLevel : Model -> Random Model
+loadNextLevel model =
+    case model.nextLevels of
+        head :: tail ->
+            head
+                |> Level.Generator.generate model.game
+                |> Random.map
+                    (\level ->
+                        List.foldl
+                            (\( pos, fruit ) ->
+                                addBlock pos fruit
+                            )
+                            { model
+                                | level = head
+                                , game = Game.empty { columns = level.columns, rows = level.rows }
+                                , entities = Dict.empty
+                                , coins = Dict.empty
+                                , nextLevels = tail
+                                , history = []
+                            }
+                            level.blocks
+                    )
+
+        [] ->
+            Random.constant model
+
+
+applyGenerator : Seed -> Random Model -> Model
+applyGenerator seed generator =
+    let
+        ( model, newSeed ) =
+            Random.step generator seed
+    in
+    { model | seed = newSeed }
+
+
+waitThenPerform : msg -> Cmd msg
+waitThenPerform msg =
+    Task.perform (\() -> msg) (Process.sleep 500)
+
+
+
+{------------------------------------------------------------
+ -
+ - U   U  PPPP   DDDD    AAA   TTTTT  EEEEE
+ - U   U  P   P  D   D  A   A    T    E
+ - U   U  PPPP   D   D  AAAAA    T    EEE
+ - UUUUU  P      DDDD   A   A    T    EEEEE
+ -
+ -----------------------------------------------------------}
 
 
 newEntity : ( Int, Int ) -> Entity
@@ -91,12 +161,13 @@ init () =
       , entities = Dict.empty
       , coins = Dict.empty
       , money = 0
+      , day = 0
       , nextCoinId = 0
-      , level = 0
-      , levelDef = Level.fromStrings []
+      , level = Level.Generator.trainingGround1
+      , nextLevels = Level.Generator.tutorials
       , history = []
       , seed = Random.initialSeed 42
-      , shop = []
+      , openShop = False
       }
     , [ Task.perform
             (\() ->
@@ -121,384 +192,6 @@ addBlock ( x, y ) block model =
             model.entities
                 |> Dict.insert fruitId (newEntity ( x, y ))
     }
-
-
-clearLevel : Model -> Model
-clearLevel model =
-    { model
-        | game = Game.empty { columns = 0, rows = 0 }
-        , entities = Dict.empty
-        , coins = Dict.empty
-        , history = []
-    }
-
-
-loadLevel : Int -> Level -> Model -> Model
-loadLevel id level model =
-    let
-        { columns, rows, blocks } =
-            level
-    in
-    blocks
-        |> List.foldl
-            (\( pos, fruit ) ->
-                addBlock pos fruit
-            )
-            { model
-                | level = id
-                , levelDef = level
-                , game = Game.empty { columns = columns, rows = rows }
-            }
-
-
-viewFruit : { blockId : BlockId, entity : Entity } -> Model -> List (Html Msg) -> Html Msg
-viewFruit args model =
-    View.Block.withContent
-        ([ Html.Style.topPx (args.entity.y * View.Field.size)
-         , Html.Style.leftPx (args.entity.x * View.Field.size)
-         ]
-            ++ (if args.entity.shrink then
-                    [ View.Block.shrink ]
-
-                else
-                    model.game.selected
-                        |> Maybe.map
-                            (\selected ->
-                                if selected == args.entity.pos then
-                                    [ View.Block.small ]
-
-                                else if Game.isValidPair args.entity.pos selected model.game then
-                                    [ View.Block.rocking ]
-
-                                else
-                                    []
-                            )
-                        |> Maybe.withDefault []
-               )
-        )
-
-
-viewSolid : { x : Int, y : Int, solid : Solid } -> Model -> Html Msg
-viewSolid args model =
-    View.Block.withContent
-        ([ Html.Style.topPx (toFloat args.y * View.Field.size)
-         , Html.Style.leftPx (toFloat args.x * View.Field.size)
-         ]
-            ++ (model.game.selected
-                    |> Maybe.map
-                        (\selected ->
-                            if selected == ( args.x, args.y ) then
-                                [ View.Block.small ]
-
-                            else if Game.isValidPair ( args.x, args.y ) selected model.game then
-                                [ View.Block.rocking ]
-
-                            else
-                                []
-                        )
-                    |> Maybe.withDefault []
-               )
-        )
-        [ Html.div
-            [ Html.Style.positionAbsolute
-            , Html.Style.bottomPx 8
-            , Html.Style.width "100%"
-            , Html.Style.displayFlex
-            , Html.Style.justifyContentCenter
-            , Html.Style.fontSizePx 10
-            ]
-            (case args.solid of
-                Stone ->
-                    []
-
-                Sprout ->
-                    []
-
-                Dynamite ->
-                    []
-            )
-        , Html.div []
-            [ Html.text
-                (case args.solid of
-                    Stone ->
-                        View.Block.stone
-
-                    Sprout ->
-                        View.Block.sprout
-
-                    Dynamite ->
-                        View.Block.dynamite
-                )
-            ]
-        ]
-
-
-viewMoney : Coin -> Html msg
-viewMoney money =
-    View.Block.withContent
-        ([ Html.Style.topPx (money.y * View.Field.size)
-         , Html.Style.leftPx (money.x * View.Field.size)
-         , Html.Style.heightPx View.Field.size
-         ]
-            ++ (if money.shrink then
-                    [ View.Block.shrink ]
-
-                else
-                    []
-               )
-        )
-        [ View.Coin.toHtml
-            [ Html.Style.fontSizePx (View.Field.size / 4)
-            , Html.Style.heightPx (View.Field.size / 2)
-            , Html.Style.borderWidthPx 4
-            , Html.Style.displayFlex
-            ]
-            money.value
-        ]
-
-
-viewHeader : Model -> Html Msg
-viewHeader model =
-    Html.div
-        [ Html.Style.displayFlex
-        , Html.Style.alignItemsCenter
-        , Html.Style.justifyContentCenter
-        , Html.Style.gapPx 4
-        , Html.Style.width "100%"
-        ]
-        [ [ View.Coin.toHtml
-                [ Html.Style.fontSizePx 14
-                , Html.Style.heightPx 26
-                , Html.Style.borderWidthPx 3
-                ]
-                1
-          , Html.div [ Html.Style.padding "4px 8px" ]
-                [ Html.text "Undo" ]
-          ]
-            |> Html.button
-                (Layout.asButton
-                    { onPress = Just Undo, label = "Undo" }
-                    ++ [ Html.Attributes.class "button"
-                       , Html.Style.paddingPx 2
-                       , Html.Style.displayFlex
-                       , Html.Style.alignItemsCenter
-                       ]
-                )
-            |> List.singleton
-            |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
-        , View.Coin.toHtml
-            [ Html.Style.fontSizePx 48
-            , Html.Style.heightPx 100
-            , Html.Style.borderWidthPx 8
-            ]
-            (model.money |> min 999 |> max -99)
-            |> List.singleton
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentCenter
-                ]
-        , []
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentFlexEnd
-                ]
-        ]
-
-
-viewShop : Model -> Html Msg
-viewShop model =
-    [ Html.span [ Html.Style.fontSizePx 50 ]
-        [ Html.text "Next Level" ]
-    , View.Coin.toHtml
-        [ Html.Style.fontSizePx 48
-        , Html.Style.heightPx 100
-        , Html.Style.borderWidthPx 8
-        ]
-        (model.money |> min 999 |> max -99)
-        |> List.singleton
-        |> Html.div
-            [ Html.Style.flex "1"
-            , Html.Style.displayFlex
-            , Html.Style.justifyContentCenter
-            ]
-    ]
-        ++ (model.shop
-                |> List.map
-                    (\setting ->
-                        [ View.Coin.toHtml
-                            [ Html.Style.fontSizePx 14
-                            , Html.Style.heightPx 26
-                            , Html.Style.borderWidthPx 3
-                            ]
-                            (Level.Generator.priceForSetting setting)
-                        , Html.div [ Html.Style.padding "4px 8px" ]
-                            [ Html.text setting.name ]
-                        ]
-                            |> Html.button
-                                (Layout.asButton
-                                    { onPress = Just (GenerateLevel setting), label = setting.name }
-                                    ++ [ Html.Attributes.class "button"
-                                       , Html.Style.paddingPx 2
-                                       , Html.Style.displayFlex
-                                       , Html.Style.alignItemsCenter
-                                       , Html.Style.justifyContentCenter
-                                       ]
-                                )
-                    )
-           )
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.gapPx 16
-            ]
-        |> List.singleton
-        |> Html.div
-            [ Html.Style.positionAbsolute
-            , Html.Style.backgroundImage
-                "linear-gradient(0deg, #998c5e 50%,#a79d7a 50%)"
-            , Html.Style.backgroundSize "100px 100px"
-            , Html.Style.height "100vh"
-            , Html.Style.width "100%"
-            , Html.Style.transition "bottom 1s"
-            , Html.Style.bottom
-                (if List.isEmpty model.shop then
-                    "100vh"
-
-                 else
-                    "0vh"
-                )
-            , Html.Style.displayFlex
-            , Html.Style.justifyContentCenter
-            , Html.Style.alignItemsCenter
-            ]
-
-
-view : Model -> Html Msg
-view model =
-    [ [ viewHeader model
-      , [ [ View.Field.toHtml
-                [ View.Field.light ]
-                { columns = model.game.columns, rows = model.game.rows }
-          , [ model.entities
-                |> Dict.toList
-                |> List.filterMap
-                    (\( blockId, entity ) ->
-                        model.game.blocks
-                            |> Dict.get blockId
-                            |> Maybe.map
-                                (\block ->
-                                    { blockId = blockId, entity = entity, block = block }
-                                )
-                    )
-                |> List.map
-                    (\{ blockId, entity, block } ->
-                        ( "block_" ++ String.fromInt blockId
-                        , viewFruit { blockId = blockId, entity = entity }
-                            model
-                            [ Html.text
-                                (case block of
-                                    Game.FruitBlock Game.Apple ->
-                                        View.Block.apple
-
-                                    Game.FruitBlock Game.Orange ->
-                                        View.Block.orange
-
-                                    Game.FruitBlock Game.Lemon ->
-                                        View.Block.lemon
-
-                                    Game.FruitBlock Game.Grapes ->
-                                        View.Block.grapes
-
-                                    Game.SolidBlock Stone ->
-                                        View.Block.stone
-
-                                    Game.SolidBlock Sprout ->
-                                        View.Block.sprout
-
-                                    Game.SolidBlock Dynamite ->
-                                        View.Block.dynamite
-                                )
-                            ]
-                        )
-                    )
-            , model.coins
-                |> Dict.toList
-                |> List.singleton
-                |> List.concat
-                |> List.sortBy Tuple.first
-                |> List.map
-                    (\( id, coin ) ->
-                        ( "coin_" ++ String.fromInt id
-                        , viewMoney coin
-                        )
-                    )
-            ]
-                |> List.concat
-                |> Html.Keyed.node "div"
-                    [ Html.Style.positionAbsolute
-                    , Html.Style.topPx 0
-                    , Html.Style.leftPx 0
-                    ]
-          ]
-        , model.game.fields
-            |> Dict.toList
-            |> List.filterMap
-                (\( p, fruitId ) ->
-                    model.game.blocks
-                        |> Dict.get fruitId
-                        |> Maybe.map (Tuple.pair p)
-                )
-            |> List.map
-                (\( ( x, y ), _ ) ->
-                    Html.div
-                        (Layout.asButton
-                            { onPress = Just (Click ( x, y ))
-                            , label =
-                                [ "Select "
-                                , String.fromInt x
-                                , ", "
-                                , String.fromInt y
-                                ]
-                                    |> String.concat
-                            }
-                            ++ [ Html.Style.aspectRatio "1"
-                               , Html.Style.widthPx View.Field.size
-                               , Html.Style.positionAbsolute
-                               , Html.Style.topPx (toFloat y * View.Field.size)
-                               , Html.Style.leftPx (toFloat x * View.Field.size)
-                               ]
-                        )
-                        []
-                )
-        ]
-            |> List.concat
-            |> Html.div [ Html.Style.positionRelative ]
-      ]
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.gapPx 16
-            ]
-    , viewShop model
-    , Stylesheet.stylesheet
-    , Html.node "meta"
-        [ Html.Attributes.name "viewport"
-        , Html.Attributes.attribute "content" "width=400, initial-scale=1,user-scalable=no"
-        ]
-        []
-    ]
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.alignItemsCenter
-            , Html.Style.justifyContentCenter
-            , Html.Style.positionRelative
-            , Html.Style.gapPx 16
-            , Html.Style.width "100%"
-            , Html.Style.height "100%"
-            ]
 
 
 coinsEarnedFromMatching : Block -> Block -> Int
@@ -604,24 +297,6 @@ checkWinCondition model =
     )
 
 
-generateLevel : Setting -> Model -> Model
-generateLevel setting model =
-    setting
-        |> Level.Generator.generate model.game
-        |> (\gen -> Random.step gen model.seed)
-        |> (\( level, seed ) ->
-                { model
-                    | seed = seed
-                }
-                    |> clearAndloadLevel (model.level + 1) level
-           )
-
-
-clearAndloadLevel : Int -> Level -> Model -> Model
-clearAndloadLevel id def model =
-    model |> clearLevel |> loadLevel id def
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -648,12 +323,6 @@ update msg model =
                         ( { model | game = Game.setSelected Nothing model.game }
                         , Cmd.none
                         )
-
-        GenerateLevel setting ->
-            ( generateLevel setting { model | money = model.money - Level.Generator.priceForSetting setting }
-            , Process.sleep 500
-                |> Task.perform (\() -> CloseShop)
-            )
 
         Undo ->
             case model.history of
@@ -689,40 +358,76 @@ update msg model =
             )
 
         Won ->
-            let
-                ( settings, newSeed ) =
-                    Random.step
-                        (Level.Generator.pickSettings
-                            { amount = 2
-                            , money = (model.money * 2) // 3
-                            }
-                        )
-                        model.seed
-            in
-            ( { model
-                | money =
-                    model.coins
-                        |> Dict.values
-                        |> List.map .value
-                        |> List.sum
-                        |> (+) model.money
-                , shop = settings |> List.sortBy (\s -> Level.Generator.priceForSetting s * -1)
-                , seed = newSeed
-                , coins = Dict.map (\_ coin -> { coin | x = 2.5, y = -1 }) model.coins
-              }
-            , Cmd.none
+            ( model
+                |> collectCoins
+                |> gotoShop
+            , waitThenPerform LoadNextLevel
             )
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
 
+        LoadNextLevel ->
+            ( model
+                |> generateAnotherSetting
+                |> Random.andThen loadNextLevel
+                |> applyGenerator model.seed
+            , waitThenPerform NextDay
+            )
+
+        NextDay ->
+            ( model
+                |> nextDay
+            , Cmd.none
+            )
+
         CloseShop ->
-            ( { model | shop = [] }, Cmd.none )
+            ( gotoLevel model, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+view : Model -> Html Msg
+view model =
+    [ [ View.Header.viewHeader
+            { money = model.money
+            , onUndo = Undo
+            }
+      , View.Game.viewGame
+            { game = model.game
+            , coins = model.coins
+            , entities = model.entities
+            , onClick = Click
+            }
+      ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 16
+            ]
+    , View.Shop.viewShop
+        { money = model.money
+        , currentLevel = model.level
+        , nextLevels = model.nextLevels
+        , onGotoLevel = CloseShop
+        , openShop = model.openShop
+        , day = model.day
+        }
+    , Stylesheet.stylesheet
+    , Html.node "meta"
+        [ Html.Attributes.name "viewport"
+        , Html.Attributes.attribute "content" "width=400, initial-scale=1,user-scalable=no"
+        ]
+        []
+    ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.alignItemsCenter
+            , Html.Style.justifyContentCenter
+            , Html.Style.positionRelative
+            , Html.Style.gapPx 16
+            , Html.Style.width "100%"
+            , Html.Style.height "100%"
+            ]
 
 
 main : Program () Model Msg
@@ -731,5 +436,5 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
