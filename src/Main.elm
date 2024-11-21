@@ -15,6 +15,7 @@ import Stylesheet
 import Task
 import View.Background
 import View.Coin exposing (Coin, CoinId)
+import View.EndOfDay
 import View.Game
 import View.Header
 import View.Shop
@@ -41,6 +42,8 @@ type alias Model =
             , coins : Dict CoinId Coin
             , nextCoinId : CoinId
             }
+    , possibleSettings : List Setting
+    , endOfDay : Bool
     , openShop : Bool
     }
 
@@ -53,7 +56,8 @@ type Msg
     | SetSeed Seed
     | NextDay
     | LoadNextLevel
-    | CloseShop
+    | StartDay
+    | OpenShop
 
 
 collectCoins : Model -> Model
@@ -80,14 +84,22 @@ generateAnotherSetting model =
             )
 
 
-gotoShop : Model -> Model
-gotoShop model =
-    { model | openShop = True }
+endDay : Model -> Model
+endDay model =
+    { model | endOfDay = True }
 
 
 gotoLevel : Model -> Model
 gotoLevel model =
-    { model | openShop = False }
+    { model
+        | endOfDay = False
+        , openShop = False
+    }
+
+
+gotoShop : Model -> Model
+gotoShop model =
+    { model | openShop = True }
 
 
 nextDay : Model -> Model
@@ -177,7 +189,9 @@ init () =
       , level = Level.Generator.trainingGround1
       , nextLevels = Level.Generator.tutorials
       , history = []
+      , possibleSettings = []
       , seed = seed
+      , endOfDay = False
       , openShop = False
       }
         |> loadNextLevel
@@ -366,7 +380,7 @@ update msg model =
         Won ->
             ( model
                 |> collectCoins
-                |> gotoShop
+                |> endDay
                 |> generateAnotherSetting
                 |> applyGenerator model.seed
             , longWaitThenPerform LoadNextLevel
@@ -379,17 +393,17 @@ update msg model =
             ( model
                 |> loadNextLevel
                 |> applyGenerator model.seed
-            , longWaitThenPerform CloseShop
+            , longWaitThenPerform StartDay
             )
 
         NextDay ->
-            ( model
-                |> nextDay
-            , Cmd.none
-            )
+            ( nextDay model, Cmd.none )
 
-        CloseShop ->
+        StartDay ->
             ( gotoLevel model, Cmd.none )
+
+        OpenShop ->
+            ( model |> gotoShop, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -397,6 +411,7 @@ view model =
     [ [ View.Header.viewHeader
             { money = model.money
             , onUndo = Undo
+            , onOpenShop = OpenShop
             }
       , View.Game.viewGame
             { game = model.game
@@ -410,13 +425,18 @@ view model =
             , Html.Style.flexDirectionColumn
             , Html.Style.gapPx 16
             ]
-    , View.Shop.viewShop
+    , View.EndOfDay.viewShop
         { money = model.money
         , currentLevel = model.level
         , nextLevels = model.nextLevels
-        , openShop = model.openShop
+        , endOfDay = model.endOfDay
         , day = model.day
         }
+    , if model.openShop then
+        View.Shop.toHtml
+
+      else
+        Html.div [] []
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"

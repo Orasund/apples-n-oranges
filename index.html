@@ -5259,108 +5259,24 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Main$SetSeed = function (a) {
 	return {$: 'SetSeed', a: a};
 };
-var $author$project$Main$Won = {$: 'Won'};
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $author$project$Main$applyGenerator = F2(
+	function (seed, generator) {
+		var _v0 = A2($elm$random$Random$step, generator, seed);
+		var model = _v0.a;
+		var newSeed = _v0.b;
+		return _Utils_update(
+			model,
+			{seed: newSeed});
+	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Game$empty = function (args) {
 	return {blocks: $elm$core$Dict$empty, columns: args.columns, fields: $elm$core$Dict$empty, rows: args.rows, selected: $elm$core$Maybe$Nothing};
-};
-var $author$project$Game$Apple = {$: 'Apple'};
-var $author$project$Game$FruitBlock = function (a) {
-	return {$: 'FruitBlock', a: a};
-};
-var $author$project$Game$Orange = {$: 'Orange'};
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Level$fromStrings = function (list) {
-	var rows = $elm$core$List$length(list);
-	var fruits = $elm$core$List$concat(
-		A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (y, row) {
-					return A2(
-						$elm$core$List$filterMap,
-						$elm$core$Basics$identity,
-						A2(
-							$elm$core$List$indexedMap,
-							F2(
-								function (x, string) {
-									switch (string.valueOf()) {
-										case '🍊':
-											return $elm$core$Maybe$Just(
-												_Utils_Tuple2(
-													_Utils_Tuple2(x, y),
-													$author$project$Game$FruitBlock($author$project$Game$Orange)));
-										case '🍎':
-											return $elm$core$Maybe$Just(
-												_Utils_Tuple2(
-													_Utils_Tuple2(x, y),
-													$author$project$Game$FruitBlock($author$project$Game$Apple)));
-										default:
-											return $elm$core$Maybe$Nothing;
-									}
-								}),
-							$elm$core$String$toList(row)));
-				}),
-			list));
-	var columns = $elm$core$List$length(
-		$elm$core$String$toList(
-			A2(
-				$elm$core$Maybe$withDefault,
-				'',
-				$elm$core$List$head(list))));
-	return {blocks: fruits, columns: columns, rows: rows};
 };
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -5412,11 +5328,6 @@ var $elm$random$Random$init = A2(
 				$elm$time$Time$posixToMillis(time)));
 	},
 	$elm$time$Time$now);
-var $elm$random$Random$step = F2(
-	function (_v0, seed) {
-		var generator = _v0.a;
-		return generator(seed);
-	});
 var $elm$random$Random$onEffects = F3(
 	function (router, commands, seed) {
 		if (!commands.b) {
@@ -5546,157 +5457,6 @@ var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
 			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
 			seed0);
 	});
-var $author$project$Main$init = function (_v0) {
-	return _Utils_Tuple2(
-		{
-			coins: $elm$core$Dict$empty,
-			entities: $elm$core$Dict$empty,
-			game: $author$project$Game$empty(
-				{columns: 6, rows: 6}),
-			history: _List_Nil,
-			level: 0,
-			levelDef: $author$project$Level$fromStrings(_List_Nil),
-			money: 0,
-			nextCoinId: 0,
-			seed: $elm$random$Random$initialSeed(42),
-			shop: _List_Nil
-		},
-		$elm$core$Platform$Cmd$batch(
-			_List_fromArray(
-				[
-					A2(
-					$elm$core$Task$perform,
-					function (_v1) {
-						return $author$project$Main$Won;
-					},
-					$elm$core$Task$succeed(_Utils_Tuple0)),
-					A2($elm$random$Random$generate, $author$project$Main$SetSeed, $elm$random$Random$independentSeed)
-				])));
-};
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
-};
-var $author$project$Main$CloseShop = {$: 'CloseShop'};
-var $author$project$Main$CollectCoin = function (a) {
-	return {$: 'CollectCoin', a: a};
-};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $elm$core$Process$sleep = _Process_sleep;
-var $author$project$Main$checkWinCondition = function (model) {
-	var hasWon = A2(
-		$elm$core$List$all,
-		function (_v2) {
-			var blockId = _v2.b;
-			var _v3 = A2($elm$core$Dict$get, blockId, model.game.blocks);
-			if (_v3.$ === 'Just') {
-				if (_v3.a.$ === 'FruitBlock') {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				return true;
-			}
-		},
-		$elm$core$Dict$toList(model.game.fields));
-	return _Utils_Tuple2(
-		model,
-		$elm$core$Platform$Cmd$batch(
-			_List_fromArray(
-				[
-					A2(
-					$elm$core$Task$perform,
-					function (_v0) {
-						return $author$project$Main$CollectCoin(model.nextCoinId - 1);
-					},
-					$elm$core$Process$sleep(100)),
-					hasWon ? A2(
-					$elm$core$Task$perform,
-					function (_v1) {
-						return $author$project$Main$Won;
-					},
-					$elm$core$Process$sleep(500)) : $elm$core$Platform$Cmd$none
-				])));
-};
-var $author$project$Main$clearLevel = function (model) {
-	return _Utils_update(
-		model,
-		{
-			coins: $elm$core$Dict$empty,
-			entities: $elm$core$Dict$empty,
-			game: $author$project$Game$empty(
-				{columns: 0, rows: 0}),
-			history: _List_Nil
-		});
-};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5757,6 +5517,7 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5876,37 +5637,12 @@ var $author$project$Main$addBlock = F3(
 				game: game
 			});
 	});
-var $author$project$Main$loadLevel = F3(
-	function (id, level, model) {
-		var _v0 = level;
-		var columns = _v0.columns;
-		var rows = _v0.rows;
-		var blocks = _v0.blocks;
-		return A3(
-			$elm$core$List$foldl,
-			function (_v1) {
-				var pos = _v1.a;
-				var fruit = _v1.b;
-				return A2($author$project$Main$addBlock, pos, fruit);
-			},
-			_Utils_update(
-				model,
-				{
-					game: $author$project$Game$empty(
-						{columns: columns, rows: rows}),
-					level: id,
-					levelDef: level
-				}),
-			blocks);
-	});
-var $author$project$Main$clearAndloadLevel = F3(
-	function (id, def, model) {
-		return A3(
-			$author$project$Main$loadLevel,
-			id,
-			def,
-			$author$project$Main$clearLevel(model));
-	});
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
 var $author$project$Game$SolidBlock = function (a) {
 	return {$: 'SolidBlock', a: a};
 };
@@ -5959,8 +5695,13 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
+var $author$project$Game$Apple = {$: 'Apple'};
+var $author$project$Game$FruitBlock = function (a) {
+	return {$: 'FruitBlock', a: a};
+};
 var $author$project$Game$Grapes = {$: 'Grapes'};
 var $author$project$Game$Lemon = {$: 'Lemon'};
+var $author$project$Game$Orange = {$: 'Orange'};
 var $author$project$Game$Sprout = {$: 'Sprout'};
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -6368,12 +6109,6 @@ var $elm$random$Random$andThen = F2(
 				return genB(newSeed);
 			});
 	});
-var $elm$random$Random$constant = function (value) {
-	return $elm$random$Random$Generator(
-		function (seed) {
-			return _Utils_Tuple2(value, seed);
-		});
-};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -6384,6 +6119,71 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -6398,6 +6198,15 @@ var $elm$core$Maybe$map = F2(
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
 	});
 var $author$project$Level$Builder$isValidPair = F3(
 	function (builder, _v0, _v1) {
@@ -6771,6 +6580,17 @@ var $author$project$Level$Builder$build = function (builder) {
 		rows: builder.rows
 	};
 };
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$core$List$concatMap = F2(
 	function (f, list) {
 		return $elm$core$List$concat(
@@ -6885,6 +6705,24 @@ var $author$project$Level$Builder$generateLevel = function (args) {
 											$author$project$Level$Builder$new(
 												{columns: args.columns, oldSprouts: oldSprouts, rows: args.rows})))))))))));
 };
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -6954,24 +6792,435 @@ var $author$project$Level$Generator$generate = F2(
 				rows: 6
 			});
 	});
-var $author$project$Main$generateLevel = F2(
-	function (setting, model) {
-		return function (_v0) {
-			var level = _v0.a;
-			var seed = _v0.b;
-			return A3(
-				$author$project$Main$clearAndloadLevel,
-				model.level + 1,
-				level,
-				_Utils_update(
-					model,
-					{seed: seed}));
-		}(
-			function (gen) {
-				return A2($elm$random$Random$step, gen, model.seed);
-			}(
-				A2($author$project$Level$Generator$generate, model.game, setting)));
+var $author$project$Main$loadNextLevel = function (model) {
+	var _v0 = model.nextLevels;
+	if (_v0.b) {
+		var head = _v0.a;
+		var tail = _v0.b;
+		return A2(
+			$elm$random$Random$map,
+			function (level) {
+				return A3(
+					$elm$core$List$foldl,
+					function (_v1) {
+						var pos = _v1.a;
+						var fruit = _v1.b;
+						return A2($author$project$Main$addBlock, pos, fruit);
+					},
+					_Utils_update(
+						model,
+						{
+							coins: $elm$core$Dict$empty,
+							day: model.day + 1,
+							entities: $elm$core$Dict$empty,
+							game: $author$project$Game$empty(
+								{columns: level.columns, rows: level.rows}),
+							history: _List_Nil,
+							level: head,
+							nextLevels: tail
+						}),
+					level.blocks);
+			},
+			A2($author$project$Level$Generator$generate, model.game, head));
+	} else {
+		return $elm$random$Random$constant(model);
+	}
+};
+var $author$project$Level$Generator$trainingGround1 = {
+	name: 'Training 1',
+	newDynamite: 0,
+	newFruitPairs: 2,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Apple)
+};
+var $author$project$Level$Generator$trainingGround2 = {
+	name: 'Training 2',
+	newDynamite: 0,
+	newFruitPairs: 3,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 1,
+	symbol: $author$project$Game$SolidBlock($author$project$Game$Stone)
+};
+var $author$project$Level$Generator$trainingGround3 = {
+	name: 'Training 3',
+	newDynamite: 0,
+	newFruitPairs: 3,
+	newGrapePairs: 0,
+	newLemonPairs: 1,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Lemon)
+};
+var $author$project$Level$Generator$trainingGround4 = {
+	name: 'Training 3',
+	newDynamite: 2,
+	newFruitPairs: 3,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 1,
+	symbol: $author$project$Game$SolidBlock($author$project$Game$Dynamite)
+};
+var $author$project$Level$Generator$tutorials = _List_fromArray(
+	[$author$project$Level$Generator$trainingGround1, $author$project$Level$Generator$trainingGround2, $author$project$Level$Generator$trainingGround3, $author$project$Level$Generator$trainingGround4]);
+var $author$project$Main$init = function (_v0) {
+	var seed = $elm$random$Random$initialSeed(42);
+	return _Utils_Tuple2(
+		A2(
+			$author$project$Main$applyGenerator,
+			seed,
+			$author$project$Main$loadNextLevel(
+				{
+					coins: $elm$core$Dict$empty,
+					day: 0,
+					endOfDay: false,
+					entities: $elm$core$Dict$empty,
+					game: $author$project$Game$empty(
+						{columns: 6, rows: 6}),
+					history: _List_Nil,
+					level: $author$project$Level$Generator$trainingGround1,
+					money: 0,
+					nextCoinId: 0,
+					nextLevels: $author$project$Level$Generator$tutorials,
+					openShop: false,
+					possibleSettings: _List_Nil,
+					seed: seed
+				})),
+		A2($elm$random$Random$generate, $author$project$Main$SetSeed, $elm$random$Random$independentSeed));
+};
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$LoadNextLevel = {$: 'LoadNextLevel'};
+var $author$project$Main$StartDay = {$: 'StartDay'};
+var $author$project$Main$CollectCoin = function (a) {
+	return {$: 'CollectCoin', a: a};
+};
+var $author$project$Main$Won = {$: 'Won'};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Process$sleep = _Process_sleep;
+var $author$project$Main$checkWinCondition = function (model) {
+	var hasWon = A2(
+		$elm$core$List$all,
+		function (_v2) {
+			var blockId = _v2.b;
+			var _v3 = A2($elm$core$Dict$get, blockId, model.game.blocks);
+			if (_v3.$ === 'Just') {
+				if (_v3.a.$ === 'FruitBlock') {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		},
+		$elm$core$Dict$toList(model.game.fields));
+	return _Utils_Tuple2(
+		model,
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Task$perform,
+					function (_v0) {
+						return $author$project$Main$CollectCoin(model.nextCoinId - 1);
+					},
+					$elm$core$Process$sleep(100)),
+					hasWon ? A2(
+					$elm$core$Task$perform,
+					function (_v1) {
+						return $author$project$Main$Won;
+					},
+					$elm$core$Process$sleep(500)) : $elm$core$Platform$Cmd$none
+				])));
+};
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Main$collectCoins = function (model) {
+	return _Utils_update(
+		model,
+		{
+			coins: A2(
+				$elm$core$Dict$map,
+				F2(
+					function (_v0, coin) {
+						return _Utils_update(
+							coin,
+							{x: 2.5, y: -1});
+					}),
+				model.coins),
+			money: model.money + $elm$core$List$sum(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.value;
+					},
+					$elm$core$Dict$values(model.coins)))
+		});
+};
+var $author$project$Main$endDay = function (model) {
+	return _Utils_update(
+		model,
+		{endOfDay: true});
+};
+var $author$project$Level$Generator$applesAndOranges = {
+	name: 'Apple\'n Oranges 2',
+	newDynamite: 1,
+	newFruitPairs: 10,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Orange)
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Level$Generator$priceForSetting = function (setting) {
+	var times = F2(
+		function (_float, n) {
+			return $elm$core$Basics$round(n * _float);
+		});
+	return A2(
+		$elm$core$Basics$max,
+		0,
+		((((setting.newFruitPairs + A2(times, 2, setting.newGrapePairs)) + A2(times, 1.5, setting.newLemonPairs)) + setting.newStone) + setting.newDynamite) - 10);
+};
+var $author$project$Level$Generator$applesAndOrangesBasic = {
+	name: 'Apple\'n Oranges 1',
+	newDynamite: 1,
+	newFruitPairs: 5,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Orange)
+};
+var $author$project$Level$Generator$lifeGivesYouLemons = {
+	name: 'Life gives Lemons 1',
+	newDynamite: 1,
+	newFruitPairs: 5,
+	newGrapePairs: 0,
+	newLemonPairs: 5,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Lemon)
+};
+var $author$project$Level$Generator$lifeGivesYouLemonsBasic = {
+	name: 'Life gives Lemons 2',
+	newDynamite: 1,
+	newFruitPairs: 2,
+	newGrapePairs: 0,
+	newLemonPairs: 3,
+	newStone: 1,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Lemon)
+};
+var $author$project$Level$Generator$miningTime = {
+	name: 'Mining Time 2',
+	newDynamite: 6,
+	newFruitPairs: 6,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 6,
+	symbol: $author$project$Game$SolidBlock($author$project$Game$Dynamite)
+};
+var $author$project$Level$Generator$miningTimeBasic = {
+	name: 'Mining Time 1',
+	newDynamite: 3,
+	newFruitPairs: 4,
+	newGrapePairs: 0,
+	newLemonPairs: 0,
+	newStone: 3,
+	symbol: $author$project$Game$SolidBlock($author$project$Game$Dynamite)
+};
+var $author$project$Level$Generator$pleantyOfColor = {
+	name: 'Pleanty of Color 2',
+	newDynamite: 0,
+	newFruitPairs: 6,
+	newGrapePairs: 3,
+	newLemonPairs: 0,
+	newStone: 0,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Grapes)
+};
+var $author$project$Level$Generator$pleantyOfColorBasic = {
+	name: 'Pleanty of Color 1',
+	newDynamite: 0,
+	newFruitPairs: 3,
+	newGrapePairs: 2,
+	newLemonPairs: 0,
+	newStone: 0,
+	symbol: $author$project$Game$FruitBlock($author$project$Game$Grapes)
+};
+var $author$project$Level$Generator$settings = _List_fromArray(
+	[$author$project$Level$Generator$applesAndOrangesBasic, $author$project$Level$Generator$applesAndOranges, $author$project$Level$Generator$lifeGivesYouLemonsBasic, $author$project$Level$Generator$lifeGivesYouLemons, $author$project$Level$Generator$miningTimeBasic, $author$project$Level$Generator$miningTime, $author$project$Level$Generator$pleantyOfColor, $author$project$Level$Generator$pleantyOfColorBasic]);
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
 	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Level$Generator$pickSetting = function (args) {
+	var validSettings = A2(
+		$elm$core$List$take,
+		3,
+		$elm$core$List$reverse(
+			A2(
+				$elm$core$List$filter,
+				function (setting) {
+					return _Utils_cmp(
+						$author$project$Level$Generator$priceForSetting(setting),
+						args.money) < 1;
+				},
+				$author$project$Level$Generator$settings)));
+	if (!validSettings.b) {
+		return $elm$random$Random$constant($author$project$Level$Generator$applesAndOranges);
+	} else {
+		var head = validSettings.a;
+		var tail = validSettings.b;
+		return A2($elm$random$Random$uniform, head, tail);
+	}
+};
+var $author$project$Main$generateAnotherSetting = function (model) {
+	return A2(
+		$elm$random$Random$map,
+		function (generatedSetting) {
+			return _Utils_update(
+				model,
+				{
+					nextLevels: _Utils_ap(
+						model.nextLevels,
+						_List_fromArray(
+							[generatedSetting]))
+				});
+		},
+		$author$project$Level$Generator$pickSetting(
+			{money: ((model.money * 2) / 3) | 0}));
+};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -6993,6 +7242,16 @@ var $author$project$Game$getBlockAndIdAt = F2(
 			},
 			A2($elm$core$Dict$get, pos, game.fields));
 	});
+var $author$project$Main$gotoLevel = function (model) {
+	return _Utils_update(
+		model,
+		{endOfDay: false, openShop: false});
+};
+var $author$project$Main$gotoShop = function (model) {
+	return _Utils_update(
+		model,
+		{openShop: true});
+};
 var $author$project$Game$getBlockAt = F2(
 	function (pos, game) {
 		return A2(
@@ -7267,231 +7526,18 @@ var $author$project$Main$join = F3(
 			A2($author$project$Game$getBlockAndIdAt, p1, model.game),
 			A2($author$project$Game$getBlockAndIdAt, p2, model.game));
 	});
-var $elm$random$Random$listHelp = F4(
-	function (revList, n, gen, seed) {
-		listHelp:
-		while (true) {
-			if (n < 1) {
-				return _Utils_Tuple2(revList, seed);
-			} else {
-				var _v0 = gen(seed);
-				var value = _v0.a;
-				var newSeed = _v0.b;
-				var $temp$revList = A2($elm$core$List$cons, value, revList),
-					$temp$n = n - 1,
-					$temp$gen = gen,
-					$temp$seed = newSeed;
-				revList = $temp$revList;
-				n = $temp$n;
-				gen = $temp$gen;
-				seed = $temp$seed;
-				continue listHelp;
-			}
-		}
-	});
-var $elm$random$Random$list = F2(
-	function (n, _v0) {
-		var gen = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
-			});
-	});
-var $elm$core$Basics$round = _Basics_round;
-var $author$project$Level$Generator$priceForSetting = function (setting) {
-	var times = F2(
-		function (_float, n) {
-			return $elm$core$Basics$round(n * _float);
-		});
+var $author$project$Main$longWaitThenPerform = function (msg) {
 	return A2(
-		$elm$core$Basics$max,
-		0,
-		((((setting.newFruitPairs + A2(times, 2, setting.newGrapePairs)) + A2(times, 1.5, setting.newLemonPairs)) + setting.newStone) + setting.newDynamite) - 3);
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $author$project$Level$Generator$applesAndOranges = {name: 'Apple\'n Oranges 2', newDynamite: 1, newFruitPairs: 10, newGrapePairs: 0, newLemonPairs: 0, newStone: 1};
-var $author$project$Level$Generator$applesAndOrangesBasic = {name: 'Apple\'n Oranges 1', newDynamite: 1, newFruitPairs: 5, newGrapePairs: 0, newLemonPairs: 0, newStone: 1};
-var $author$project$Level$Generator$lifeGivesYouLemons = {name: 'Life gives Lemons 1', newDynamite: 1, newFruitPairs: 0, newGrapePairs: 0, newLemonPairs: 10, newStone: 1};
-var $author$project$Level$Generator$lifeGivesYouLemonsBasic = {name: 'Life gives Lemons 2', newDynamite: 1, newFruitPairs: 0, newGrapePairs: 0, newLemonPairs: 5, newStone: 1};
-var $author$project$Level$Generator$miningTime = {name: 'Mining Time 2', newDynamite: 8, newFruitPairs: 4, newGrapePairs: 0, newLemonPairs: 0, newStone: 8};
-var $author$project$Level$Generator$miningTimeBasic = {name: 'Mining Time 1', newDynamite: 4, newFruitPairs: 2, newGrapePairs: 0, newLemonPairs: 0, newStone: 4};
-var $author$project$Level$Generator$pleantyOfColor = {name: 'Pleanty of Color 2', newDynamite: 0, newFruitPairs: 2, newGrapePairs: 5, newLemonPairs: 2, newStone: 0};
-var $author$project$Level$Generator$pleantyOfColorBasic = {name: 'Pleanty of Color 1', newDynamite: 0, newFruitPairs: 0, newGrapePairs: 3, newLemonPairs: 1, newStone: 0};
-var $author$project$Level$Generator$trainingGround1 = {name: 'Training 1', newDynamite: 0, newFruitPairs: 2, newGrapePairs: 0, newLemonPairs: 0, newStone: 1};
-var $author$project$Level$Generator$trainingGround2 = {name: 'Training 2', newDynamite: 1, newFruitPairs: 3, newGrapePairs: 0, newLemonPairs: 0, newStone: 1};
-var $author$project$Level$Generator$settings = _List_fromArray(
-	[$author$project$Level$Generator$trainingGround1, $author$project$Level$Generator$trainingGround2, $author$project$Level$Generator$applesAndOrangesBasic, $author$project$Level$Generator$applesAndOranges, $author$project$Level$Generator$lifeGivesYouLemonsBasic, $author$project$Level$Generator$lifeGivesYouLemons, $author$project$Level$Generator$miningTimeBasic, $author$project$Level$Generator$miningTime, $author$project$Level$Generator$pleantyOfColor, $author$project$Level$Generator$pleantyOfColorBasic]);
-var $elm$core$List$sortBy = _List_sortBy;
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
-var $author$project$Level$Generator$pickSettings = function (args) {
-	var validSettings = A2(
-		$elm$core$List$take,
-		3,
-		$elm$core$List$reverse(
-			A2(
-				$elm$core$List$filter,
-				function (setting) {
-					return _Utils_cmp(
-						$author$project$Level$Generator$priceForSetting(setting),
-						args.money) < 1;
-				},
-				$author$project$Level$Generator$settings)));
-	return A2(
-		$elm$random$Random$map,
-		function (randomFloat) {
-			return A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2(
-					$elm$core$List$take,
-					args.amount,
-					A2(
-						$elm$core$List$sortBy,
-						$elm$core$Tuple$second,
-						A3($elm$core$List$map2, $elm$core$Tuple$pair, validSettings, randomFloat))));
+		$elm$core$Task$perform,
+		function (_v0) {
+			return msg;
 		},
-		A2(
-			$elm$random$Random$list,
-			$elm$core$List$length(validSettings),
-			A2($elm$random$Random$float, 0, 1)));
+		$elm$core$Process$sleep(1000));
 };
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
+var $author$project$Main$nextDay = function (model) {
+	return _Utils_update(
+		model,
+		{day: model.day + 1});
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -7537,28 +7583,11 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none));
 				}
-			case 'GenerateLevel':
-				var setting = msg.a;
-				return _Utils_Tuple2(
-					A2(
-						$author$project$Main$generateLevel,
-						setting,
-						_Utils_update(
-							model,
-							{
-								money: model.money - $author$project$Level$Generator$priceForSetting(setting)
-							})),
-					A2(
-						$elm$core$Task$perform,
-						function (_v5) {
-							return $author$project$Main$CloseShop;
-						},
-						$elm$core$Process$sleep(500)));
 			case 'Undo':
-				var _v6 = model.history;
-				if (_v6.b) {
-					var history = _v6.a;
-					var tail = _v6.b;
+				var _v5 = model.history;
+				if (_v5.b) {
+					var history = _v5.a;
+					var tail = _v5.b;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7593,42 +7622,14 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Won':
-				var _v7 = A2(
-					$elm$random$Random$step,
-					$author$project$Level$Generator$pickSettings(
-						{amount: 2, money: ((model.money * 2) / 3) | 0}),
-					model.seed);
-				var settings = _v7.a;
-				var newSeed = _v7.b;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							coins: A2(
-								$elm$core$Dict$map,
-								F2(
-									function (_v8, coin) {
-										return _Utils_update(
-											coin,
-											{x: 2.5, y: -1});
-									}),
-								model.coins),
-							money: model.money + $elm$core$List$sum(
-								A2(
-									$elm$core$List$map,
-									function ($) {
-										return $.value;
-									},
-									$elm$core$Dict$values(model.coins))),
-							seed: newSeed,
-							shop: A2(
-								$elm$core$List$sortBy,
-								function (s) {
-									return $author$project$Level$Generator$priceForSetting(s) * (-1);
-								},
-								settings)
-						}),
-					$elm$core$Platform$Cmd$none);
+					A2(
+						$author$project$Main$applyGenerator,
+						model.seed,
+						$author$project$Main$generateAnotherSetting(
+							$author$project$Main$endDay(
+								$author$project$Main$collectCoins(model)))),
+					$author$project$Main$longWaitThenPerform($author$project$Main$LoadNextLevel));
 			case 'SetSeed':
 				var seed = msg.a;
 				return _Utils_Tuple2(
@@ -7636,24 +7637,38 @@ var $author$project$Main$update = F2(
 						model,
 						{seed: seed}),
 					$elm$core$Platform$Cmd$none);
+			case 'LoadNextLevel':
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Main$applyGenerator,
+						model.seed,
+						$author$project$Main$loadNextLevel(model)),
+					$author$project$Main$longWaitThenPerform($author$project$Main$StartDay));
+			case 'NextDay':
+				return _Utils_Tuple2(
+					$author$project$Main$nextDay(model),
+					$elm$core$Platform$Cmd$none);
+			case 'StartDay':
+				return _Utils_Tuple2(
+					$author$project$Main$gotoLevel(model),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{shop: _List_Nil}),
+					$author$project$Main$gotoShop(model),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$Click = function (a) {
 	return {$: 'Click', a: a};
 };
+var $author$project$Main$OpenShop = {$: 'OpenShop'};
+var $author$project$Main$Undo = {$: 'Undo'};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $Orasund$elm_html_style$Html$Style$alignItems = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-items', value);
 };
 var $Orasund$elm_html_style$Html$Style$alignItemsCenter = $Orasund$elm_html_style$Html$Style$alignItems('center');
-var $author$project$View$Block$apple = '🍎';
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -7662,60 +7677,45 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $Orasund$elm_layout$Layout$asButton = function (args) {
-	return _Utils_ap(
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
-				A2($elm$html$Html$Attributes$attribute, 'aria-label', args.label),
-				A2($elm$html$Html$Attributes$attribute, 'role', 'button')
-			]),
-		A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (msg) {
-					return _List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(msg)
-						]);
-				},
-				args.onPress)));
-};
-var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
-};
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
 var $Orasund$elm_html_style$Html$Style$display = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'display', value);
 };
 var $Orasund$elm_html_style$Html$Style$displayFlex = $Orasund$elm_html_style$Html$Style$display('flex');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$View$Block$dynamite = '💣';
 var $Orasund$elm_html_style$Html$Style$flexDirection = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex-direction', value);
 };
 var $Orasund$elm_html_style$Html$Style$flexDirectionColumn = $Orasund$elm_html_style$Html$Style$flexDirection('column');
+var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-color', value);
+};
+var $Orasund$elm_html_style$Html$Style$height = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'height', value);
+};
+var $Orasund$elm_html_style$Html$Style$width = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'width', value);
+};
+var $author$project$View$Background$toHtml = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$height('100%'),
+					$Orasund$elm_html_style$Html$Style$width('100%'),
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$flexDirectionColumn
+				]),
+			attrs));
+};
+var $author$project$View$Background$game = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$backgroundColor('#a4cc95')
+				]),
+			attrs));
+};
 var $elm$core$String$append = _String_append;
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $Orasund$elm_html_style$Html$Style$gap = function (value) {
@@ -7728,29 +7728,10 @@ var $Orasund$elm_html_style$Html$Style$gapPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $author$project$View$Block$grapes = '🍇';
-var $Orasund$elm_html_style$Html$Style$height = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'height', value);
-};
 var $Orasund$elm_html_style$Html$Style$justifyContent = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'justify-content', value);
 };
 var $Orasund$elm_html_style$Html$Style$justifyContentCenter = $Orasund$elm_html_style$Html$Style$justifyContent('center');
-var $Orasund$elm_html_style$Html$Style$left = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'left', value);
-};
-var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$left(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$Block$lemon = '🍋';
-var $Orasund$elm_html_style$Html$Style$background = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background', value);
-};
-var $author$project$View$Field$light = $Orasund$elm_html_style$Html$Style$background('#61bb6b');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7765,24 +7746,14 @@ var $elm$virtual_dom$VirtualDom$node = function (tag) {
 		_VirtualDom_noScript(tag));
 };
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
-	return _VirtualDom_keyedNode(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
-var $author$project$View$Block$orange = '🍊';
 var $Orasund$elm_html_style$Html$Style$position = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'position', value);
 };
-var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
 var $Orasund$elm_html_style$Html$Style$positionRelative = $Orasund$elm_html_style$Html$Style$position('relative');
 var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
-var $author$project$View$Field$size = 60;
-var $author$project$View$Block$sprout = '🌱';
-var $author$project$View$Block$stone = '🪨';
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Stylesheet$stylesheet = A3(
@@ -7790,7 +7761,7 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        background-color:#a4cc95;\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: white;\n    }\n\n    .button:hover {\n        background-color: rgba(255,255,255,0.9);\n    }\n\n    .button:active {\n        background-color: rgba(255,255,255,0.7);\n    }\n    ')));
+		$elm$html$Html$text('\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        \n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n        \n        //from {background: linear-gradient(0deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%); }\n        //to {background: linear-gradient(180deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%);}\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: white;\n    }\n\n    .button:hover {\n        background-color: rgba(255,255,255,0.9);\n    }\n\n    .button:active {\n        background-color: rgba(255,255,255,0.7);\n    }\n    ')));
 var $Orasund$elm_html_style$Html$Style$borderRadius = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-radius', value);
 };
@@ -7801,81 +7772,6 @@ var $Orasund$elm_html_style$Html$Style$borderRadiusPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $author$project$View$Field$dark = $Orasund$elm_html_style$Html$Style$background('#399E5A');
-var $Orasund$elm_html_style$Html$Style$flexDirectionRow = $Orasund$elm_html_style$Html$Style$flexDirection('row');
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'overflow', value);
-};
-var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
-var $Orasund$elm_html_style$Html$Style$width = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'width', value);
-};
-var $Orasund$elm_html_style$Html$Style$widthMinContent = $Orasund$elm_html_style$Html$Style$width('min-content');
-var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$width(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$Field$toHtml = F2(
-	function (attrs, args) {
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$overflowHidden,
-						$Orasund$elm_html_style$Html$Style$borderRadiusPx($author$project$View$Field$size / 4),
-						$Orasund$elm_html_style$Html$Style$widthMinContent
-					]),
-				attrs),
-			A2(
-				$elm$core$List$map,
-				function (y) {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionRow]),
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-											$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$Field$size),
-											(!A2($elm$core$Basics$modBy, 2, x + y)) ? $author$project$View$Field$light : $author$project$View$Field$dark
-										]),
-									_List_Nil);
-							},
-							A2($elm$core$List$range, 0, args.columns - 1)));
-				},
-				A2($elm$core$List$range, 0, args.rows - 1)));
-	});
-var $Orasund$elm_html_style$Html$Style$top = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'top', value);
-};
-var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$top(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$animation = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'animation', value);
-};
-var $author$project$View$Block$rocking = $Orasund$elm_html_style$Html$Style$animation('1s rocking ease-in-out infinite');
-var $Orasund$elm_html_style$Html$Style$scale = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'scale', value);
-};
-var $author$project$View$Block$shrink = $Orasund$elm_html_style$Html$Style$scale('0');
-var $author$project$View$Block$small = $Orasund$elm_html_style$Html$Style$scale('0.5');
 var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'font-size', value);
 };
@@ -7886,52 +7782,156 @@ var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$rotate = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'rotate', value);
+var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$height(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$transition = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'transition', value);
+var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'overflow', value);
 };
-var $author$project$View$Block$withContent = function (attrs) {
-	return $elm$html$Html$div(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size * 0.8),
-					$Orasund$elm_html_style$Html$Style$widthMinContent,
-					$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-					$Orasund$elm_html_style$Html$Style$rotate('0deg'),
-					$Orasund$elm_html_style$Html$Style$positionAbsolute,
-					$Orasund$elm_html_style$Html$Style$transition('top 0.2s ease-in, left 0.2s ease-in, scale 0.2s ease-in'),
-					$Orasund$elm_html_style$Html$Style$displayFlex,
-					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-					$Orasund$elm_html_style$Html$Style$alignItemsCenter
-				]),
-			attrs));
+var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
+var $author$project$View$Block$apple = '🍎';
+var $author$project$View$Block$dynamite = '💣';
+var $author$project$View$Block$grapes = '🍇';
+var $author$project$View$Block$lemon = '🍋';
+var $author$project$View$Block$orange = '🍊';
+var $author$project$View$Block$sprout = '🌱';
+var $author$project$View$Block$stone = '🪨';
+var $author$project$View$Block$toString = function (block) {
+	if (block.$ === 'FruitBlock') {
+		switch (block.a.$) {
+			case 'Apple':
+				var _v1 = block.a;
+				return $author$project$View$Block$apple;
+			case 'Orange':
+				var _v2 = block.a;
+				return $author$project$View$Block$orange;
+			case 'Lemon':
+				var _v3 = block.a;
+				return $author$project$View$Block$lemon;
+			default:
+				var _v4 = block.a;
+				return $author$project$View$Block$grapes;
+		}
+	} else {
+		switch (block.a.$) {
+			case 'Stone':
+				var _v5 = block.a;
+				return $author$project$View$Block$stone;
+			case 'Sprout':
+				var _v6 = block.a;
+				return $author$project$View$Block$sprout;
+			default:
+				var _v7 = block.a;
+				return $author$project$View$Block$dynamite;
+		}
+	}
 };
-var $author$project$Main$viewFruit = F2(
-	function (args, model) {
-		return $author$project$View$Block$withContent(
+var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$width(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $author$project$View$CalenderDay$calenderDay = F3(
+	function (calenderSize, attrs, setting) {
+		return A2(
+			$elm$html$Html$div,
 			_Utils_ap(
 				_List_fromArray(
 					[
-						$Orasund$elm_html_style$Html$Style$topPx(args.entity.y * $author$project$View$Field$size),
-						$Orasund$elm_html_style$Html$Style$leftPx(args.entity.x * $author$project$View$Field$size)
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$fontSizePx(calenderSize * 0.5),
+						$Orasund$elm_html_style$Html$Style$backgroundColor('#fff'),
+						$Orasund$elm_html_style$Html$Style$borderRadiusPx(calenderSize * 0.1),
+						$Orasund$elm_html_style$Html$Style$overflowHidden,
+						$Orasund$elm_html_style$Html$Style$heightPx(calenderSize),
+						$Orasund$elm_html_style$Html$Style$widthPx(calenderSize)
 					]),
-				args.entity.shrink ? _List_fromArray(
-					[$author$project$View$Block$shrink]) : A2(
-					$elm$core$Maybe$withDefault,
-					_List_Nil,
+				attrs),
+			_List_fromArray(
+				[
 					A2(
-						$elm$core$Maybe$map,
-						function (selected) {
-							return _Utils_eq(selected, args.entity.pos) ? _List_fromArray(
-								[$author$project$View$Block$small]) : (A3($author$project$Game$isValidPair, args.entity.pos, selected, model.game) ? _List_fromArray(
-								[$author$project$View$Block$rocking]) : _List_Nil);
-						},
-						model.game.selected))));
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$backgroundColor('red'),
+							$Orasund$elm_html_style$Html$Style$heightPx(calenderSize / 5)
+						]),
+					_List_Nil),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$displayFlex,
+							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+							$Orasund$elm_html_style$Html$Style$height('100%')
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(
+							$author$project$View$Block$toString(setting.symbol))))
+				]));
 	});
-var $author$project$Main$Undo = {$: 'Undo'};
+var $author$project$View$Shop$calenderSize = 60;
+var $author$project$View$Shop$columns = 5;
+var $Orasund$elm_html_style$Html$Style$flexDirectionRow = $Orasund$elm_html_style$Html$Style$flexDirection('row');
+var $Orasund$elm_html_style$Html$Style$flexWrap = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex-wrap', value);
+};
+var $Orasund$elm_html_style$Html$Style$flexWrapWrap = $Orasund$elm_html_style$Html$Style$flexWrap('wrap');
+var $author$project$View$Shop$gap = 16;
+var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-image', value);
+};
+var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-size', value);
+};
+var $author$project$View$Background$shop = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, #998c5e 50%,#a79d7a 50%)'),
+					$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px')
+				]),
+			attrs));
+};
+var $author$project$View$Shop$toHtml = A2(
+	$author$project$View$Background$shop,
+	_List_fromArray(
+		[
+			$Orasund$elm_html_style$Html$Style$displayFlex,
+			$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+			$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+			$Orasund$elm_html_style$Html$Style$positionAbsolute,
+			$Orasund$elm_html_style$Html$Style$gapPx(16),
+			$Orasund$elm_html_style$Html$Style$width('100%'),
+			$Orasund$elm_html_style$Html$Style$height('100%')
+		]),
+	$elm$core$List$singleton(
+		A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$flexDirectionRow,
+					$Orasund$elm_html_style$Html$Style$flexWrapWrap,
+					$Orasund$elm_html_style$Html$Style$gapPx($author$project$View$Shop$gap),
+					$Orasund$elm_html_style$Html$Style$widthPx(($author$project$View$Shop$columns * $author$project$View$Shop$calenderSize) + (($author$project$View$Shop$columns - 1) * $author$project$View$Shop$gap))
+				]),
+			A2(
+				$elm$core$List$map,
+				function (setting) {
+					return A3($author$project$View$CalenderDay$calenderDay, $author$project$View$Shop$calenderSize, _List_Nil, setting);
+				},
+				$author$project$Level$Generator$settings))));
 var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-width', value);
 };
@@ -7942,35 +7942,27 @@ var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $Orasund$elm_html_style$Html$Style$flex = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'flex', value);
+var $Orasund$elm_html_style$Html$Style$left = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'left', value);
 };
-var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$height(
+var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$left(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$justifyContentFlexEnd = $Orasund$elm_html_style$Html$Style$justifyContent('flex-end');
-var $Orasund$elm_html_style$Html$Style$padding = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'padding', value);
+var $Orasund$elm_html_style$Html$Style$scale = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'scale', value);
 };
-var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$padding(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
+var $author$project$View$Block$shrink = $Orasund$elm_html_style$Html$Style$scale('0');
+var $author$project$View$Field$size = 60;
 var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-content', value);
 };
 var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
-var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-color', value);
+var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
 };
 var $Orasund$elm_html_style$Html$Style$border = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border', value);
@@ -8010,7 +8002,317 @@ var $author$project$View$Coin$toHtml = F2(
 						$elm$html$Html$text(
 							$elm$core$String$fromInt(n))))));
 	});
-var $author$project$Main$viewHeader = function (model) {
+var $Orasund$elm_html_style$Html$Style$top = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'top', value);
+};
+var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$top(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$rotate = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'rotate', value);
+};
+var $Orasund$elm_html_style$Html$Style$transition = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'transition', value);
+};
+var $Orasund$elm_html_style$Html$Style$widthMinContent = $Orasund$elm_html_style$Html$Style$width('min-content');
+var $author$project$View$Block$withContent = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size * 0.8),
+					$Orasund$elm_html_style$Html$Style$widthMinContent,
+					$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+					$Orasund$elm_html_style$Html$Style$rotate('0deg'),
+					$Orasund$elm_html_style$Html$Style$positionAbsolute,
+					$Orasund$elm_html_style$Html$Style$transition('top 0.2s ease-in, left 0.2s ease-in, scale 0.2s ease-in'),
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+					$Orasund$elm_html_style$Html$Style$alignItemsCenter
+				]),
+			attrs));
+};
+var $author$project$View$Coin$asBlock = function (money) {
+	return A2(
+		$author$project$View$Block$withContent,
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$topPx(money.y * $author$project$View$Field$size),
+					$Orasund$elm_html_style$Html$Style$leftPx(money.x * $author$project$View$Field$size),
+					$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$Field$size)
+				]),
+			money.shrink ? _List_fromArray(
+				[$author$project$View$Block$shrink]) : _List_Nil),
+		_List_fromArray(
+			[
+				A2(
+				$author$project$View$Coin$toHtml,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size / 4),
+						$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$Field$size / 2),
+						$Orasund$elm_html_style$Html$Style$borderWidthPx(4),
+						$Orasund$elm_html_style$Html$Style$displayFlex
+					]),
+				money.value)
+			]));
+};
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $Orasund$elm_layout$Layout$asButton = function (args) {
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+				A2($elm$html$Html$Attributes$attribute, 'aria-label', args.label),
+				A2($elm$html$Html$Attributes$attribute, 'role', 'button')
+			]),
+		A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (msg) {
+					return _List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(msg)
+						]);
+				},
+				args.onPress)));
+};
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $Orasund$elm_html_style$Html$Style$background = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background', value);
+};
+var $author$project$View$Field$light = $Orasund$elm_html_style$Html$Style$background('#61bb6b');
+var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
+	return _VirtualDom_keyedNode(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$View$Field$dark = $Orasund$elm_html_style$Html$Style$background('#399E5A');
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$View$Field$toHtml = F2(
+	function (attrs, args) {
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$overflowHidden,
+						$Orasund$elm_html_style$Html$Style$borderRadiusPx($author$project$View$Field$size / 4),
+						$Orasund$elm_html_style$Html$Style$widthMinContent
+					]),
+				attrs),
+			A2(
+				$elm$core$List$map,
+				function (y) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionRow]),
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+											$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$Field$size),
+											(!A2($elm$core$Basics$modBy, 2, x + y)) ? $author$project$View$Field$light : $author$project$View$Field$dark
+										]),
+									_List_Nil);
+							},
+							A2($elm$core$List$range, 0, args.columns - 1)));
+				},
+				A2($elm$core$List$range, 0, args.rows - 1)));
+	});
+var $Orasund$elm_html_style$Html$Style$animation = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'animation', value);
+};
+var $author$project$View$Block$rocking = $Orasund$elm_html_style$Html$Style$animation('1s rocking ease-in-out infinite');
+var $author$project$View$Block$small = $Orasund$elm_html_style$Html$Style$scale('0.5');
+var $author$project$View$Fruit$viewFruit = function (args) {
+	return $author$project$View$Block$withContent(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$topPx(args.entity.y * $author$project$View$Field$size),
+					$Orasund$elm_html_style$Html$Style$leftPx(args.entity.x * $author$project$View$Field$size)
+				]),
+			args.entity.shrink ? _List_fromArray(
+				[$author$project$View$Block$shrink]) : A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					function (selected) {
+						return _Utils_eq(selected, args.entity.pos) ? _List_fromArray(
+							[$author$project$View$Block$small]) : (A3($author$project$Game$isValidPair, args.entity.pos, selected, args.game) ? _List_fromArray(
+							[$author$project$View$Block$rocking]) : _List_Nil);
+					},
+					args.game.selected))));
+};
+var $author$project$View$Game$viewGame = function (args) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[$Orasund$elm_html_style$Html$Style$positionRelative]),
+		$elm$core$List$concat(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						A2(
+						$author$project$View$Field$toHtml,
+						_List_fromArray(
+							[$author$project$View$Field$light]),
+						{columns: args.game.columns, rows: args.game.rows}),
+						A3(
+						$elm$html$Html$Keyed$node,
+						'div',
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$positionAbsolute,
+								$Orasund$elm_html_style$Html$Style$topPx(0),
+								$Orasund$elm_html_style$Html$Style$leftPx(0)
+							]),
+						$elm$core$List$concat(
+							_List_fromArray(
+								[
+									A2(
+									$elm$core$List$map,
+									function (_v1) {
+										var blockId = _v1.blockId;
+										var entity = _v1.entity;
+										var block = _v1.block;
+										return _Utils_Tuple2(
+											'block_' + $elm$core$String$fromInt(blockId),
+											A2(
+												$author$project$View$Fruit$viewFruit,
+												{blockId: blockId, entity: entity, game: args.game},
+												$elm$core$List$singleton(
+													$elm$html$Html$text(
+														$author$project$View$Block$toString(block)))));
+									},
+									A2(
+										$elm$core$List$filterMap,
+										function (_v0) {
+											var blockId = _v0.a;
+											var entity = _v0.b;
+											return A2(
+												$elm$core$Maybe$map,
+												function (block) {
+													return {block: block, blockId: blockId, entity: entity};
+												},
+												A2($elm$core$Dict$get, blockId, args.game.blocks));
+										},
+										$elm$core$Dict$toList(args.entities))),
+									A2(
+									$elm$core$List$map,
+									function (_v2) {
+										var id = _v2.a;
+										var coin = _v2.b;
+										return _Utils_Tuple2(
+											'coin_' + $elm$core$String$fromInt(id),
+											$author$project$View$Coin$asBlock(coin));
+									},
+									A2(
+										$elm$core$List$sortBy,
+										$elm$core$Tuple$first,
+										$elm$core$List$concat(
+											$elm$core$List$singleton(
+												$elm$core$Dict$toList(args.coins)))))
+								])))
+					]),
+					A2(
+					$elm$core$List$map,
+					function (_v4) {
+						var _v5 = _v4.a;
+						var x = _v5.a;
+						var y = _v5.b;
+						return A2(
+							$elm$html$Html$div,
+							_Utils_ap(
+								$Orasund$elm_layout$Layout$asButton(
+									{
+										label: $elm$core$String$concat(
+											_List_fromArray(
+												[
+													'Select ',
+													$elm$core$String$fromInt(x),
+													', ',
+													$elm$core$String$fromInt(y)
+												])),
+										onPress: $elm$core$Maybe$Just(
+											args.onClick(
+												_Utils_Tuple2(x, y)))
+									}),
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+										$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$Field$size),
+										$Orasund$elm_html_style$Html$Style$positionAbsolute,
+										$Orasund$elm_html_style$Html$Style$topPx(y * $author$project$View$Field$size),
+										$Orasund$elm_html_style$Html$Style$leftPx(x * $author$project$View$Field$size)
+									])),
+							_List_Nil);
+					},
+					A2(
+						$elm$core$List$filterMap,
+						function (_v3) {
+							var p = _v3.a;
+							var fruitId = _v3.b;
+							return A2(
+								$elm$core$Maybe$map,
+								$elm$core$Tuple$pair(p),
+								A2($elm$core$Dict$get, fruitId, args.game.blocks));
+						},
+						$elm$core$Dict$toList(args.game.fields)))
+				])));
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $Orasund$elm_html_style$Html$Style$flex = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex', value);
+};
+var $Orasund$elm_html_style$Html$Style$padding = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'padding', value);
+};
+var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$padding(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $author$project$View$Header$viewHeader = function (args) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8037,7 +8339,7 @@ var $author$project$Main$viewHeader = function (model) {
 							$Orasund$elm_layout$Layout$asButton(
 								{
 									label: 'Undo',
-									onPress: $elm$core$Maybe$Just($author$project$Main$Undo)
+									onPress: $elm$core$Maybe$Just(args.onUndo)
 								}),
 							_List_fromArray(
 								[
@@ -8088,80 +8390,88 @@ var $author$project$Main$viewHeader = function (model) {
 						A2(
 							$elm$core$Basics$max,
 							-99,
-							A2($elm$core$Basics$min, 999, model.money))))),
+							A2($elm$core$Basics$min, 999, args.money))))),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$Orasund$elm_html_style$Html$Style$flex('1'),
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$justifyContentFlexEnd
-					]),
-				_List_Nil)
-			]));
-};
-var $author$project$Main$viewMoney = function (money) {
-	return A2(
-		$author$project$View$Block$withContent,
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$Orasund$elm_html_style$Html$Style$topPx(money.y * $author$project$View$Field$size),
-					$Orasund$elm_html_style$Html$Style$leftPx(money.x * $author$project$View$Field$size),
-					$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$Field$size)
-				]),
-			money.shrink ? _List_fromArray(
-				[$author$project$View$Block$shrink]) : _List_Nil),
-		_List_fromArray(
-			[
-				A2(
-				$author$project$View$Coin$toHtml,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$fontSizePx($author$project$View$Field$size / 4),
-						$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$Field$size / 2),
-						$Orasund$elm_html_style$Html$Style$borderWidthPx(4),
 						$Orasund$elm_html_style$Html$Style$displayFlex
 					]),
-				money.value)
+				$elm$core$List$singleton(
+					A2(
+						$elm$html$Html$button,
+						_Utils_ap(
+							$Orasund$elm_layout$Layout$asButton(
+								{
+									label: 'Undo',
+									onPress: $elm$core$Maybe$Just(args.onOpenShop)
+								}),
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button'),
+									$Orasund$elm_html_style$Html$Style$paddingPx(2),
+									$Orasund$elm_html_style$Html$Style$displayFlex,
+									$Orasund$elm_html_style$Html$Style$alignItemsCenter
+								])),
+						_List_fromArray(
+							[
+								A2(
+								$author$project$View$Coin$toHtml,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$fontSizePx(14),
+										$Orasund$elm_html_style$Html$Style$heightPx(26),
+										$Orasund$elm_html_style$Html$Style$borderWidthPx(3)
+									]),
+								1),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$padding('4px 8px')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Open Shop')
+									]))
+							]))))
 			]));
-};
-var $author$project$Main$GenerateLevel = function (a) {
-	return {$: 'GenerateLevel', a: a};
-};
-var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-image', value);
-};
-var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-size', value);
 };
 var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'bottom', value);
 };
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
+var $Orasund$elm_html_style$Html$Style$bottomPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$bottom(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Main$viewShop = function (model) {
+var $author$project$View$EndOfDay$calenderSize = 300;
+var $author$project$View$Background$endOfDay = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$backgroundImage('url(endOfDay.svg)')
+				]),
+			attrs));
+};
+var $author$project$View$EndOfDay$viewShop = function (args) {
 	return A2(
-		$elm$html$Html$div,
+		$author$project$View$Background$endOfDay,
 		_List_fromArray(
 			[
 				$Orasund$elm_html_style$Html$Style$positionAbsolute,
-				$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, #998c5e 50%,#a79d7a 50%)'),
-				$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px'),
 				$Orasund$elm_html_style$Html$Style$height('100vh'),
 				$Orasund$elm_html_style$Html$Style$width('100%'),
 				$Orasund$elm_html_style$Html$Style$transition('bottom 1s'),
 				$Orasund$elm_html_style$Html$Style$bottom(
-				$elm$core$List$isEmpty(model.shop) ? '100vh' : '0vh'),
+				args.endOfDay ? '0vh' : '100vh'),
 				$Orasund$elm_html_style$Html$Style$displayFlex,
-				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-				$Orasund$elm_html_style$Html$Style$alignItemsCenter
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$overflowHidden
 			]),
 		$elm$core$List$singleton(
 			A2(
@@ -8172,89 +8482,54 @@ var $author$project$Main$viewShop = function (model) {
 						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
 						$Orasund$elm_html_style$Html$Style$gapPx(16)
 					]),
-				_Utils_ap(
-					_List_fromArray(
-						[
+				_List_fromArray(
+					[
+						A3(
+						$elm$html$Html$Keyed$node,
+						'div',
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$gapPx(8),
+								$Orasund$elm_html_style$Html$Style$top('50vh'),
+								$Orasund$elm_html_style$Html$Style$positionRelative
+							]),
+						A2(
+							$elm$core$List$sortBy,
+							$elm$core$Tuple$first,
 							A2(
-							$elm$html$Html$span,
-							_List_fromArray(
-								[
-									$Orasund$elm_html_style$Html$Style$fontSizePx(50)
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Next Level')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$Orasund$elm_html_style$Html$Style$flex('1'),
-									$Orasund$elm_html_style$Html$Style$displayFlex,
-									$Orasund$elm_html_style$Html$Style$justifyContentCenter
-								]),
-							$elm$core$List$singleton(
+								$elm$core$List$map,
+								function (_v0) {
+									var i = _v0.a;
+									var setting = _v0.b;
+									return _Utils_Tuple2(
+										$elm$core$String$fromInt(i),
+										A3(
+											$author$project$View$CalenderDay$calenderDay,
+											$author$project$View$EndOfDay$calenderSize,
+											_List_fromArray(
+												[
+													$Orasund$elm_html_style$Html$Style$positionAbsolute,
+													$Orasund$elm_html_style$Html$Style$leftPx(-($author$project$View$EndOfDay$calenderSize / 2)),
+													$Orasund$elm_html_style$Html$Style$bottomPx(((-$author$project$View$EndOfDay$calenderSize) / 2) - ((i - args.day) * ($author$project$View$EndOfDay$calenderSize + 64))),
+													$Orasund$elm_html_style$Html$Style$transition('bottom 1s')
+												]),
+											setting));
+								},
 								A2(
-									$author$project$View$Coin$toHtml,
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$fontSizePx(48),
-											$Orasund$elm_html_style$Html$Style$heightPx(100),
-											$Orasund$elm_html_style$Html$Style$borderWidthPx(8)
-										]),
+									$elm$core$List$cons,
+									_Utils_Tuple2(args.day, args.currentLevel),
 									A2(
-										$elm$core$Basics$max,
-										-99,
-										A2($elm$core$Basics$min, 999, model.money)))))
-						]),
-					A2(
-						$elm$core$List$map,
-						function (setting) {
-							return A2(
-								$elm$html$Html$button,
-								_Utils_ap(
-									$Orasund$elm_layout$Layout$asButton(
-										{
-											label: setting.name,
-											onPress: $elm$core$Maybe$Just(
-												$author$project$Main$GenerateLevel(setting))
-										}),
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('button'),
-											$Orasund$elm_html_style$Html$Style$paddingPx(2),
-											$Orasund$elm_html_style$Html$Style$displayFlex,
-											$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-											$Orasund$elm_html_style$Html$Style$justifyContentCenter
-										])),
-								_List_fromArray(
-									[
-										A2(
-										$author$project$View$Coin$toHtml,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$fontSizePx(14),
-												$Orasund$elm_html_style$Html$Style$heightPx(26),
-												$Orasund$elm_html_style$Html$Style$borderWidthPx(3)
-											]),
-										$author$project$Level$Generator$priceForSetting(setting)),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$padding('4px 8px')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(setting.name)
-											]))
-									]));
-						},
-						model.shop)))));
+										$elm$core$List$indexedMap,
+										function (i) {
+											return $elm$core$Tuple$pair((i + 1) + args.day);
+										},
+										args.nextLevels)))))
+					]))));
 };
 var $author$project$Main$view = function (model) {
 	return A2(
-		$elm$html$Html$div,
+		$author$project$View$Background$game,
 		_List_fromArray(
 			[
 				$Orasund$elm_html_style$Html$Style$displayFlex,
@@ -8278,157 +8553,14 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$viewHeader(model),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[$Orasund$elm_html_style$Html$Style$positionRelative]),
-						$elm$core$List$concat(
-							_List_fromArray(
-								[
-									_List_fromArray(
-									[
-										A2(
-										$author$project$View$Field$toHtml,
-										_List_fromArray(
-											[$author$project$View$Field$light]),
-										{columns: model.game.columns, rows: model.game.rows}),
-										A3(
-										$elm$html$Html$Keyed$node,
-										'div',
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$positionAbsolute,
-												$Orasund$elm_html_style$Html$Style$topPx(0),
-												$Orasund$elm_html_style$Html$Style$leftPx(0)
-											]),
-										$elm$core$List$concat(
-											_List_fromArray(
-												[
-													A2(
-													$elm$core$List$map,
-													function (_v1) {
-														var blockId = _v1.blockId;
-														var entity = _v1.entity;
-														var block = _v1.block;
-														return _Utils_Tuple2(
-															'block_' + $elm$core$String$fromInt(blockId),
-															A3(
-																$author$project$Main$viewFruit,
-																{blockId: blockId, entity: entity},
-																model,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text(
-																		function () {
-																			if (block.$ === 'FruitBlock') {
-																				switch (block.a.$) {
-																					case 'Apple':
-																						var _v3 = block.a;
-																						return $author$project$View$Block$apple;
-																					case 'Orange':
-																						var _v4 = block.a;
-																						return $author$project$View$Block$orange;
-																					case 'Lemon':
-																						var _v5 = block.a;
-																						return $author$project$View$Block$lemon;
-																					default:
-																						var _v6 = block.a;
-																						return $author$project$View$Block$grapes;
-																				}
-																			} else {
-																				switch (block.a.$) {
-																					case 'Stone':
-																						var _v7 = block.a;
-																						return $author$project$View$Block$stone;
-																					case 'Sprout':
-																						var _v8 = block.a;
-																						return $author$project$View$Block$sprout;
-																					default:
-																						var _v9 = block.a;
-																						return $author$project$View$Block$dynamite;
-																				}
-																			}
-																		}())
-																	])));
-													},
-													A2(
-														$elm$core$List$filterMap,
-														function (_v0) {
-															var blockId = _v0.a;
-															var entity = _v0.b;
-															return A2(
-																$elm$core$Maybe$map,
-																function (block) {
-																	return {block: block, blockId: blockId, entity: entity};
-																},
-																A2($elm$core$Dict$get, blockId, model.game.blocks));
-														},
-														$elm$core$Dict$toList(model.entities))),
-													A2(
-													$elm$core$List$map,
-													function (_v10) {
-														var id = _v10.a;
-														var coin = _v10.b;
-														return _Utils_Tuple2(
-															'coin_' + $elm$core$String$fromInt(id),
-															$author$project$Main$viewMoney(coin));
-													},
-													A2(
-														$elm$core$List$sortBy,
-														$elm$core$Tuple$first,
-														$elm$core$List$concat(
-															$elm$core$List$singleton(
-																$elm$core$Dict$toList(model.coins)))))
-												])))
-									]),
-									A2(
-									$elm$core$List$map,
-									function (_v12) {
-										var _v13 = _v12.a;
-										var x = _v13.a;
-										var y = _v13.b;
-										return A2(
-											$elm$html$Html$div,
-											_Utils_ap(
-												$Orasund$elm_layout$Layout$asButton(
-													{
-														label: $elm$core$String$concat(
-															_List_fromArray(
-																[
-																	'Select ',
-																	$elm$core$String$fromInt(x),
-																	', ',
-																	$elm$core$String$fromInt(y)
-																])),
-														onPress: $elm$core$Maybe$Just(
-															$author$project$Main$Click(
-																_Utils_Tuple2(x, y)))
-													}),
-												_List_fromArray(
-													[
-														$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-														$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$Field$size),
-														$Orasund$elm_html_style$Html$Style$positionAbsolute,
-														$Orasund$elm_html_style$Html$Style$topPx(y * $author$project$View$Field$size),
-														$Orasund$elm_html_style$Html$Style$leftPx(x * $author$project$View$Field$size)
-													])),
-											_List_Nil);
-									},
-									A2(
-										$elm$core$List$filterMap,
-										function (_v11) {
-											var p = _v11.a;
-											var fruitId = _v11.b;
-											return A2(
-												$elm$core$Maybe$map,
-												$elm$core$Tuple$pair(p),
-												A2($elm$core$Dict$get, fruitId, model.game.blocks));
-										},
-										$elm$core$Dict$toList(model.game.fields)))
-								])))
+						$author$project$View$Header$viewHeader(
+						{money: model.money, onOpenShop: $author$project$Main$OpenShop, onUndo: $author$project$Main$Undo}),
+						$author$project$View$Game$viewGame(
+						{coins: model.coins, entities: model.entities, game: model.game, onClick: $author$project$Main$Click})
 					])),
-				$author$project$Main$viewShop(model),
+				$author$project$View$EndOfDay$viewShop(
+				{currentLevel: model.level, day: model.day, endOfDay: model.endOfDay, money: model.money, nextLevels: model.nextLevels}),
+				model.openShop ? $author$project$View$Shop$toHtml : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 				$author$project$Stylesheet$stylesheet,
 				A3(
 				$elm$html$Html$node,
@@ -8442,7 +8574,14 @@ var $author$project$Main$view = function (model) {
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
-	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
+	{
+		init: $author$project$Main$init,
+		subscriptions: function (_v0) {
+			return $elm$core$Platform$Sub$none;
+		},
+		update: $author$project$Main$update,
+		view: $author$project$Main$view
+	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
 

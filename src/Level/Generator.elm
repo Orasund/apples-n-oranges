@@ -1,4 +1,4 @@
-module Level.Generator exposing (Setting, generate, pickSetting, priceForSetting, trainingGround1, tutorials)
+module Level.Generator exposing (Setting, generate, pickSetting, priceForSetting, settings, trainingGround1, tutorials)
 
 import Dict
 import Game exposing (Block(..), Fruit(..), Game, Solid(..))
