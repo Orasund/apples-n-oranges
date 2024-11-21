@@ -60,6 +60,10 @@ type Msg
     | OpenShop
 
 
+
+--| BuySetting Setting
+
+
 collectCoins : Model -> Model
 collectCoins model =
     { model
