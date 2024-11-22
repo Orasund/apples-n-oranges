@@ -1,10 +1,8 @@
 module View.CalenderDay exposing (..)
 
 import Html exposing (Attribute, Html)
-import Html.Keyed
 import Html.Style
 import Level.Generator exposing (Setting)
-import View.Background
 import View.Block
 
 

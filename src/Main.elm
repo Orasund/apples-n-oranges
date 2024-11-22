@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Array
 import Browser
 import Dict exposing (Dict)
 import Entity exposing (Entity)
@@ -44,7 +45,11 @@ type alias Model =
             }
     , possibleSettings : List Setting
     , endOfDay : Bool
-    , openShop : Bool
+    , shop :
+        Maybe
+            { buyableSettings : List Setting
+            , selected : Maybe Int
+            }
     }
 
 
@@ -52,12 +57,17 @@ type Msg
     = Click ( Int, Int )
     | CollectCoin CoinId
     | Undo
-    | Won
+    | EndDay
     | SetSeed Seed
-    | NextDay
+      --| NextDay
     | LoadNextLevel
     | StartDay
     | OpenShop
+      --| CloseShop
+    | SelectSettingToBuy (Maybe Int)
+    | BuySettingAndReplaceWith Int
+    | Wait Float Msg
+    | Sequence (List Msg)
 
 
 
@@ -79,13 +89,16 @@ collectCoins model =
 
 generateAnotherSetting : Model -> Generator Model
 generateAnotherSetting model =
-    Level.Generator.pickSetting
-        { money = (model.money * 2) // 3
-        }
-        |> Random.map
-            (\generatedSetting ->
-                { model | nextLevels = model.nextLevels ++ [ generatedSetting ] }
-            )
+    case model.possibleSettings of
+        head :: tail ->
+            Random.uniform head tail
+                |> Random.map
+                    (\generatedSetting ->
+                        { model | nextLevels = model.nextLevels ++ [ generatedSetting ] }
+                    )
+
+        [] ->
+            Random.constant model
 
 
 endDay : Model -> Model
@@ -97,13 +110,31 @@ gotoLevel : Model -> Model
 gotoLevel model =
     { model
         | endOfDay = False
-        , openShop = False
+        , shop = Nothing
     }
 
 
-gotoShop : Model -> Model
-gotoShop model =
-    { model | openShop = True }
+openShop : Model -> Random Model
+openShop model =
+    Level.Generator.pickSettings
+        { amount = 2
+        , money = model.money
+        }
+        |> Random.map
+            (\list ->
+                { model
+                    | shop =
+                        Just
+                            { buyableSettings = list
+                            , selected = Nothing
+                            }
+                }
+            )
+
+
+closeShop : Model -> Model
+closeShop model =
+    { model | shop = Nothing }
 
 
 nextDay : Model -> Model
@@ -111,7 +142,7 @@ nextDay model =
     { model | day = model.day + 1 }
 
 
-loadNextLevel : Model -> Random Model
+loadNextLevel : Model -> Maybe (Random Model)
 loadNextLevel model =
     case model.nextLevels of
         head :: tail ->
@@ -134,9 +165,15 @@ loadNextLevel model =
                             }
                             level.blocks
                     )
+                |> Just
 
         [] ->
-            Random.constant model
+            Nothing
+
+
+
+--model
+--    |> gotoShop
 
 
 applyGenerator : Seed -> Random Model -> Model
@@ -148,14 +185,68 @@ applyGenerator seed generator =
     { model | seed = newSeed }
 
 
-shortWaitThenPerform : msg -> Cmd msg
-shortWaitThenPerform msg =
-    Task.perform (\() -> msg) (Process.sleep 100)
+shortWaitThenPerform : Msg -> Msg
+shortWaitThenPerform =
+    Wait 100
 
 
-longWaitThenPerform : msg -> Cmd msg
-longWaitThenPerform msg =
-    Task.perform (\() -> msg) (Process.sleep 1000)
+longWaitThenPerform : Msg -> Msg
+longWaitThenPerform =
+    Wait 1000
+
+
+sequence : List Msg -> Cmd Msg
+sequence list =
+    Task.succeed ()
+        |> Task.perform (\() -> Sequence list)
+
+
+selectSettingToBuy : Maybe Int -> Model -> Model
+selectSettingToBuy selected model =
+    { model
+        | shop =
+            model.shop
+                |> Maybe.map
+                    (\shop ->
+                        { shop | selected = selected }
+                    )
+    }
+
+
+buyAndReplaceSetting : Int -> Model -> Model
+buyAndReplaceSetting replaceWith model =
+    model.shop
+        |> Maybe.andThen
+            (\shop ->
+                shop.selected
+                    |> Maybe.andThen
+                        (\selected ->
+                            shop.buyableSettings
+                                |> List.drop selected
+                                |> List.head
+                        )
+            )
+        |> Maybe.map
+            (\setting ->
+                { model
+                    | possibleSettings =
+                        model.possibleSettings
+                            |> List.indexedMap
+                                (\j s ->
+                                    if replaceWith == j then
+                                        setting
+
+                                    else
+                                        s
+                                )
+                }
+            )
+        |> Maybe.withDefault model
+
+
+generateNextWeek : Model -> Model
+generateNextWeek model =
+    { model | nextLevels = model.possibleSettings }
 
 
 
@@ -183,22 +274,26 @@ init () =
     let
         seed =
             Random.initialSeed 42
+
+        model =
+            { game = Game.empty { columns = 6, rows = 6 }
+            , entities = Dict.empty
+            , coins = Dict.empty
+            , money = 0
+            , day = 0
+            , nextCoinId = 0
+            , level = Level.Generator.startingLevel
+            , nextLevels = Level.Generator.tutorials
+            , history = []
+            , possibleSettings = Level.Generator.tutorials
+            , seed = seed
+            , endOfDay = False
+            , shop = Nothing
+            }
     in
-    ( { game = Game.empty { columns = 6, rows = 6 }
-      , entities = Dict.empty
-      , coins = Dict.empty
-      , money = 0
-      , day = 0
-      , nextCoinId = 0
-      , level = Level.Generator.trainingGround1
-      , nextLevels = Level.Generator.tutorials
-      , history = []
-      , possibleSettings = []
-      , seed = seed
-      , endOfDay = False
-      , openShop = False
-      }
+    ( model
         |> loadNextLevel
+        |> Maybe.withDefault (Random.constant model)
         |> applyGenerator seed
     , Random.generate SetSeed Random.independentSeed
     )
@@ -308,11 +403,12 @@ checkWinCondition model =
     , [ Process.sleep 100
             |> Task.perform (\() -> CollectCoin (model.nextCoinId - 1))
       , if hasWon then
-            Process.sleep 500
-                |> Task.perform
-                    (\() ->
-                        Won
-                    )
+            sequence
+                [ shortWaitThenPerform EndDay
+                , longWaitThenPerform LoadNextLevel
+
+                --  , longWaitThenPerform StartDay
+                ]
 
         else
             Cmd.none
@@ -381,33 +477,89 @@ update msg model =
             , Cmd.none
             )
 
-        Won ->
+        EndDay ->
             ( model
                 |> collectCoins
                 |> endDay
-                |> generateAnotherSetting
-                |> applyGenerator model.seed
-            , longWaitThenPerform LoadNextLevel
+              --    |> generateAnotherSetting
+              --|> applyGenerator model.seed
+            , Cmd.none
             )
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
 
         LoadNextLevel ->
-            ( model
-                |> loadNextLevel
-                |> applyGenerator model.seed
-            , longWaitThenPerform StartDay
-            )
+            case loadNextLevel model of
+                Just m ->
+                    ( m
+                        |> applyGenerator model.seed
+                    , sequence [ longWaitThenPerform StartDay ]
+                    )
 
-        NextDay ->
-            ( nextDay model, Cmd.none )
+                Nothing ->
+                    ( model
+                    , sequence [ longWaitThenPerform OpenShop ]
+                    )
 
+        --NextDay ->
+        --    ( nextDay model, Cmd.none )
         StartDay ->
             ( gotoLevel model, Cmd.none )
 
         OpenShop ->
-            ( model |> gotoShop, Cmd.none )
+            ( model
+                |> openShop
+                |> applyGenerator model.seed
+            , Cmd.none
+            )
+
+        {--CloseShop ->
+            ( model
+                |> generateAnotherSetting
+                |> Random.map gotoLevel
+                |> applyGenerator model.seed
+            , sequence
+                [ LoadNextLevel
+                ]
+            )--}
+        SelectSettingToBuy i ->
+            ( model |> selectSettingToBuy i, Cmd.none )
+
+        BuySettingAndReplaceWith i ->
+            ( model
+                |> buyAndReplaceSetting i
+                |> selectSettingToBuy Nothing
+                |> generateAnotherSetting
+                |> Random.map generateNextWeek
+                |> Random.map closeShop
+                |> applyGenerator model.seed
+            , sequence
+                [ StartDay
+                ]
+            )
+
+        Wait ms m ->
+            ( model
+            , Process.sleep ms
+                |> Task.perform (\() -> m)
+            )
+
+        Sequence list ->
+            case list of
+                [] ->
+                    ( model, Cmd.none )
+
+                head :: tail ->
+                    update head model
+                        |> Tuple.mapSecond
+                            (\cmd ->
+                                Cmd.batch
+                                    [ cmd
+                                    , Task.succeed ()
+                                        |> Task.perform (\() -> Sequence tail)
+                                    ]
+                            )
 
 
 view : Model -> Html Msg
@@ -429,18 +581,28 @@ view model =
             , Html.Style.flexDirectionColumn
             , Html.Style.gapPx 16
             ]
-    , View.EndOfDay.viewShop
+    , View.EndOfDay.toHtml
         { money = model.money
         , currentLevel = model.level
         , nextLevels = model.nextLevels
         , endOfDay = model.endOfDay
         , day = model.day
         }
-    , if model.openShop then
-        View.Shop.toHtml
+    , case model.shop of
+        Nothing ->
+            Html.div [] []
 
-      else
-        Html.div [] []
+        Just shop ->
+            View.Shop.toHtml
+                { settings = model.possibleSettings
+                , buyableSettings = shop.buyableSettings
+                , selected = shop.selected
+                , onSelectSettingToBuy = SelectSettingToBuy
+                , money = model.money
+
+                --, onCloseShop = CloseShop
+                , onBuy = BuySettingAndReplaceWith
+                }
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"

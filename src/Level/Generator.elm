@@ -1,4 +1,4 @@
-module Level.Generator exposing (Setting, generate, pickSetting, priceForSetting, settings, trainingGround1, tutorials)
+module Level.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, startingLevel, tutorials)
 
 import Dict
 import Game exposing (Block(..), Fruit(..), Game, Solid(..))
@@ -22,24 +22,24 @@ type alias Setting =
     }
 
 
-trainingGround1 : Setting
-trainingGround1 =
+startingLevel : Setting
+startingLevel =
     { name = "Training 1"
     , symbol = FruitBlock Apple
     , newFruitPairs = 2
-    , newStone = 1
+    , newStone = 0
     , newDynamite = 0
     , newLemonPairs = 0
     , newGrapePairs = 0
     }
 
 
-trainingGround2 : Setting
-trainingGround2 =
+trainingApples : Setting
+trainingApples =
     { name = "Training 2"
-    , symbol = SolidBlock Stone
+    , symbol = FruitBlock Apple
     , newFruitPairs = 3
-    , newStone = 1
+    , newStone = 0
     , newDynamite = 0
     , newLemonPairs = 0
     , newGrapePairs = 0
@@ -168,8 +168,10 @@ pleantyOfColor =
 
 tutorials : List Setting
 tutorials =
-    [ trainingGround1
-    , trainingGround2
+    [ trainingApples
+    , trainingApples
+    , trainingApples
+    , trainingApples
     , trainingGround3
     , trainingGround4
     ]
@@ -177,7 +179,10 @@ tutorials =
 
 settings : List Setting
 settings =
-    [ applesAndOrangesBasic
+    [ trainingApples
+    , trainingGround3
+    , trainingGround4
+    , applesAndOrangesBasic
     , applesAndOranges
     , lifeGivesYouLemonsBasic
     , lifeGivesYouLemons
@@ -210,26 +215,6 @@ pickSettings args =
             )
 
 
-pickSetting : { money : Int } -> Random Setting
-pickSetting args =
-    let
-        validSettings =
-            settings
-                |> List.filter
-                    (\setting ->
-                        priceForSetting setting <= args.money
-                    )
-                |> List.reverse
-                |> List.take 3
-    in
-    case validSettings of
-        [] ->
-            Random.constant applesAndOranges
-
-        head :: tail ->
-            Random.uniform head tail
-
-
 priceForSetting : Setting -> Int
 priceForSetting setting =
     let
@@ -237,12 +222,13 @@ priceForSetting setting =
             round (toFloat n * float)
     in
     max 0
-        (setting.newFruitPairs
+        ((setting.newFruitPairs
             + times 2 setting.newGrapePairs
             + times 1.5 setting.newLemonPairs
             + setting.newStone
             + setting.newDynamite
-            - 10
+         )
+            * 3
         )
 
 
