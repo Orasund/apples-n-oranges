@@ -1,5 +1,6 @@
 module View.Shop exposing (..)
 
+import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
 import Layout
@@ -63,7 +64,7 @@ toHtml args =
         ]
     , [ args.buyableSettings
             |> List.indexedMap
-                (\i setting ->
+                (\i weather ->
                     [ View.CalenderDay.calenderDay calenderSize
                         (Html.Style.transition "scale 0.2s ease-in"
                             :: Layout.asButton
@@ -90,7 +91,7 @@ toHtml args =
                                             [ Html.Style.scale "1.0" ]
                                )
                         )
-                        setting
+                        (WeatherEvent weather)
                     , if args.selected == Just i then
                         View.Button.toHtml
                             { label = "Cancel"
@@ -99,7 +100,7 @@ toHtml args =
 
                       else
                         View.Button.withPrice
-                            { price = Puzzle.Generator.priceForSetting setting
+                            { price = Puzzle.Generator.priceForSetting weather
                             , label = "Buy"
                             , onPress = args.onSelectSettingToBuy (Just i)
                             }
@@ -119,7 +120,7 @@ toHtml args =
                 ]
       , args.settings
             |> List.indexedMap
-                (\i setting ->
+                (\i weather ->
                     View.CalenderDay.calenderDay calenderSize
                         (Layout.asButton
                             { label = "Select"
@@ -137,7 +138,7 @@ toHtml args =
                                     [ View.Block.rocking ]
                                )
                         )
-                        setting
+                        (WeatherEvent weather)
                 )
             |> Html.div
                 [ Html.Style.displayFlex

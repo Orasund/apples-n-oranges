@@ -1,13 +1,52 @@
 module View.CalenderDay exposing (..)
 
+import Event exposing (Event(..))
 import Html exposing (Attribute, Html)
 import Html.Style
-import Puzzle.Generator exposing (Setting)
 import View.Block
 
 
-calenderDay : Float -> List (Attribute msg) -> Setting -> Html msg
-calenderDay calenderSize attrs setting =
+eventToString : Event -> String
+eventToString event =
+    case event of
+        WeatherEvent weather ->
+            weather.symbol
+                |> View.Block.toString
+
+        ShopEvent ->
+            "🔮"
+
+
+stylingForEvent : Float -> Event -> List (Attribute msg)
+stylingForEvent calenderSize event =
+    case event of
+        WeatherEvent weather ->
+            case weather.difficulty of
+                0 ->
+                    [ Html.Style.filter "contrast(0) brightness(1.5)"
+                    ]
+
+                1 ->
+                    []
+
+                2 ->
+                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
+                    , Html.Style.borderStyleDouble
+                    , Html.Style.borderColor "#ddd"
+                    ]
+
+                _ ->
+                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
+                    , Html.Style.borderStyleDouble
+                    , Html.Style.borderColor "rgb(242 245 122)"
+                    ]
+
+        ShopEvent ->
+            []
+
+
+calenderDay : Float -> List (Attribute msg) -> Event -> Html msg
+calenderDay calenderSize attrs event =
     Html.div
         ([ Html.Style.displayFlex
          , Html.Style.flexDirectionColumn
@@ -25,31 +64,11 @@ calenderDay calenderSize attrs setting =
             , Html.Style.heightPx (calenderSize / 5)
             ]
             []
-        , setting.symbol
-            |> View.Block.toString
+        , eventToString event
             |> Html.text
             |> List.singleton
             |> Html.div
-                ((case setting.difficulty of
-                    0 ->
-                        [ Html.Style.filter "contrast(0) brightness(1.5)"
-                        ]
-
-                    1 ->
-                        []
-
-                    2 ->
-                        [ Html.Style.borderWidthPx (calenderSize * 0.1)
-                        , Html.Style.borderStyleDouble
-                        , Html.Style.borderColor "#ddd"
-                        ]
-
-                    _ ->
-                        [ Html.Style.borderWidthPx (calenderSize * 0.1)
-                        , Html.Style.borderStyleDouble
-                        , Html.Style.borderColor "rgb(242 245 122)"
-                        ]
-                 )
+                (stylingForEvent calenderSize event
                     ++ [ Html.Style.displayFlex
                        , Html.Style.justifyContentCenter
                        , Html.Style.alignItemsCenter

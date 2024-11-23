@@ -51,6 +51,11 @@ empty args =
     }
 
 
+clear : Level -> Level
+clear level =
+    empty { columns = level.columns, rows = level.rows }
+
+
 addBlock : ( Int, Int ) -> Block -> Level -> ( Level, BlockId )
 addBlock ( x, y ) block game =
     let

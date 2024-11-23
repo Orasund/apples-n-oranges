@@ -1,12 +1,13 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser
 import Dict exposing (Dict)
 import Entity exposing (Entity)
+import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import Level exposing (Block(..), BlockId, Fruit(..), Level, Solid(..))
+import Level exposing (Block(..), BlockId, Fruit(..), Level, Puzzle, Solid(..))
 import Maths
 import Process
 import Puzzle.Generator exposing (Setting)
@@ -32,8 +33,8 @@ type alias Model =
     , day : Int
     , money : Int
     , nextCoinId : CoinId
-    , setting : Setting
-    , nextLevels : List Setting
+    , setting : Event
+    , nextLevels : List Event
     , seed : Seed
     , history :
         List
@@ -86,20 +87,6 @@ collectCoins model =
     }
 
 
-generateAnotherSetting : Model -> Generator Model
-generateAnotherSetting model =
-    case model.possibleSettings of
-        head :: tail ->
-            Random.uniform head tail
-                |> Random.map
-                    (\generatedSetting ->
-                        { model | nextLevels = model.nextLevels ++ [ generatedSetting ] }
-                    )
-
-        [] ->
-            Random.constant model
-
-
 endDay : Model -> Model
 endDay model =
     { model | endOfDay = True }
@@ -109,7 +96,6 @@ gotoLevel : Model -> Model
 gotoLevel model =
     { model
         | endOfDay = False
-        , shop = Nothing
     }
 
 
@@ -141,34 +127,54 @@ nextDay model =
     { model | day = model.day + 1 }
 
 
-loadNextLevel : Model -> Maybe (Random Model)
+loadPuzzle : Puzzle -> Model -> Model
+loadPuzzle puzzle model =
+    List.foldl
+        (\( pos, fruit ) ->
+            addBlock pos fruit
+        )
+        model
+        puzzle.blocks
+
+
+clearLevel : Model -> Model
+clearLevel model =
+    { model
+        | game = Level.clear model.game
+        , entities = Dict.empty
+        , coins = Dict.empty
+        , history = []
+    }
+
+
+loadNextLevel : Model -> Random Model
 loadNextLevel model =
     case model.nextLevels of
         head :: tail ->
-            head
-                |> Puzzle.Generator.generate model.game
-                |> Random.map
-                    (\level ->
-                        List.foldl
-                            (\( pos, fruit ) ->
-                                addBlock pos fruit
+            case head of
+                WeatherEvent weather ->
+                    weather
+                        |> Puzzle.Generator.generate model.game
+                        |> Random.map
+                            (\puzzle ->
+                                { model
+                                    | setting = head
+                                    , nextLevels = tail
+                                }
+                                    |> clearLevel
+                                    |> loadPuzzle puzzle
                             )
-                            { model
-                                | setting = head
-                                , game = Level.empty { columns = level.columns, rows = level.rows }
 
-                                -- , day = model.day + 1
-                                , entities = Dict.empty
-                                , coins = Dict.empty
-                                , nextLevels = tail
-                                , history = []
-                            }
-                            level.blocks
-                    )
-                |> Just
+                ShopEvent ->
+                    { model
+                        | setting = head
+                        , nextLevels = tail
+                    }
+                        |> clearLevel
+                        |> openShop
 
         [] ->
-            Nothing
+            Random.constant model
 
 
 
@@ -249,7 +255,14 @@ generateNextWeek : Model -> Random Model
 generateNextWeek model =
     model.possibleSettings
         |> Puzzle.Generator.sort
-        |> Random.map (\nextLevels -> { model | nextLevels = nextLevels })
+        |> Random.map
+            (\nextLevels ->
+                { model
+                    | nextLevels =
+                        List.map WeatherEvent nextLevels
+                            ++ [ ShopEvent ]
+                }
+            )
 
 
 
@@ -278,6 +291,7 @@ init () =
         seed =
             Random.initialSeed 42
 
+        model : Model
         model =
             { game = Level.empty { columns = 6, rows = 6 }
             , entities = Dict.empty
@@ -285,8 +299,10 @@ init () =
             , money = 0
             , day = 1
             , nextCoinId = 0
-            , setting = Puzzle.Generator.startingLevel
-            , nextLevels = Puzzle.Generator.tutorials
+            , setting = WeatherEvent Puzzle.Generator.startingLevel
+            , nextLevels =
+                List.map WeatherEvent Puzzle.Generator.tutorials
+                    ++ [ ShopEvent ]
             , history = []
             , possibleSettings = Puzzle.Generator.tutorials
             , seed = seed
@@ -296,7 +312,6 @@ init () =
     in
     ( model
         |> loadNextLevel
-        |> Maybe.withDefault (Random.constant model)
         |> applyGenerator seed
     , Random.generate SetSeed Random.independentSeed
     )
@@ -493,18 +508,16 @@ update msg model =
             ( { model | seed = seed }, Cmd.none )
 
         LoadNextLevel ->
-            case loadNextLevel model of
-                Just m ->
-                    ( m
-                        |> Random.map nextDay
-                        |> applyGenerator model.seed
-                    , sequence [ longWaitThenPerform StartDay ]
-                    )
-
-                Nothing ->
-                    ( model
-                    , sequence [ longWaitThenPerform OpenShop ]
-                    )
+            model
+                |> closeShop
+                |> loadNextLevel
+                |> (\m ->
+                        ( m
+                            |> Random.map nextDay
+                            |> applyGenerator model.seed
+                        , sequence [ longWaitThenPerform StartDay ]
+                        )
+                   )
 
         NextDay ->
             ( nextDay model, Cmd.none )
@@ -537,10 +550,12 @@ update msg model =
                 |> selectSettingToBuy Nothing
                 --|> generateAnotherSetting
                 |> generateNextWeek
-                |> Random.map closeShop
+                --   |> Random.map closeShop
+                -- |> Random.map endDay
                 |> applyGenerator model.seed
             , sequence
-                [ longWaitThenPerform LoadNextLevel
+                [ shortWaitThenPerform EndDay
+                , longWaitThenPerform LoadNextLevel
                 ]
             )
 
@@ -569,33 +584,25 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    [ [ View.Header.viewHeader
-            { money = model.money
-            , onUndo = Undo
-            , onOpenShop = OpenShop
-            }
-      , View.Game.viewGame
-            { game = model.game
-            , coins = model.coins
-            , entities = model.entities
-            , onClick = Click
-            }
-      ]
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.gapPx 16
-            ]
-    , View.EndOfDay.toHtml
-        { money = model.money
-        , currentLevel = model.setting
-        , nextLevels = model.nextLevels
-        , endOfDay = model.endOfDay
-        , day = model.day
-        }
-    , case model.shop of
+    [ case model.shop of
         Nothing ->
-            Html.div [] []
+            [ View.Header.viewHeader
+                { money = model.money
+                , onUndo = Undo
+                , onOpenShop = OpenShop
+                }
+            , View.Game.viewGame
+                { game = model.game
+                , coins = model.coins
+                , entities = model.entities
+                , onClick = Click
+                }
+            ]
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.flexDirectionColumn
+                    , Html.Style.gapPx 16
+                    ]
 
         Just shop ->
             View.Shop.toHtml
@@ -608,6 +615,13 @@ view model =
                 --, onCloseShop = CloseShop
                 , onBuy = BuySettingAndReplaceWith
                 }
+    , View.EndOfDay.toHtml
+        { money = model.money
+        , currentEvent = model.setting
+        , nextEvents = model.nextLevels
+        , endOfDay = model.endOfDay
+        , day = model.day
+        }
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"

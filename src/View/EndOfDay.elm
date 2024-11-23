@@ -1,9 +1,9 @@
 module View.EndOfDay exposing (..)
 
+import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
-import Puzzle.Generator exposing (Setting)
 import View.Background
 import View.CalenderDay
 
@@ -12,44 +12,62 @@ calenderSize =
     300
 
 
+title : Int -> String
+title n =
+    case modBy 7 n of
+        1 ->
+            "Monday"
+
+        2 ->
+            "Tuesday"
+
+        3 ->
+            "Wednesday"
+
+        4 ->
+            "Thursday"
+
+        5 ->
+            "Friday"
+
+        6 ->
+            "Saturday"
+
+        0 ->
+            "Sunday"
+
+        _ ->
+            "Day " ++ String.fromInt n
+
+
 toHtml :
     { money : Int
-    , currentLevel : Setting
-    , nextLevels : List Setting
+    , currentEvent : Event
+    , nextEvents : List Event
     , endOfDay : Bool
     , day : Int
     }
     -> Html msg
 toHtml args =
-    [ Html.div [ Html.Style.fontSizePx 100 ] [ Html.text ("Day " ++ String.fromInt args.day) ]
-    , ( args.day, args.currentLevel )
-        :: List.indexedMap (\i -> Tuple.pair (i + 1 + args.day)) args.nextLevels
+    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (title args.day) ]
+    , ( args.day, args.currentEvent )
+        :: List.indexedMap (\i -> Tuple.pair (i + 1 + args.day)) args.nextEvents
         |> List.map
-            (\( i, setting ) ->
+            (\( i, event ) ->
                 ( String.fromInt i
                 , View.CalenderDay.calenderDay calenderSize
                     [ Html.Style.positionAbsolute
-
-                    --, Html.Style.leftPx (200 - (calenderSize / 2))
                     , Html.Style.bottomPx (0 - toFloat (i - args.day) * (calenderSize + toFloat 64))
                     , Html.Style.transition "bottom 1s"
                     ]
-                    setting
+                    event
                 )
             )
         |> List.sortBy Tuple.first
         |> Html.Keyed.node "div"
             [ Html.Style.displayFlex
-
-            --, Html.Style.gapPx 64
-            --, Html.Style.heightPx 50
-            --, Html.Style.widthPx 280
-            --, Html.Style.leftPx 60
-            --, Html.Style.top "50vh"
             , Html.Style.widthPx calenderSize
             , Html.Style.heightPx calenderSize
-
-            --, Html.Style.height "100vh"
             , Html.Style.overflowHidden
             , Html.Style.positionRelative
             ]
