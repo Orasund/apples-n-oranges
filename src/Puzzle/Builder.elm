@@ -1,8 +1,7 @@
-module Level.Builder exposing (generateLevel)
+module Puzzle.Builder exposing (generateLevel)
 
 import Dict exposing (Dict)
-import Game exposing (Block(..), Fruit(..), Solid(..))
-import Level exposing (Level)
+import Level exposing (Block(..), Fruit(..), Puzzle, Solid(..))
 import Random exposing (Generator)
 import Set exposing (Set)
 
@@ -48,7 +47,7 @@ generateLevel :
     , newLemonPairs : Int
     , newGrapePairs : Int
     }
-    -> Random Level
+    -> Random Puzzle
 generateLevel args =
     let
         oldSprouts =
@@ -88,7 +87,7 @@ generateLevel args =
         |> Random.map build
 
 
-build : Builder -> Level
+build : Builder -> Puzzle
 build builder =
     { columns = builder.columns
     , rows = builder.rows

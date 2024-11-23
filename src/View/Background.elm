@@ -1,7 +1,6 @@
 module View.Background exposing (..)
 
 import Html exposing (Attribute, Html)
-import Html.Attributes
 import Html.Style
 
 
@@ -20,19 +19,17 @@ toHtml attrs =
 game : List (Attribute msg) -> List (Html msg) -> Html msg
 game attrs =
     toHtml
-        ([ Html.Style.backgroundColor "#a4cc95"
-         ]
-            ++ attrs
+        (Html.Style.backgroundColor "#a4cc95"
+            :: attrs
         )
 
 
 endOfDay : List (Attribute msg) -> List (Html msg) -> Html msg
 endOfDay attrs =
     toHtml
-        ([ Html.Style.backgroundImage
+        (Html.Style.backgroundImage
             """url(endOfDay.svg)"""
-         ]
-            ++ attrs
+            :: attrs
         )
 
 

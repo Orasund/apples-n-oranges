@@ -3,13 +3,13 @@ module Main exposing (..)
 import Browser
 import Dict exposing (Dict)
 import Entity exposing (Entity)
-import Game exposing (Block(..), BlockId, Fruit(..), Game, Solid(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import Level.Generator exposing (Setting)
+import Level exposing (Block(..), BlockId, Fruit(..), Level, Solid(..))
 import Maths
 import Process
+import Puzzle.Generator exposing (Setting)
 import Random exposing (Generator, Seed)
 import Stylesheet
 import Task
@@ -26,18 +26,18 @@ type alias Random a =
 
 
 type alias Model =
-    { game : Game
+    { game : Level
     , entities : Dict BlockId Entity
     , coins : Dict CoinId Coin
     , day : Int
     , money : Int
     , nextCoinId : CoinId
-    , level : Setting
+    , setting : Setting
     , nextLevels : List Setting
     , seed : Seed
     , history :
         List
-            { game : Game
+            { game : Level
             , entities : Dict BlockId Entity
             , coins : Dict CoinId Coin
             , nextCoinId : CoinId
@@ -115,7 +115,7 @@ gotoLevel model =
 
 openShop : Model -> Random Model
 openShop model =
-    Level.Generator.pickSettings
+    Puzzle.Generator.pickSettings
         { amount = 2
         , money = model.money
         }
@@ -146,7 +146,7 @@ loadNextLevel model =
     case model.nextLevels of
         head :: tail ->
             head
-                |> Level.Generator.generate model.game
+                |> Puzzle.Generator.generate model.game
                 |> Random.map
                     (\level ->
                         List.foldl
@@ -154,8 +154,8 @@ loadNextLevel model =
                                 addBlock pos fruit
                             )
                             { model
-                                | level = head
-                                , game = Game.empty { columns = level.columns, rows = level.rows }
+                                | setting = head
+                                , game = Level.empty { columns = level.columns, rows = level.rows }
 
                                 -- , day = model.day + 1
                                 , entities = Dict.empty
@@ -248,7 +248,7 @@ buyAndReplaceSetting replaceWith model =
 generateNextWeek : Model -> Random Model
 generateNextWeek model =
     model.possibleSettings
-        |> Level.Generator.sort
+        |> Puzzle.Generator.sort
         |> Random.map (\nextLevels -> { model | nextLevels = nextLevels })
 
 
@@ -279,16 +279,16 @@ init () =
             Random.initialSeed 42
 
         model =
-            { game = Game.empty { columns = 6, rows = 6 }
+            { game = Level.empty { columns = 6, rows = 6 }
             , entities = Dict.empty
             , coins = Dict.empty
             , money = 0
             , day = 1
             , nextCoinId = 0
-            , level = Level.Generator.startingLevel
-            , nextLevels = Level.Generator.tutorials
+            , setting = Puzzle.Generator.startingLevel
+            , nextLevels = Puzzle.Generator.tutorials
             , history = []
-            , possibleSettings = Level.Generator.tutorials
+            , possibleSettings = Puzzle.Generator.tutorials
             , seed = seed
             , endOfDay = False
             , shop = Nothing
@@ -306,7 +306,7 @@ addBlock : ( Int, Int ) -> Block -> Model -> Model
 addBlock ( x, y ) block model =
     let
         ( game, fruitId ) =
-            model.game |> Game.addBlock ( x, y ) block
+            model.game |> Level.addBlock ( x, y ) block
     in
     { model
         | game = game
@@ -345,9 +345,9 @@ join p1 p2 model =
             { model
                 | game =
                     model.game
-                        |> Game.removeField p1
-                        |> Game.removeField p2
-                        |> Game.setSelected Nothing
+                        |> Level.removeField p1
+                        |> Level.removeField p2
+                        |> Level.setSelected Nothing
                 , entities =
                     model.entities
                         |> Dict.update fruit1
@@ -380,8 +380,8 @@ join p1 p2 model =
                         :: model.history
             }
         )
-        (model.game |> Game.getBlockAndIdAt p1)
-        (model.game |> Game.getBlockAndIdAt p2)
+        (model.game |> Level.getBlockAndIdAt p1)
+        (model.game |> Level.getBlockAndIdAt p2)
 
 
 checkWinCondition : Model -> ( Model, Cmd Msg )
@@ -426,24 +426,24 @@ update msg model =
         Click pos ->
             case model.game.selected of
                 Nothing ->
-                    case Game.getBlockAndIdAt pos model.game of
+                    case Level.getBlockAndIdAt pos model.game of
                         Just ( _, SolidBlock Sprout ) ->
                             ( model, Cmd.none )
 
                         _ ->
-                            ( { model | game = Game.setSelected (Just pos) model.game }, Cmd.none )
+                            ( { model | game = Level.setSelected (Just pos) model.game }, Cmd.none )
 
                 Just p ->
                     if p == pos then
-                        ( { model | game = Game.setSelected Nothing model.game }, Cmd.none )
+                        ( { model | game = Level.setSelected Nothing model.game }, Cmd.none )
 
-                    else if Game.isValidPair pos p model.game then
+                    else if Level.isValidPair pos p model.game then
                         join pos p model
                             |> Maybe.withDefault model
                             |> checkWinCondition
 
                     else
-                        ( { model | game = Game.setSelected Nothing model.game }
+                        ( { model | game = Level.setSelected Nothing model.game }
                         , Cmd.none
                         )
 
@@ -451,7 +451,7 @@ update msg model =
             case model.history of
                 history :: tail ->
                     ( { model
-                        | game = history.game |> Game.setSelected Nothing
+                        | game = history.game |> Level.setSelected Nothing
                         , entities = history.entities
                         , coins = history.coins
                         , history = tail
@@ -588,7 +588,7 @@ view model =
             ]
     , View.EndOfDay.toHtml
         { money = model.money
-        , currentLevel = model.level
+        , currentLevel = model.setting
         , nextLevels = model.nextLevels
         , endOfDay = model.endOfDay
         , day = model.day

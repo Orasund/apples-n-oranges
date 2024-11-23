@@ -1,9 +1,8 @@
-module Level.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, sort, startingLevel, tutorials)
+module Puzzle.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, sort, startingLevel, tutorials)
 
 import Dict
-import Game exposing (Block(..), Fruit(..), Game, Solid(..))
-import Level exposing (Level)
-import Level.Builder
+import Level exposing (Block(..), Fruit(..), Level, Puzzle, Solid(..))
+import Puzzle.Builder
 import Random
 
 
@@ -234,11 +233,11 @@ priceForSetting setting =
         )
 
 
-generate : Game -> Setting -> Random Level
+generate : Level -> Setting -> Random Puzzle
 generate game setting =
     let
         oldBlocks =
-            game |> Game.getBlocks |> Dict.fromList
+            game |> Level.getBlocks |> Dict.fromList
 
         oldStones block =
             oldBlocks
@@ -248,7 +247,7 @@ generate game setting =
         limitedByExisting block n =
             min n (8 - oldStones block)
     in
-    Level.Builder.generateLevel
+    Puzzle.Builder.generateLevel
         { columns = 6
         , rows = 6
         , oldBlocks = oldBlocks

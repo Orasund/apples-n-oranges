@@ -3,7 +3,7 @@ module View.Shop exposing (..)
 import Html exposing (Html)
 import Html.Style
 import Layout
-import Level.Generator exposing (Setting)
+import Puzzle.Generator exposing (Setting)
 import View.Background
 import View.Block
 import View.Button
@@ -99,7 +99,7 @@ toHtml args =
 
                       else
                         View.Button.withPrice
-                            { price = Level.Generator.priceForSetting setting
+                            { price = Puzzle.Generator.priceForSetting setting
                             , label = "Buy"
                             , onPress = args.onSelectSettingToBuy (Just i)
                             }

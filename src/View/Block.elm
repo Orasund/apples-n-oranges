@@ -1,8 +1,8 @@
 module View.Block exposing (..)
 
-import Game exposing (Block)
 import Html exposing (Attribute, Html)
 import Html.Style
+import Level exposing (Block(..), Fruit(..), Solid(..))
 import View.Field
 
 
@@ -49,25 +49,25 @@ grapes =
 toString : Block -> String
 toString block =
     case block of
-        Game.FruitBlock Game.Apple ->
+        FruitBlock Apple ->
             apple
 
-        Game.FruitBlock Game.Orange ->
+        FruitBlock Orange ->
             orange
 
-        Game.FruitBlock Game.Lemon ->
+        FruitBlock Lemon ->
             lemon
 
-        Game.FruitBlock Game.Grapes ->
+        FruitBlock Grapes ->
             grapes
 
-        Game.SolidBlock Game.Stone ->
+        SolidBlock Stone ->
             stone
 
-        Game.SolidBlock Game.Sprout ->
+        SolidBlock Sprout ->
             sprout
 
-        Game.SolidBlock Game.Dynamite ->
+        SolidBlock Dynamite ->
             dynamite
 
 

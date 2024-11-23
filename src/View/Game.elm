@@ -2,11 +2,11 @@ module View.Game exposing (..)
 
 import Dict exposing (Dict)
 import Entity exposing (Entity)
-import Game exposing (BlockId, Game)
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
 import Layout
+import Level exposing (BlockId, Level)
 import View.Block
 import View.Coin exposing (Coin, CoinId)
 import View.Field
@@ -14,7 +14,7 @@ import View.Fruit
 
 
 viewGame :
-    { game : Game
+    { game : Level
     , coins : Dict CoinId Coin
     , entities : Dict BlockId Entity
     , onClick : ( Int, Int ) -> msg

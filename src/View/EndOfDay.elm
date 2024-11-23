@@ -3,7 +3,7 @@ module View.EndOfDay exposing (..)
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
-import Level.Generator exposing (Setting)
+import Puzzle.Generator exposing (Setting)
 import View.Background
 import View.CalenderDay
 
