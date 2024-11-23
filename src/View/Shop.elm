@@ -1,7 +1,6 @@
 module View.Shop exposing (..)
 
 import Html exposing (Html)
-import Html.Attributes
 import Html.Style
 import Layout
 import Level.Generator exposing (Setting)
@@ -10,7 +9,6 @@ import View.Block
 import View.Button
 import View.CalenderDay
 import View.Coin
-import View.Header
 
 
 calenderSize =
@@ -31,8 +29,6 @@ toHtml :
     , onSelectSettingToBuy : Maybe Int -> msg
     , selected : Maybe Int
     , money : Int
-
-    --, onCloseShop : msg
     , onBuy : Int -> msg
     }
     -> Html msg
@@ -58,12 +54,7 @@ toHtml args =
                 , Html.Style.displayFlex
                 , Html.Style.justifyContentCenter
                 ]
-        , {--View.Button.toHtml
-            { label = "Close"
-            , onPress = args.onCloseShop
-            }
-            |> List.singleton--}
-          []
+        , []
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
@@ -74,8 +65,8 @@ toHtml args =
             |> List.indexedMap
                 (\i setting ->
                     [ View.CalenderDay.calenderDay calenderSize
-                        ([ Html.Style.transition "scale 0.2s ease-in" ]
-                            ++ Layout.asButton
+                        (Html.Style.transition "scale 0.2s ease-in"
+                            :: Layout.asButton
                                 { label = "Select"
                                 , onPress =
                                     args.onSelectSettingToBuy

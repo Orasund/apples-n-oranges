@@ -1,4 +1,4 @@
-module Level.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, startingLevel, tutorials)
+module Level.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, sort, startingLevel, tutorials)
 
 import Dict
 import Game exposing (Block(..), Fruit(..), Game, Solid(..))
@@ -12,8 +12,8 @@ type alias Random a =
 
 
 type alias Setting =
-    { name : String
-    , symbol : Block
+    { symbol : Block
+    , difficulty : Int
     , newFruitPairs : Int
     , newStone : Int
     , newDynamite : Int
@@ -24,8 +24,8 @@ type alias Setting =
 
 startingLevel : Setting
 startingLevel =
-    { name = "Training 1"
-    , symbol = FruitBlock Apple
+    { symbol = FruitBlock Apple
+    , difficulty = 0
     , newFruitPairs = 2
     , newStone = 0
     , newDynamite = 0
@@ -34,10 +34,10 @@ startingLevel =
     }
 
 
-trainingApples : Setting
-trainingApples =
-    { name = "Training 2"
-    , symbol = FruitBlock Apple
+applesTraining : Setting
+applesTraining =
+    { symbol = FruitBlock Apple
+    , difficulty = 0
     , newFruitPairs = 3
     , newStone = 0
     , newDynamite = 0
@@ -46,34 +46,10 @@ trainingApples =
     }
 
 
-trainingGround3 : Setting
-trainingGround3 =
-    { name = "Training 3"
-    , symbol = FruitBlock Lemon
-    , newFruitPairs = 3
-    , newStone = 1
-    , newDynamite = 0
-    , newLemonPairs = 1
-    , newGrapePairs = 0
-    }
-
-
-trainingGround4 : Setting
-trainingGround4 =
-    { name = "Training 3"
-    , symbol = SolidBlock Dynamite
-    , newFruitPairs = 3
-    , newStone = 1
-    , newDynamite = 2
-    , newLemonPairs = 0
-    , newGrapePairs = 0
-    }
-
-
-applesAndOrangesBasic : Setting
-applesAndOrangesBasic =
-    { name = "Apple'n Oranges 1"
-    , symbol = FruitBlock Orange
+applesBasic : Setting
+applesBasic =
+    { symbol = FruitBlock Apple
+    , difficulty = 1
     , newFruitPairs = 5
     , newStone = 1
     , newDynamite = 1
@@ -82,10 +58,10 @@ applesAndOrangesBasic =
     }
 
 
-applesAndOranges : Setting
-applesAndOranges =
-    { name = "Apple'n Oranges 2"
-    , symbol = FruitBlock Orange
+applesAdvanced : Setting
+applesAdvanced =
+    { symbol = FruitBlock Apple
+    , difficulty = 2
     , newFruitPairs = 10
     , newStone = 1
     , newDynamite = 1
@@ -94,22 +70,22 @@ applesAndOranges =
     }
 
 
-lifeGivesYouLemons : Setting
-lifeGivesYouLemons =
-    { name = "Life gives Lemons 1"
-    , symbol = FruitBlock Lemon
-    , newFruitPairs = 5
+lemonTraining : Setting
+lemonTraining =
+    { symbol = FruitBlock Lemon
+    , difficulty = 0
+    , newFruitPairs = 3
     , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 5
+    , newDynamite = 0
+    , newLemonPairs = 1
     , newGrapePairs = 0
     }
 
 
-lifeGivesYouLemonsBasic : Setting
-lifeGivesYouLemonsBasic =
-    { name = "Life gives Lemons 2"
-    , symbol = FruitBlock Lemon
+lemonBasic : Setting
+lemonBasic =
+    { symbol = FruitBlock Lemon
+    , difficulty = 1
     , newFruitPairs = 2
     , newStone = 1
     , newDynamite = 1
@@ -118,10 +94,34 @@ lifeGivesYouLemonsBasic =
     }
 
 
-miningTimeBasic : Setting
-miningTimeBasic =
-    { name = "Mining Time 1"
-    , symbol = SolidBlock Dynamite
+lemonAdvanced : Setting
+lemonAdvanced =
+    { symbol = FruitBlock Lemon
+    , difficulty = 2
+    , newFruitPairs = 5
+    , newStone = 1
+    , newDynamite = 1
+    , newLemonPairs = 5
+    , newGrapePairs = 0
+    }
+
+
+miningTraining : Setting
+miningTraining =
+    { symbol = SolidBlock Dynamite
+    , difficulty = 0
+    , newFruitPairs = 3
+    , newStone = 1
+    , newDynamite = 1
+    , newLemonPairs = 0
+    , newGrapePairs = 0
+    }
+
+
+miningBasic : Setting
+miningBasic =
+    { symbol = SolidBlock Dynamite
+    , difficulty = 1
     , newFruitPairs = 4
     , newStone = 3
     , newDynamite = 3
@@ -130,10 +130,10 @@ miningTimeBasic =
     }
 
 
-miningTime : Setting
-miningTime =
-    { name = "Mining Time 2"
-    , symbol = SolidBlock Dynamite
+miningAdvanced : Setting
+miningAdvanced =
+    { symbol = SolidBlock Dynamite
+    , difficulty = 2
     , newFruitPairs = 6
     , newStone = 6
     , newDynamite = 6
@@ -142,25 +142,25 @@ miningTime =
     }
 
 
-pleantyOfColorBasic : Setting
-pleantyOfColorBasic =
-    { name = "Pleanty of Color 1"
-    , symbol = FruitBlock Grapes
+grapesBasic : Setting
+grapesBasic =
+    { symbol = FruitBlock Grapes
+    , difficulty = 1
     , newFruitPairs = 3
-    , newStone = 0
-    , newDynamite = 0
+    , newStone = 1
+    , newDynamite = 1
     , newLemonPairs = 0
     , newGrapePairs = 2
     }
 
 
-pleantyOfColor : Setting
-pleantyOfColor =
-    { name = "Pleanty of Color 2"
-    , symbol = FruitBlock Grapes
+grapesAdvanced : Setting
+grapesAdvanced =
+    { symbol = FruitBlock Grapes
+    , difficulty = 2
     , newFruitPairs = 6
-    , newStone = 0
-    , newDynamite = 0
+    , newStone = 1
+    , newDynamite = 1
     , newLemonPairs = 0
     , newGrapePairs = 3
     }
@@ -168,28 +168,28 @@ pleantyOfColor =
 
 tutorials : List Setting
 tutorials =
-    [ trainingApples
-    , trainingApples
-    , trainingApples
-    , trainingApples
-    , trainingGround3
-    , trainingGround4
+    [ applesTraining
+    , applesTraining
+    , applesTraining
+    , applesTraining
+    , lemonTraining
+    , miningTraining
     ]
 
 
 settings : List Setting
 settings =
-    [ trainingApples
-    , trainingGround3
-    , trainingGround4
-    , applesAndOrangesBasic
-    , applesAndOranges
-    , lifeGivesYouLemonsBasic
-    , lifeGivesYouLemons
-    , miningTimeBasic
-    , miningTime
-    , pleantyOfColor
-    , pleantyOfColorBasic
+    [ applesTraining
+    , applesBasic
+    , applesAdvanced
+    , lemonTraining
+    , lemonBasic
+    , lemonAdvanced
+    , miningTraining
+    , miningBasic
+    , miningAdvanced
+    , grapesBasic
+    , grapesAdvanced
     ]
 
 
@@ -203,7 +203,8 @@ pickSettings args =
                         priceForSetting setting <= args.money
                     )
                 |> List.reverse
-                |> List.take 3
+
+        --|> List.take 5
     in
     Random.list (List.length validSettings) (Random.float 0 1)
         |> Random.map
@@ -222,13 +223,14 @@ priceForSetting setting =
             round (toFloat n * float)
     in
     max 0
-        ((setting.newFruitPairs
-            + times 2 setting.newGrapePairs
-            + times 1.5 setting.newLemonPairs
-            + setting.newStone
-            + setting.newDynamite
+        ((times 0.7 setting.newFruitPairs
+            + times 1.5 setting.newGrapePairs
+            + times 1 setting.newLemonPairs
+            + times 0.5 setting.newStone
+            + times 0.5 setting.newDynamite
+          -- 3
          )
-            * 3
+            ^ 2
         )
 
 
@@ -238,22 +240,35 @@ generate game setting =
         oldBlocks =
             game |> Game.getBlocks |> Dict.fromList
 
-        oldStones =
+        oldStones block =
             oldBlocks
-                |> Dict.filter (\_ b -> b == SolidBlock Stone)
+                |> Dict.filter (\_ b -> b == block)
                 |> Dict.size
 
-        limitedByExistingStones n =
-            min n (8 - oldStones)
+        limitedByExisting block n =
+            min n (8 - oldStones block)
     in
     Level.Builder.generateLevel
         { columns = 6
         , rows = 6
         , oldBlocks = oldBlocks
         , newSprouts = 0
-        , newFruitPairs = setting.newFruitPairs --|> beginnerFriendly
-        , newStone = setting.newStone |> limitedByExistingStones
-        , newDynamite = setting.newDynamite --|> beginnerFriendly
-        , newLemonPairs = setting.newLemonPairs --|> beginnerFriendly
-        , newGrapePairs = setting.newGrapePairs --|> beginnerFriendly
+        , newFruitPairs = setting.newFruitPairs
+        , newStone = setting.newStone |> limitedByExisting (SolidBlock Stone)
+        , newDynamite = setting.newDynamite |> limitedByExisting (SolidBlock Dynamite)
+        , newLemonPairs = setting.newLemonPairs
+        , newGrapePairs = setting.newGrapePairs
         }
+
+
+sort : List a -> Random (List a)
+sort list =
+    Random.list (List.length list) (Random.float 0 1)
+        |> Random.map
+            (\randomList ->
+                List.map2 Tuple.pair
+                    list
+                    randomList
+                    |> List.sortBy Tuple.second
+                    |> List.map Tuple.first
+            )

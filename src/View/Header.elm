@@ -1,9 +1,7 @@
 module View.Header exposing (..)
 
 import Html exposing (Html)
-import Html.Attributes
 import Html.Style
-import Layout
 import View.Button
 import View.Coin
 

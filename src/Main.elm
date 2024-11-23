@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-import Array
 import Browser
 import Dict exposing (Dict)
 import Entity exposing (Entity)
@@ -59,7 +58,7 @@ type Msg
     | Undo
     | EndDay
     | SetSeed Seed
-      --| NextDay
+    | NextDay
     | LoadNextLevel
     | StartDay
     | OpenShop
@@ -157,7 +156,8 @@ loadNextLevel model =
                             { model
                                 | level = head
                                 , game = Game.empty { columns = level.columns, rows = level.rows }
-                                , day = model.day + 1
+
+                                -- , day = model.day + 1
                                 , entities = Dict.empty
                                 , coins = Dict.empty
                                 , nextLevels = tail
@@ -239,14 +239,17 @@ buyAndReplaceSetting replaceWith model =
                                     else
                                         s
                                 )
+                            |> List.sortBy .difficulty
                 }
             )
         |> Maybe.withDefault model
 
 
-generateNextWeek : Model -> Model
+generateNextWeek : Model -> Random Model
 generateNextWeek model =
-    { model | nextLevels = model.possibleSettings }
+    model.possibleSettings
+        |> Level.Generator.sort
+        |> Random.map (\nextLevels -> { model | nextLevels = nextLevels })
 
 
 
@@ -280,7 +283,7 @@ init () =
             , entities = Dict.empty
             , coins = Dict.empty
             , money = 0
-            , day = 0
+            , day = 1
             , nextCoinId = 0
             , level = Level.Generator.startingLevel
             , nextLevels = Level.Generator.tutorials
@@ -322,7 +325,7 @@ coinsEarnedFromMatching block1 block2 =
                     1
 
                 SolidBlock Stone ->
-                    4
+                    2
 
                 SolidBlock _ ->
                     0
@@ -493,6 +496,7 @@ update msg model =
             case loadNextLevel model of
                 Just m ->
                     ( m
+                        |> Random.map nextDay
                         |> applyGenerator model.seed
                     , sequence [ longWaitThenPerform StartDay ]
                     )
@@ -502,8 +506,9 @@ update msg model =
                     , sequence [ longWaitThenPerform OpenShop ]
                     )
 
-        --NextDay ->
-        --    ( nextDay model, Cmd.none )
+        NextDay ->
+            ( nextDay model, Cmd.none )
+
         StartDay ->
             ( gotoLevel model, Cmd.none )
 
@@ -530,12 +535,12 @@ update msg model =
             ( model
                 |> buyAndReplaceSetting i
                 |> selectSettingToBuy Nothing
-                |> generateAnotherSetting
-                |> Random.map generateNextWeek
+                --|> generateAnotherSetting
+                |> generateNextWeek
                 |> Random.map closeShop
                 |> applyGenerator model.seed
             , sequence
-                [ StartDay
+                [ longWaitThenPerform LoadNextLevel
                 ]
             )
 

@@ -30,9 +30,33 @@ calenderDay calenderSize attrs setting =
             |> Html.text
             |> List.singleton
             |> Html.div
-                [ Html.Style.displayFlex
-                , Html.Style.justifyContentCenter
-                , Html.Style.alignItemsCenter
-                , Html.Style.height "100%"
-                ]
+                ((case setting.difficulty of
+                    0 ->
+                        [ Html.Style.filter "contrast(0) brightness(1.5)"
+                        ]
+
+                    1 ->
+                        []
+
+                    2 ->
+                        [ Html.Style.borderWidthPx (calenderSize * 0.1)
+                        , Html.Style.borderStyleDouble
+                        , Html.Style.borderColor "#ddd"
+                        ]
+
+                    _ ->
+                        [ Html.Style.borderWidthPx (calenderSize * 0.1)
+                        , Html.Style.borderStyleDouble
+                        , Html.Style.borderColor "rgb(242 245 122)"
+                        ]
+                 )
+                    ++ [ Html.Style.displayFlex
+                       , Html.Style.justifyContentCenter
+                       , Html.Style.alignItemsCenter
+                       , Html.Style.height "100%"
+                       , Html.Style.boxSizingBorderBox
+                       , Html.Style.borderBottomLeftRadiusPx (calenderSize * 0.1)
+                       , Html.Style.borderBottomRightRadiusPx (calenderSize * 0.1)
+                       ]
+                )
         ]
