@@ -157,6 +157,9 @@ toHtml args =
                             , Html.Style.flexDirectionColumn
                             , Html.Style.alignItemsCenter
                             , Html.Style.widthPx 80
+                            , Html.Style.color "white"
+                            , Html.Style.gapPx 4
+                            , Html.Style.fontWeightBold
                             ]
                 )
             |> Html.div
@@ -167,13 +170,12 @@ toHtml args =
                 , Html.Style.widthPx 240
                 ]
         ]
-            |> View.Background.endOfDay
+            |> View.Background.fortuneTeller
                 [ Html.Style.positionRelative
                 , Html.Style.alignItemsCenter
                 , Html.Style.paddingPx 16
                 , Html.Style.borderRadiusPx 16
                 , Html.Style.boxSizingBorderBox
-                , Html.Style.border "2px solid black"
                 ]
             |> List.singleton
             |> Html.div []

@@ -19,7 +19,8 @@ toHtml attrs =
 game : List (Attribute msg) -> List (Html msg) -> Html msg
 game attrs =
     toHtml
-        (Html.Style.backgroundColor "#a4cc95"
+        (Html.Style.backgroundImage
+            """url(grass.svg)"""
             :: attrs
         )
 
@@ -41,4 +42,13 @@ shop attrs =
          , Html.Style.backgroundSize "100px 100px"
          ]
             ++ attrs
+        )
+
+
+fortuneTeller : List (Attribute msg) -> List (Html msg) -> Html msg
+fortuneTeller attrs =
+    toHtml
+        (Html.Style.backgroundImage
+            """url(fortuneTeller.svg)"""
+            :: attrs
         )

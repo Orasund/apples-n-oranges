@@ -7981,8 +7981,8 @@ var $Orasund$elm_html_style$Html$Style$flexDirection = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex-direction', value);
 };
 var $Orasund$elm_html_style$Html$Style$flexDirectionColumn = $Orasund$elm_html_style$Html$Style$flexDirection('column');
-var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-color', value);
+var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-image', value);
 };
 var $Orasund$elm_html_style$Html$Style$height = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'height', value);
@@ -8002,11 +8002,11 @@ var $author$project$View$Background$toHtml = function (attrs) {
 				]),
 			attrs));
 };
-var $author$project$View$Background$game = function (attrs) {
+var $author$project$View$Background$fortuneTeller = function (attrs) {
 	return $author$project$View$Background$toHtml(
 		A2(
 			$elm$core$List$cons,
-			$Orasund$elm_html_style$Html$Style$backgroundColor('#a4cc95'),
+			$Orasund$elm_html_style$Html$Style$backgroundImage('url(fortuneTeller.svg)'),
 			attrs));
 };
 var $elm$core$String$append = _String_append;
@@ -8064,6 +8064,9 @@ var $Orasund$elm_html_style$Html$Style$bottomPx = function (value) {
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-color', value);
 };
 var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-bottom-left-radius', value);
@@ -8278,9 +8281,6 @@ var $author$project$View$CalenderDay$calenderDay = F3(
 				]));
 	});
 var $author$project$View$EndOfDay$calenderSize = 300;
-var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-image', value);
-};
 var $author$project$View$Background$endOfDay = function (attrs) {
 	return $author$project$View$Background$toHtml(
 		A2(
@@ -9139,7 +9139,7 @@ var $author$project$View$Header$viewHeader = function (args) {
 };
 var $author$project$Main$view = function (model) {
 	return A2(
-		$author$project$View$Background$game,
+		$author$project$View$Background$fortuneTeller,
 		_List_fromArray(
 			[
 				$Orasund$elm_html_style$Html$Style$displayFlex,
