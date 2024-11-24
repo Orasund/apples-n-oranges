@@ -25,11 +25,17 @@ type Fruit
 type Solid
     = Stone
     | Sprout
-    | Dynamite
+
+
+type Optional
+    = Dynamite
+    | Fish
 
 
 type Block
     = FruitBlock Fruit
+    | FishingRod
+    | OptionalBlock Optional
     | SolidBlock Solid
 
 
@@ -137,10 +143,16 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                 ( FruitBlock _, FruitBlock _ ) ->
                     True
 
-                ( SolidBlock Dynamite, SolidBlock Stone ) ->
+                ( OptionalBlock Dynamite, SolidBlock Stone ) ->
                     True
 
-                ( SolidBlock Stone, SolidBlock Dynamite ) ->
+                ( SolidBlock Stone, OptionalBlock Dynamite ) ->
+                    True
+
+                ( FishingRod, OptionalBlock Fish ) ->
+                    True
+
+                ( OptionalBlock Fish, FishingRod ) ->
                     True
 
                 _ ->

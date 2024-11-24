@@ -1,7 +1,7 @@
 module Puzzle.Builder exposing (generateLevel)
 
 import Dict exposing (Dict)
-import Level exposing (Block(..), Fruit(..), Puzzle, Solid(..))
+import Level exposing (Block(..), Fruit(..), Optional(..), Puzzle, Solid(..), isValidPair)
 import Random exposing (Generator)
 import Set exposing (Set)
 
@@ -13,13 +13,20 @@ type alias Random a =
 type alias Builder =
     { blocks : Dict ( Int, Int ) Block
     , remainingPositions : Set ( Int, Int )
-    , remainingOldSprouts : Set ( Int, Int )
+
+    --, remainingOldSprouts : Set ( Int, Int )
     , columns : Int
     , rows : Int
     }
 
 
-new : { columns : Int, rows : Int, oldSprouts : Set ( Int, Int ) } -> Builder
+new :
+    { columns : Int
+    , rows : Int
+
+    --, oldSprouts : Set ( Int, Int )
+    }
+    -> Builder
 new args =
     { blocks = Dict.empty
     , remainingPositions =
@@ -30,7 +37,8 @@ new args =
                         |> List.map (Tuple.pair x)
                 )
             |> Set.fromList
-    , remainingOldSprouts = args.oldSprouts
+
+    --, remainingOldSprouts = args.oldSprouts
     , columns = args.columns
     , rows = args.rows
     }
@@ -40,33 +48,45 @@ generateLevel :
     { columns : Int
     , rows : Int
     , oldBlocks : Dict ( Int, Int ) Block
-    , newSprouts : Int
     , newStone : Int
     , newDynamite : Int
     , newFruitPairs : Int
     , newLemonPairs : Int
     , newGrapePairs : Int
+    , fishAndRod : Int
     }
     -> Random Puzzle
 generateLevel args =
-    let
+    {--let
         oldSprouts =
             args.oldBlocks
                 |> Dict.filter (\_ block -> block == SolidBlock Sprout)
                 |> Dict.keys
                 |> Set.fromList
-    in
+    in--}
     new
         { columns = args.columns
         , rows = args.rows
-        , oldSprouts = oldSprouts
+
+        --, oldSprouts = oldSprouts
         }
-        |> addBlocks (args.oldBlocks |> Dict.toList)
+        |> addBlocks
+            (args.oldBlocks
+                |> Dict.filter
+                    (\_ block ->
+                        case block of
+                            OptionalBlock _ ->
+                                False
+
+                            _ ->
+                                True
+                    )
+                |> Dict.toList
+            )
         |> Random.constant
         |> andThenRepeat args.newStone (addRandomSolid Stone)
-        |> andThenRepeat args.newDynamite addDynamiteNearStone
-        |> andThenRepeat args.newSprouts (addRandomSolid Sprout)
-        |> andThenRepeat (Set.size oldSprouts) addFruitPairFromOldSprout
+        |> andThenRepeat args.newDynamite (randomAddOptionalNear (SolidBlock Stone) Dynamite)
+        |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
         |> andThenRepeat args.newLemonPairs
             (\b ->
                 Random.uniform Apple [ Orange ]
@@ -84,6 +104,7 @@ generateLevel args =
                         )
             )
         |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
+        |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
         |> Random.map build
 
 
@@ -117,18 +138,22 @@ addRandomSolid solid builder =
             )
 
 
-addDynamiteNearStone : Builder -> Random Builder
-addDynamiteNearStone builder =
+randomAddOptionalNear : Block -> Optional -> Builder -> Random Builder
+randomAddOptionalNear block optional builder =
     builder.blocks
-        |> Dict.filter (\_ b -> b == SolidBlock Stone)
+        |> Dict.filter (\_ b -> b == block)
         |> Dict.keys
         |> randomFromList
         |> Maybe.map
             (Random.andThen
                 (\p1 ->
                     builder.remainingPositions
-                        |> findValidPair builder p1
-                        |> Maybe.map (Random.map (\p2 -> addBlock p2 (SolidBlock Dynamite) builder))
+                        |> findValidPair
+                            (isValidPair builder
+                                [ block ]
+                                p1
+                            )
+                        |> Maybe.map (Random.map (\p2 -> addBlock p2 (OptionalBlock optional) builder))
                         |> Maybe.withDefault (Random.constant builder)
                 )
             )
@@ -143,38 +168,8 @@ addBlock pos block builder =
     }
 
 
-addFruitPairFromOldSprout : Builder -> Random Builder
-addFruitPairFromOldSprout builder =
-    case builder.remainingOldSprouts |> Set.toList of
-        head :: tail ->
-            case findValidPair builder head builder.remainingPositions of
-                Just randomPos ->
-                    randomPos
-                        |> Random.andThen
-                            (\pos ->
-                                Random.uniform ( Lemon, Apple )
-                                    []
-                                    |> Random.map
-                                        (\( a, b ) ->
-                                            { builder | remainingOldSprouts = tail |> Set.fromList }
-                                                |> addFruit head a
-                                                |> addFruit pos b
-                                        )
-                            )
-
-                Nothing ->
-                    { builder
-                        | remainingOldSprouts = Set.fromList tail
-                    }
-                        |> addBlock head (SolidBlock Sprout)
-                        |> Random.constant
-
-        [] ->
-            Random.constant builder
-
-
-randomPair : Builder -> Random (List ( Int, Int ))
-randomPair builder =
+randomPair : List Block -> Builder -> Random (List ( Int, Int ))
+randomPair validBlocks builder =
     Set.toList builder.remainingPositions
         |> randomFromList
         |> Maybe.map
@@ -182,7 +177,8 @@ randomPair builder =
                 (\p1 ->
                     builder.remainingPositions
                         |> Set.remove p1
-                        |> findValidPair builder p1
+                        |> findValidPair
+                            (isValidPair builder validBlocks p1)
                         |> Maybe.map (Random.map (\p2 -> [ p1, p2 ]))
                         |> Maybe.withDefault (Random.constant [ p1 ])
                 )
@@ -200,7 +196,7 @@ addFruit pos fruit builder =
 
 addRandomPair : Block -> Block -> Builder -> Random Builder
 addRandomPair b1 b2 builder =
-    randomPair builder
+    randomPair [ b1, b2 ] builder
         |> Random.map
             (\list ->
                 case list of
@@ -224,24 +220,19 @@ addRandomPair b1 b2 builder =
             )
 
 
-findValidPair : Builder -> ( Int, Int ) -> Set ( Int, Int ) -> Maybe (Random ( Int, Int ))
-findValidPair builder pos candidates =
+findValidPair : (( Int, Int ) -> Bool) -> Set ( Int, Int ) -> Maybe (Random ( Int, Int ))
+findValidPair fun candidates =
     candidates
         |> Set.toList
-        |> List.filter (isValidPair builder pos)
+        |> List.filter fun
         |> randomFromList
 
 
-isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
-isValidPair builder ( x1, y1 ) ( x2, y2 ) =
+isValidPair : Builder -> List Block -> ( Int, Int ) -> ( Int, Int ) -> Bool
+isValidPair builder validBlocks ( x1, y1 ) ( x2, y2 ) =
     let
         validBlock block =
-            case block of
-                FruitBlock _ ->
-                    True
-
-                SolidBlock _ ->
-                    False
+            List.member block validBlocks
     in
     ((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)

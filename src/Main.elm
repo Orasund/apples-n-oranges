@@ -6,10 +6,10 @@ import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import Level exposing (Block(..), CoinId, Fruit(..), Level, Puzzle, Solid(..))
+import Level exposing (Block(..), CoinId, Fruit(..), Level, Optional(..), Puzzle, Solid(..))
 import Maths
 import Process
-import Puzzle.Generator exposing (Setting)
+import Puzzle.Setting exposing (Setting)
 import Random exposing (Generator, Seed)
 import Stylesheet
 import Task
@@ -89,20 +89,23 @@ gotoLevel model =
 
 openShop : Model -> Random Model
 openShop model =
-    Puzzle.Generator.pickSettings
-        { amount = 2
-        , money = model.money
-        }
-        |> Random.map
-            (\list ->
-                { model
-                    | shop =
-                        Just
-                            { buyableSettings = list
-                            , selected = Nothing
-                            }
-                }
-            )
+    Random.map2
+        (\buyableSettings possibleSettings ->
+            { model
+                | possibleSettings = possibleSettings
+                , shop =
+                    Just
+                        { buyableSettings = buyableSettings
+                        , selected = Nothing
+                        }
+            }
+        )
+        (Puzzle.Setting.pickSettings
+            { amount = 2
+            , money = model.money
+            }
+        )
+        (model.possibleSettings |> Puzzle.Setting.shuffle)
 
 
 closeShop : Model -> Model
@@ -140,7 +143,7 @@ loadNextLevel model =
             case head of
                 WeatherEvent weather ->
                     weather
-                        |> Puzzle.Generator.generate model.level
+                        |> Puzzle.Setting.generate model.level
                         |> Random.map
                             (\puzzle ->
                                 { model
@@ -231,24 +234,20 @@ buyAndReplaceSetting replaceWith model =
                                     else
                                         s
                                 )
-                            |> List.sortBy .difficulty
+
+                    --|> List.sortBy .difficulty
                 }
             )
         |> Maybe.withDefault model
 
 
-generateNextWeek : Model -> Random Model
+generateNextWeek : Model -> Model
 generateNextWeek model =
-    model.possibleSettings
-        |> Puzzle.Generator.sort
-        |> Random.map
-            (\nextLevels ->
-                { model
-                    | nextEvents =
-                        List.map WeatherEvent nextLevels
-                            ++ [ ShopEvent ]
-                }
-            )
+    { model
+        | nextEvents =
+            List.map WeatherEvent model.possibleSettings
+                ++ [ ShopEvent ]
+    }
 
 
 
@@ -273,12 +272,12 @@ init () =
             { level = Level.empty { columns = 6, rows = 6 }
             , money = 0
             , day = 1
-            , event = WeatherEvent Puzzle.Generator.startingLevel
+            , event = WeatherEvent Puzzle.Setting.startingLevel
             , nextEvents =
-                List.map WeatherEvent Puzzle.Generator.tutorials
+                List.map WeatherEvent Puzzle.Setting.tutorials
                     ++ [ ShopEvent ]
             , history = []
-            , possibleSettings = Puzzle.Generator.tutorials
+            , possibleSettings = Puzzle.Setting.tutorials
             , seed = seed
             , endOfDay = False
             , shop = Nothing
@@ -304,19 +303,21 @@ addBlock ( x, y ) block model =
 
 coinsEarnedFromMatching : Block -> Block -> Int
 coinsEarnedFromMatching block1 block2 =
-    let
+    {--let
         coinsEarned block =
             case block of
                 FruitBlock _ ->
                     1
 
-                SolidBlock Stone ->
-                    2
-
                 SolidBlock _ ->
                     0
+
+                OptionalBlock Dynamite ->
+                    2
     in
     (coinsEarned block1 + coinsEarned block2) // 2
+    --}
+    1
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
@@ -357,7 +358,13 @@ checkWinCondition model =
                             Just (FruitBlock _) ->
                                 False
 
+                            Just FishingRod ->
+                                False
+
                             Just (SolidBlock _) ->
+                                True
+
+                            Just (OptionalBlock _) ->
                                 True
 
                             Nothing ->
@@ -413,7 +420,7 @@ update msg model =
                     ( { model
                         | level = history |> Level.setSelected Nothing
                         , history = tail
-                        , money = model.money - 1
+                        , money = model.money - View.Header.undoPrice
                       }
                     , Cmd.none
                     )
@@ -473,7 +480,6 @@ update msg model =
                 |> buyAndReplaceSetting i
                 |> selectSettingToBuy Nothing
                 |> generateNextWeek
-                |> applyGenerator model.seed
             , sequence
                 [ shortWaitThenPerform EndDay
                 , longWaitThenPerform LoadNextLevel
@@ -511,6 +517,7 @@ view model =
                 { money = model.money
                 , onUndo = Undo
                 , onOpenShop = OpenShop
+                , currentEvent = model.event
                 }
             , View.Game.viewGame
                 { game = model.level

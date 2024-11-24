@@ -1,6 +1,6 @@
 module Event exposing (..)
 
-import Puzzle.Generator exposing (Setting)
+import Puzzle.Setting exposing (Setting)
 
 
 type Event

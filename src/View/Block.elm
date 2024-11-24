@@ -2,73 +2,39 @@ module View.Block exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
-import Level exposing (Block(..), Fruit(..), Solid(..))
+import Level exposing (Block(..), Fruit(..), Optional(..), Solid(..))
 import View.Field
-
-
-apple : String
-apple =
-    "🍎"
-
-
-orange : String
-orange =
-    "🍊"
-
-
-lemon : String
-lemon =
-    "🍋"
-
-
-pear : String
-pear =
-    "🍐"
-
-
-stone : String
-stone =
-    "🪨"
-
-
-sprout : String
-sprout =
-    "🌱"
-
-
-dynamite : String
-dynamite =
-    "💣"
-
-
-grapes : String
-grapes =
-    "🍇"
 
 
 toString : Block -> String
 toString block =
     case block of
         FruitBlock Apple ->
-            apple
+            "🍎"
 
         FruitBlock Orange ->
-            orange
+            "🍊"
 
         FruitBlock Lemon ->
-            lemon
+            "🍋"
 
         FruitBlock Grapes ->
-            grapes
+            "🍇"
+
+        FishingRod ->
+            "🎣"
 
         SolidBlock Stone ->
-            stone
+            "🪨"
 
         SolidBlock Sprout ->
-            sprout
+            "🌱"
 
-        SolidBlock Dynamite ->
-            dynamite
+        OptionalBlock Dynamite ->
+            "💣"
+
+        OptionalBlock Fish ->
+            "🐟"
 
 
 rocking : Attribute msg

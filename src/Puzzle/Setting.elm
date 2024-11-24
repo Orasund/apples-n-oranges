@@ -1,7 +1,7 @@
-module Puzzle.Generator exposing (Setting, generate, pickSettings, priceForSetting, settings, sort, startingLevel, tutorials)
+module Puzzle.Setting exposing (Setting, generate, pickSettings, priceForSetting, settings, shuffle, startingLevel, tutorials)
 
 import Dict
-import Level exposing (Block(..), Fruit(..), Level, Puzzle, Solid(..))
+import Level exposing (Block(..), Fruit(..), Level, Optional(..), Puzzle, Solid(..))
 import Puzzle.Builder
 import Random
 
@@ -14,154 +14,164 @@ type alias Setting =
     { symbol : Block
     , difficulty : Int
     , newFruitPairs : Int
-    , newStone : Int
-    , newDynamite : Int
+    , newStoneAndDynamite : Int
     , newLemonPairs : Int
     , newGrapePairs : Int
+    , fishAndRod : Int
+    }
+
+
+empty : Setting
+empty =
+    { symbol = FruitBlock Apple
+    , difficulty = 0
+    , newFruitPairs = 0
+    , newStoneAndDynamite = 0
+    , newLemonPairs = 0
+    , newGrapePairs = 0
+    , fishAndRod = 0
     }
 
 
 startingLevel : Setting
 startingLevel =
-    { symbol = FruitBlock Apple
-    , difficulty = 0
-    , newFruitPairs = 2
-    , newStone = 0
-    , newDynamite = 0
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Apple
+        , difficulty = 0
+        , newFruitPairs = 2
     }
 
 
 applesTraining : Setting
 applesTraining =
-    { symbol = FruitBlock Apple
-    , difficulty = 0
-    , newFruitPairs = 3
-    , newStone = 0
-    , newDynamite = 0
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Apple
+        , difficulty = 0
+        , newFruitPairs = 3
     }
 
 
 applesBasic : Setting
 applesBasic =
-    { symbol = FruitBlock Apple
-    , difficulty = 1
-    , newFruitPairs = 5
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Orange
+        , difficulty = 1
+        , newFruitPairs = 5
+        , newStoneAndDynamite = 1
     }
 
 
 applesAdvanced : Setting
 applesAdvanced =
-    { symbol = FruitBlock Apple
-    , difficulty = 2
-    , newFruitPairs = 10
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Orange
+        , difficulty = 2
+        , newFruitPairs = 10
+        , newStoneAndDynamite = 1
     }
 
 
 lemonTraining : Setting
 lemonTraining =
-    { symbol = FruitBlock Lemon
-    , difficulty = 0
-    , newFruitPairs = 3
-    , newStone = 1
-    , newDynamite = 0
-    , newLemonPairs = 1
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Lemon
+        , difficulty = 0
+        , newFruitPairs = 3
+        , newLemonPairs = 1
     }
 
 
 lemonBasic : Setting
 lemonBasic =
-    { symbol = FruitBlock Lemon
-    , difficulty = 1
-    , newFruitPairs = 2
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 3
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Lemon
+        , difficulty = 1
+        , newFruitPairs = 2
+        , newStoneAndDynamite = 1
+        , newLemonPairs = 3
     }
 
 
 lemonAdvanced : Setting
 lemonAdvanced =
-    { symbol = FruitBlock Lemon
-    , difficulty = 2
-    , newFruitPairs = 5
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 5
-    , newGrapePairs = 0
+    { empty
+        | symbol = FruitBlock Lemon
+        , difficulty = 2
+        , newFruitPairs = 5
+        , newStoneAndDynamite = 1
+        , newLemonPairs = 5
     }
 
 
 miningTraining : Setting
 miningTraining =
-    { symbol = SolidBlock Dynamite
-    , difficulty = 0
-    , newFruitPairs = 3
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = OptionalBlock Dynamite
+        , difficulty = 0
+        , newFruitPairs = 3
+        , newStoneAndDynamite = 1
     }
 
 
 miningBasic : Setting
 miningBasic =
-    { symbol = SolidBlock Dynamite
-    , difficulty = 1
-    , newFruitPairs = 4
-    , newStone = 3
-    , newDynamite = 3
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = OptionalBlock Dynamite
+        , difficulty = 1
+        , newFruitPairs = 4
+        , newStoneAndDynamite = 3
     }
 
 
 miningAdvanced : Setting
 miningAdvanced =
-    { symbol = SolidBlock Dynamite
-    , difficulty = 2
-    , newFruitPairs = 6
-    , newStone = 6
-    , newDynamite = 6
-    , newLemonPairs = 0
-    , newGrapePairs = 0
+    { empty
+        | symbol = OptionalBlock Dynamite
+        , difficulty = 2
+        , newFruitPairs = 6
+        , newStoneAndDynamite = 6
     }
 
 
 grapesBasic : Setting
 grapesBasic =
-    { symbol = FruitBlock Grapes
-    , difficulty = 1
-    , newFruitPairs = 3
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 0
-    , newGrapePairs = 2
+    { empty
+        | symbol = FruitBlock Grapes
+        , difficulty = 1
+        , newFruitPairs = 3
+        , newStoneAndDynamite = 1
+        , newGrapePairs = 2
     }
 
 
 grapesAdvanced : Setting
 grapesAdvanced =
-    { symbol = FruitBlock Grapes
-    , difficulty = 2
-    , newFruitPairs = 6
-    , newStone = 1
-    , newDynamite = 1
-    , newLemonPairs = 0
-    , newGrapePairs = 3
+    { empty
+        | symbol = FruitBlock Grapes
+        , difficulty = 2
+        , newFruitPairs = 6
+        , newStoneAndDynamite = 1
+        , newGrapePairs = 3
+    }
+
+
+fishingBasic : Setting
+fishingBasic =
+    { empty
+        | symbol = FishingRod
+        , difficulty = 1
+        , newFruitPairs = 5
+        , fishAndRod = 4
+    }
+
+
+fishingAdvanced : Setting
+fishingAdvanced =
+    { empty
+        | symbol = FishingRod
+        , difficulty = 2
+        , newFruitPairs = 5
+        , fishAndRod = 6
     }
 
 
@@ -189,6 +199,8 @@ settings =
     , miningAdvanced
     , grapesBasic
     , grapesAdvanced
+    , fishingBasic
+    , fishingAdvanced
     ]
 
 
@@ -219,18 +231,19 @@ priceForSetting : Setting -> Int
 priceForSetting setting =
     let
         times float n =
-            round (toFloat n * float)
+            toFloat n * float
     in
     max 0
-        ((times 0.7 setting.newFruitPairs
-            + times 1.5 setting.newGrapePairs
+        ((times 1 setting.newFruitPairs
+            + times 1 setting.newGrapePairs
             + times 1 setting.newLemonPairs
-            + times 0.5 setting.newStone
-            + times 0.5 setting.newDynamite
-          -- 3
+            + times 1 setting.newStoneAndDynamite
+            + times 1 setting.fishAndRod
          )
-            ^ 2
+            ^ 1.7
+         -- - 6
         )
+        |> round
 
 
 generate : Level -> Setting -> Random Puzzle
@@ -251,17 +264,19 @@ generate game setting =
         { columns = 6
         , rows = 6
         , oldBlocks = oldBlocks
-        , newSprouts = 0
+
+        --, newSprouts = 0
         , newFruitPairs = setting.newFruitPairs
-        , newStone = setting.newStone |> limitedByExisting (SolidBlock Stone)
-        , newDynamite = setting.newDynamite |> limitedByExisting (SolidBlock Dynamite)
+        , newStone = setting.newStoneAndDynamite |> limitedByExisting (SolidBlock Stone)
+        , newDynamite = setting.newStoneAndDynamite
         , newLemonPairs = setting.newLemonPairs
         , newGrapePairs = setting.newGrapePairs
+        , fishAndRod = setting.fishAndRod
         }
 
 
-sort : List a -> Random (List a)
-sort list =
+shuffle : List a -> Random (List a)
+shuffle list =
     Random.list (List.length list) (Random.float 0 1)
         |> Random.map
             (\randomList ->

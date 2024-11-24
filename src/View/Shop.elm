@@ -4,12 +4,13 @@ import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
 import Layout
-import Puzzle.Generator exposing (Setting)
+import Puzzle.Setting exposing (Setting)
 import View.Background
 import View.Block
 import View.Button
 import View.CalenderDay
 import View.Coin
+import View.EndOfDay
 
 
 calenderSize =
@@ -100,7 +101,7 @@ toHtml args =
 
                       else
                         View.Button.withPrice
-                            { price = Puzzle.Generator.priceForSetting weather
+                            { price = Puzzle.Setting.priceForSetting weather
                             , label = "Buy"
                             , onPress = args.onSelectSettingToBuy (Just i)
                             }
@@ -115,13 +116,24 @@ toHtml args =
             |> Html.div
                 [ Html.Style.displayFlex
                 , Html.Style.flexDirectionRow
-                , Html.Style.widthPx 150
+                , Html.Style.widthPx 166
                 , Html.Style.justifyContentSpaceBetween
                 ]
-      , args.settings
+      , [ Html.div
+            [ Html.Style.positionAbsolute
+            , Html.Style.topPx -40
+            , Html.Style.leftPx -40
+            , Html.Style.heightPx 80
+            , Html.Style.widthPx 80
+            , Html.Style.fontSizePx 64
+            , Html.Style.textAlignCenter
+            ]
+            [ Html.text "🔮" ]
+        , args.settings
             |> List.indexedMap
                 (\i weather ->
-                    View.CalenderDay.calenderDay calenderSize
+                    [ Html.text (View.EndOfDay.title (i + 1))
+                    , View.CalenderDay.calenderDay calenderSize
                         (Layout.asButton
                             { label = "Select"
                             , onPress =
@@ -139,19 +151,37 @@ toHtml args =
                                )
                         )
                         (WeatherEvent weather)
+                    ]
+                        |> Html.div
+                            [ Html.Style.displayFlex
+                            , Html.Style.flexDirectionColumn
+                            , Html.Style.alignItemsCenter
+                            , Html.Style.widthPx 80
+                            ]
                 )
             |> Html.div
                 [ Html.Style.displayFlex
                 , Html.Style.flexDirectionRow
                 , Html.Style.flexWrapWrap
-                , Html.Style.gapPx gap
-                , Html.Style.widthPx (columns * calenderSize + (columns - 1) * gap)
+                , Html.Style.gridRowGapPx gap
+                , Html.Style.widthPx 240
                 ]
+        ]
+            |> View.Background.endOfDay
+                [ Html.Style.positionRelative
+                , Html.Style.alignItemsCenter
+                , Html.Style.paddingPx 16
+                , Html.Style.borderRadiusPx 16
+                , Html.Style.boxSizingBorderBox
+                , Html.Style.border "2px solid black"
+                ]
+            |> List.singleton
+            |> Html.div []
       ]
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
-            , Html.Style.gapPx 16
+            , Html.Style.gapPx 32
             , Html.Style.widthPx 360
             , Html.Style.heightPx 360
             , Html.Style.alignItemsCenter

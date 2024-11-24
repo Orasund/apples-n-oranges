@@ -1,12 +1,24 @@
 module View.Header exposing (..)
 
+import Event exposing (Event)
 import Html exposing (Html)
 import Html.Style
 import View.Button
+import View.CalenderDay
 import View.Coin
 
 
-viewHeader : { money : Int, onUndo : msg, onOpenShop : msg } -> Html msg
+undoPrice =
+    2
+
+
+viewHeader :
+    { money : Int
+    , onUndo : msg
+    , onOpenShop : msg
+    , currentEvent : Event
+    }
+    -> Html msg
 viewHeader args =
     Html.div
         [ Html.Style.displayFlex
@@ -16,7 +28,7 @@ viewHeader args =
         , Html.Style.width "100%"
         ]
         [ View.Button.withPrice
-            { price = 1
+            { price = undoPrice
             , label = "Undo"
             , onPress = args.onUndo
             }
@@ -34,12 +46,16 @@ viewHeader args =
                 , Html.Style.displayFlex
                 , Html.Style.justifyContentCenter
                 ]
-        , {--View.Button.toHtml
+        , args.currentEvent
+            |> View.CalenderDay.calenderDay 40
+                []
+            {--View.Button.toHtml
             { label = "Open Shop"
             , onPress = args.onOpenShop
             }
             |> List.singleton--}
-          []
+            --[]
+            |> List.singleton
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
