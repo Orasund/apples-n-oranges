@@ -234,8 +234,7 @@ buyAndReplaceSetting replaceWith model =
                                     else
                                         s
                                 )
-
-                    --|> List.sortBy .difficulty
+                    , money = model.money - Puzzle.Setting.priceForSetting setting
                 }
             )
         |> Maybe.withDefault model
@@ -303,21 +302,16 @@ addBlock ( x, y ) block model =
 
 coinsEarnedFromMatching : Block -> Block -> Int
 coinsEarnedFromMatching block1 block2 =
-    {--let
+    let
         coinsEarned block =
             case block of
-                FruitBlock _ ->
+                OptionalBlock Rabbit ->
+                    20
+
+                _ ->
                     1
-
-                SolidBlock _ ->
-                    0
-
-                OptionalBlock Dynamite ->
-                    2
     in
     (coinsEarned block1 + coinsEarned block2) // 2
-    --}
-    1
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model

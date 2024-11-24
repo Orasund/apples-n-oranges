@@ -53,22 +53,14 @@ generateLevel :
     , newFruitPairs : Int
     , newLemonPairs : Int
     , newGrapePairs : Int
+    , rabbitAndCarrotPairs : Int
     , fishAndRod : Int
     }
     -> Random Puzzle
 generateLevel args =
-    {--let
-        oldSprouts =
-            args.oldBlocks
-                |> Dict.filter (\_ block -> block == SolidBlock Sprout)
-                |> Dict.keys
-                |> Set.fromList
-    in--}
     new
         { columns = args.columns
         , rows = args.rows
-
-        --, oldSprouts = oldSprouts
         }
         |> addBlocks
             (args.oldBlocks
@@ -84,9 +76,18 @@ generateLevel args =
                 |> Dict.toList
             )
         |> Random.constant
-        |> andThenRepeat args.newStone (addRandomSolid Stone)
+        |> andThenRepeat (args.rabbitAndCarrotPairs * 2) (addRandomBlock (OptionalBlock Rabbit))
+        |> andThenRepeat args.newStone (addRandomBlock (SolidBlock Stone))
         |> andThenRepeat args.newDynamite (randomAddOptionalNear (SolidBlock Stone) Dynamite)
         |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
+        |> andThenRepeat args.rabbitAndCarrotPairs
+            (\b ->
+                Random.uniform Apple [ Orange ]
+                    |> Random.andThen
+                        (\fruit ->
+                            addRandomPair (FruitBlock fruit) (FruitBlock Carrot) b
+                        )
+            )
         |> andThenRepeat args.newLemonPairs
             (\b ->
                 Random.uniform Apple [ Orange ]
@@ -126,15 +127,15 @@ addBlocks solids builder =
             builder
 
 
-addRandomSolid : Solid -> Builder -> Random Builder
-addRandomSolid solid builder =
+addRandomBlock : Block -> Builder -> Random Builder
+addRandomBlock block builder =
     builder.remainingPositions
         |> Set.toList
         |> randomFromList
         |> Maybe.withDefault (Random.constant ( -1, -1 ))
         |> Random.map
             (\pos ->
-                addBlock pos (SolidBlock solid) builder
+                addBlock pos block builder
             )
 
 
@@ -184,14 +185,6 @@ randomPair validBlocks builder =
                 )
             )
         |> Maybe.withDefault (Random.constant [])
-
-
-addFruit : ( Int, Int ) -> Fruit -> Builder -> Builder
-addFruit pos fruit builder =
-    { builder
-        | remainingPositions = builder.remainingPositions |> Set.remove pos
-        , blocks = builder.blocks |> Dict.insert pos (FruitBlock fruit)
-    }
 
 
 addRandomPair : Block -> Block -> Builder -> Random Builder

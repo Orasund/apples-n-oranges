@@ -17,6 +17,7 @@ type alias Setting =
     , newStoneAndDynamite : Int
     , newLemonPairs : Int
     , newGrapePairs : Int
+    , rabbitAndCarrotPairs : Int
     , fishAndRod : Int
     }
 
@@ -29,6 +30,7 @@ empty =
     , newStoneAndDynamite = 0
     , newLemonPairs = 0
     , newGrapePairs = 0
+    , rabbitAndCarrotPairs = 0
     , fishAndRod = 0
     }
 
@@ -36,7 +38,7 @@ empty =
 startingLevel : Setting
 startingLevel =
     { empty
-        | symbol = FruitBlock Apple
+        | symbol = FruitBlock Orange
         , difficulty = 0
         , newFruitPairs = 2
     }
@@ -175,9 +177,19 @@ fishingAdvanced =
     }
 
 
+rabbitAdvanced : Setting
+rabbitAdvanced =
+    { empty
+        | symbol = OptionalBlock Rabbit
+        , difficulty = 2
+        , rabbitAndCarrotPairs = 3
+        , newFruitPairs = 6
+    }
+
+
 tutorials : List Setting
 tutorials =
-    [ applesTraining
+    [ startingLevel
     , applesTraining
     , applesTraining
     , applesTraining
@@ -201,6 +213,7 @@ settings =
     , grapesAdvanced
     , fishingBasic
     , fishingAdvanced
+    , rabbitAdvanced
     ]
 
 
@@ -239,8 +252,9 @@ priceForSetting setting =
             + times 1 setting.newLemonPairs
             + times 1 setting.newStoneAndDynamite
             + times 1 setting.fishAndRod
+            + times 2 setting.rabbitAndCarrotPairs
          )
-            ^ 1.7
+            ^ 1.6
          -- - 6
         )
         |> round
@@ -271,6 +285,7 @@ generate game setting =
         , newDynamite = setting.newStoneAndDynamite
         , newLemonPairs = setting.newLemonPairs
         , newGrapePairs = setting.newGrapePairs
+        , rabbitAndCarrotPairs = setting.rabbitAndCarrotPairs
         , fishAndRod = setting.fishAndRod
         }
 

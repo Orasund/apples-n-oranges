@@ -21,6 +21,9 @@ toString block =
         FruitBlock Grapes ->
             "🍇"
 
+        FruitBlock Carrot ->
+            "🥕"
+
         FishingRod ->
             "🎣"
 
@@ -35,6 +38,9 @@ toString block =
 
         OptionalBlock Fish ->
             "🐟"
+
+        OptionalBlock Rabbit ->
+            "🐇"
 
 
 rocking : Attribute msg

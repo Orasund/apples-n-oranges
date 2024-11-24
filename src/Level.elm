@@ -20,6 +20,7 @@ type Fruit
     | Orange
     | Lemon
     | Grapes
+    | Carrot
 
 
 type Solid
@@ -30,6 +31,7 @@ type Solid
 type Optional
     = Dynamite
     | Fish
+    | Rabbit
 
 
 type Block
@@ -143,20 +145,15 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                 ( FruitBlock _, FruitBlock _ ) ->
                     True
 
-                ( OptionalBlock Dynamite, SolidBlock Stone ) ->
-                    True
-
-                ( SolidBlock Stone, OptionalBlock Dynamite ) ->
-                    True
-
-                ( FishingRod, OptionalBlock Fish ) ->
-                    True
-
-                ( OptionalBlock Fish, FishingRod ) ->
-                    True
-
                 _ ->
-                    False
+                    [ ( OptionalBlock Dynamite, SolidBlock Stone )
+                    , ( FishingRod, OptionalBlock Fish )
+                    , ( OptionalBlock Rabbit, FruitBlock Carrot )
+                    ]
+                        |> List.any
+                            (\pair ->
+                                ( p1, p2 ) == pair || ( p2, p1 ) == pair
+                            )
     in
     (((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)

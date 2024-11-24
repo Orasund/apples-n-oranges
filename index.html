@@ -5280,7 +5280,7 @@ var $author$project$Main$applyGenerator = F2(
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Level$empty = function (args) {
-	return {blocks: $elm$core$Dict$empty, columns: args.columns, fields: $elm$core$Dict$empty, rows: args.rows, selected: $elm$core$Maybe$Nothing};
+	return {blocks: $elm$core$Dict$empty, coins: $elm$core$Dict$empty, columns: args.columns, entities: $elm$core$Dict$empty, fields: $elm$core$Dict$empty, nextCoinId: 0, rows: args.rows, selected: $elm$core$Maybe$Nothing};
 };
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -5469,10 +5469,8 @@ var $author$project$Main$clearLevel = function (model) {
 	return _Utils_update(
 		model,
 		{
-			coins: $elm$core$Dict$empty,
-			entities: $elm$core$Dict$empty,
-			game: $author$project$Level$clear(model.game),
-			history: _List_Nil
+			history: _List_Nil,
+			level: $author$project$Level$clear(model.level)
 		});
 };
 var $elm$random$Random$constant = function (value) {
@@ -5481,7 +5479,6 @@ var $elm$random$Random$constant = function (value) {
 			return _Utils_Tuple2(value, seed);
 		});
 };
-var $author$project$Level$Dynamite = {$: 'Dynamite'};
 var $author$project$Level$SolidBlock = function (a) {
 	return {$: 'SolidBlock', a: a};
 };
@@ -5644,13 +5641,20 @@ var $elm$core$Dict$fromList = function (assocs) {
 		assocs);
 };
 var $author$project$Level$Apple = {$: 'Apple'};
+var $author$project$Level$Carrot = {$: 'Carrot'};
+var $author$project$Level$Dynamite = {$: 'Dynamite'};
+var $author$project$Level$Fish = {$: 'Fish'};
+var $author$project$Level$FishingRod = {$: 'FishingRod'};
 var $author$project$Level$FruitBlock = function (a) {
 	return {$: 'FruitBlock', a: a};
 };
 var $author$project$Level$Grapes = {$: 'Grapes'};
 var $author$project$Level$Lemon = {$: 'Lemon'};
+var $author$project$Level$OptionalBlock = function (a) {
+	return {$: 'OptionalBlock', a: a};
+};
 var $author$project$Level$Orange = {$: 'Orange'};
-var $author$project$Level$Sprout = {$: 'Sprout'};
+var $author$project$Level$Rabbit = {$: 'Rabbit'};
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -6043,167 +6047,6 @@ var $author$project$Puzzle$Builder$addBlocks = F2(
 			builder,
 			solids);
 	});
-var $elm$random$Random$andThen = F2(
-	function (callback, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				var _v1 = genA(seed);
-				var result = _v1.a;
-				var newSeed = _v1.b;
-				var _v2 = callback(result);
-				var genB = _v2.a;
-				return genB(newSeed);
-			});
-	});
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Puzzle$Builder$isValidPair = F3(
-	function (builder, _v0, _v1) {
-		var x1 = _v0.a;
-		var y1 = _v0.b;
-		var x2 = _v1.a;
-		var y2 = _v1.b;
-		var validBlock = function (block) {
-			if (block.$ === 'FruitBlock') {
-				return true;
-			} else {
-				return false;
-			}
-		};
-		return (_Utils_eq(x1, x2) && A2(
-			$elm$core$List$all,
-			function (y) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					true,
-					A2(
-						$elm$core$Maybe$map,
-						validBlock,
-						A2(
-							$elm$core$Dict$get,
-							_Utils_Tuple2(x1, y),
-							builder.blocks)));
-			},
-			A2(
-				$elm$core$List$range,
-				A2($elm$core$Basics$min, y1, y2) + 1,
-				A2($elm$core$Basics$max, y1, y2) - 1))) || (_Utils_eq(y1, y2) && A2(
-			$elm$core$List$all,
-			function (x) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					true,
-					A2(
-						$elm$core$Maybe$map,
-						validBlock,
-						A2(
-							$elm$core$Dict$get,
-							_Utils_Tuple2(x, y1),
-							builder.blocks)));
-			},
-			A2(
-				$elm$core$List$range,
-				A2($elm$core$Basics$min, x1, x2) + 1,
-				A2($elm$core$Basics$max, x1, x2) - 1)));
-	});
 var $elm$random$Random$addOne = function (value) {
 	return _Utils_Tuple2(1, value);
 };
@@ -6287,153 +6130,223 @@ var $author$project$Puzzle$Builder$randomFromList = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Puzzle$Builder$findValidPair = F3(
-	function (builder, pos, candidates) {
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Puzzle$Builder$addRandomBlock = F2(
+	function (block, builder) {
+		return A2(
+			$elm$random$Random$map,
+			function (pos) {
+				return A3($author$project$Puzzle$Builder$addBlock, pos, block, builder);
+			},
+			A2(
+				$elm$core$Maybe$withDefault,
+				$elm$random$Random$constant(
+					_Utils_Tuple2(-1, -1)),
+				$author$project$Puzzle$Builder$randomFromList(
+					$elm$core$Set$toList(builder.remainingPositions))));
+	});
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $author$project$Puzzle$Builder$findValidPair = F2(
+	function (fun, candidates) {
 		return $author$project$Puzzle$Builder$randomFromList(
 			A2(
 				$elm$core$List$filter,
-				A2($author$project$Puzzle$Builder$isValidPair, builder, pos),
+				fun,
 				$elm$core$Set$toList(candidates)));
 	});
-var $author$project$Puzzle$Builder$addDynamiteNearStone = function (builder) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		$elm$random$Random$constant(builder),
-		A2(
-			$elm$core$Maybe$map,
-			$elm$random$Random$andThen(
-				function (p1) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$random$Random$constant(builder),
-						A2(
-							$elm$core$Maybe$map,
-							$elm$random$Random$map(
-								function (p2) {
-									return A3(
-										$author$project$Puzzle$Builder$addBlock,
-										p2,
-										$author$project$Level$SolidBlock($author$project$Level$Dynamite),
-										builder);
-								}),
-							A3($author$project$Puzzle$Builder$findValidPair, builder, p1, builder.remainingPositions)));
-				}),
-			$author$project$Puzzle$Builder$randomFromList(
-				$elm$core$Dict$keys(
-					A2(
-						$elm$core$Dict$filter,
-						F2(
-							function (_v0, b) {
-								return _Utils_eq(
-									b,
-									$author$project$Level$SolidBlock($author$project$Level$Stone));
-							}),
-						builder.blocks)))));
-};
-var $author$project$Puzzle$Builder$addFruit = F3(
-	function (pos, fruit, builder) {
-		return _Utils_update(
-			builder,
-			{
-				blocks: A3(
-					$elm$core$Dict$insert,
-					pos,
-					$author$project$Level$FruitBlock(fruit),
-					builder.blocks),
-				remainingPositions: A2($elm$core$Set$remove, pos, builder.remainingPositions)
-			});
-	});
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
-var $author$project$Puzzle$Builder$addFruitPairFromOldSprout = function (builder) {
-	var _v0 = $elm$core$Set$toList(builder.remainingOldSprouts);
-	if (_v0.b) {
-		var head = _v0.a;
-		var tail = _v0.b;
-		var _v1 = A3($author$project$Puzzle$Builder$findValidPair, builder, head, builder.remainingPositions);
-		if (_v1.$ === 'Just') {
-			var randomPos = _v1.a;
-			return A2(
-				$elm$random$Random$andThen,
-				function (pos) {
-					return A2(
-						$elm$random$Random$map,
-						function (_v2) {
-							var a = _v2.a;
-							var b = _v2.b;
-							return A3(
-								$author$project$Puzzle$Builder$addFruit,
-								pos,
-								b,
-								A3(
-									$author$project$Puzzle$Builder$addFruit,
-									head,
-									a,
-									_Utils_update(
-										builder,
-										{
-											remainingOldSprouts: $elm$core$Set$fromList(tail)
-										})));
-						},
-						A2(
-							$elm$random$Random$uniform,
-							_Utils_Tuple2($author$project$Level$Lemon, $author$project$Level$Apple),
-							_List_Nil));
-				},
-				randomPos);
-		} else {
-			return $elm$random$Random$constant(
-				A3(
-					$author$project$Puzzle$Builder$addBlock,
-					head,
-					$author$project$Level$SolidBlock($author$project$Level$Sprout),
-					_Utils_update(
-						builder,
-						{
-							remainingOldSprouts: $elm$core$Set$fromList(tail)
-						})));
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
 		}
-	} else {
-		return $elm$random$Random$constant(builder);
-	}
-};
-var $author$project$Puzzle$Builder$randomPair = function (builder) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		$elm$random$Random$constant(_List_Nil),
-		A2(
-			$elm$core$Maybe$map,
-			$elm$random$Random$andThen(
-				function (p1) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$random$Random$constant(
-							_List_fromArray(
-								[p1])),
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Puzzle$Builder$isValidPair = F4(
+	function (builder, validBlocks, _v0, _v1) {
+		var x1 = _v0.a;
+		var y1 = _v0.b;
+		var x2 = _v1.a;
+		var y2 = _v1.b;
+		var validBlock = function (block) {
+			return A2($elm$core$List$member, block, validBlocks);
+		};
+		return (_Utils_eq(x1, x2) && A2(
+			$elm$core$List$all,
+			function (y) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						validBlock,
 						A2(
-							$elm$core$Maybe$map,
-							$elm$random$Random$map(
-								function (p2) {
-									return _List_fromArray(
-										[p1, p2]);
-								}),
-							A3(
-								$author$project$Puzzle$Builder$findValidPair,
-								builder,
-								p1,
-								A2($elm$core$Set$remove, p1, builder.remainingPositions))));
-				}),
-			$author$project$Puzzle$Builder$randomFromList(
-				$elm$core$Set$toList(builder.remainingPositions))));
-};
+							$elm$core$Dict$get,
+							_Utils_Tuple2(x1, y),
+							builder.blocks)));
+			},
+			A2(
+				$elm$core$List$range,
+				A2($elm$core$Basics$min, y1, y2) + 1,
+				A2($elm$core$Basics$max, y1, y2) - 1))) || (_Utils_eq(y1, y2) && A2(
+			$elm$core$List$all,
+			function (x) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						validBlock,
+						A2(
+							$elm$core$Dict$get,
+							_Utils_Tuple2(x, y1),
+							builder.blocks)));
+			},
+			A2(
+				$elm$core$List$range,
+				A2($elm$core$Basics$min, x1, x2) + 1,
+				A2($elm$core$Basics$max, x1, x2) - 1)));
+	});
+var $author$project$Puzzle$Builder$randomPair = F2(
+	function (validBlocks, builder) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$random$Random$constant(_List_Nil),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$random$Random$andThen(
+					function (p1) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$elm$random$Random$constant(
+								_List_fromArray(
+									[p1])),
+							A2(
+								$elm$core$Maybe$map,
+								$elm$random$Random$map(
+									function (p2) {
+										return _List_fromArray(
+											[p1, p2]);
+									}),
+								A2(
+									$author$project$Puzzle$Builder$findValidPair,
+									A3($author$project$Puzzle$Builder$isValidPair, builder, validBlocks, p1),
+									A2($elm$core$Set$remove, p1, builder.remainingPositions))));
+					}),
+				$author$project$Puzzle$Builder$randomFromList(
+					$elm$core$Set$toList(builder.remainingPositions))));
+	});
 var $author$project$Puzzle$Builder$addRandomPair = F3(
 	function (b1, b2, builder) {
 		return A2(
@@ -6469,25 +6382,11 @@ var $author$project$Puzzle$Builder$addRandomPair = F3(
 					return builder;
 				}
 			},
-			$author$project$Puzzle$Builder$randomPair(builder));
-	});
-var $author$project$Puzzle$Builder$addRandomSolid = F2(
-	function (solid, builder) {
-		return A2(
-			$elm$random$Random$map,
-			function (pos) {
-				return A3(
-					$author$project$Puzzle$Builder$addBlock,
-					pos,
-					$author$project$Level$SolidBlock(solid),
-					builder);
-			},
 			A2(
-				$elm$core$Maybe$withDefault,
-				$elm$random$Random$constant(
-					_Utils_Tuple2(-1, -1)),
-				$author$project$Puzzle$Builder$randomFromList(
-					$elm$core$Set$toList(builder.remainingPositions))));
+				$author$project$Puzzle$Builder$randomPair,
+				_List_fromArray(
+					[b1, b2]),
+				builder));
 	});
 var $elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
@@ -6543,6 +6442,16 @@ var $elm$core$List$concatMap = F2(
 		return $elm$core$List$concat(
 			A2($elm$core$List$map, f, list));
 	});
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
@@ -6551,7 +6460,6 @@ var $author$project$Puzzle$Builder$new = function (args) {
 	return {
 		blocks: $elm$core$Dict$empty,
 		columns: args.columns,
-		remainingOldSprouts: args.oldSprouts,
 		remainingPositions: $elm$core$Set$fromList(
 			A2(
 				$elm$core$List$concatMap,
@@ -6565,74 +6473,69 @@ var $author$project$Puzzle$Builder$new = function (args) {
 		rows: args.rows
 	};
 };
-var $elm$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
-					$temp$dict = left;
-				n = $temp$n;
-				dict = $temp$dict;
-				continue sizeHelp;
-			}
-		}
-	});
-var $elm$core$Dict$size = function (dict) {
-	return A2($elm$core$Dict$sizeHelp, 0, dict);
-};
-var $elm$core$Set$size = function (_v0) {
-	var dict = _v0.a;
-	return $elm$core$Dict$size(dict);
-};
-var $author$project$Puzzle$Builder$generateLevel = function (args) {
-	var oldSprouts = $elm$core$Set$fromList(
-		$elm$core$Dict$keys(
+var $author$project$Puzzle$Builder$randomAddOptionalNear = F3(
+	function (block, optional, builder) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$random$Random$constant(builder),
 			A2(
-				$elm$core$Dict$filter,
-				F2(
-					function (_v0, block) {
-						return _Utils_eq(
-							block,
-							$author$project$Level$SolidBlock($author$project$Level$Sprout));
+				$elm$core$Maybe$map,
+				$elm$random$Random$andThen(
+					function (p1) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$elm$random$Random$constant(builder),
+							A2(
+								$elm$core$Maybe$map,
+								$elm$random$Random$map(
+									function (p2) {
+										return A3(
+											$author$project$Puzzle$Builder$addBlock,
+											p2,
+											$author$project$Level$OptionalBlock(optional),
+											builder);
+									}),
+								A2(
+									$author$project$Puzzle$Builder$findValidPair,
+									A3(
+										$author$project$Puzzle$Builder$isValidPair,
+										builder,
+										_List_fromArray(
+											[block]),
+										p1),
+									builder.remainingPositions)));
 					}),
-				args.oldBlocks)));
+				$author$project$Puzzle$Builder$randomFromList(
+					$elm$core$Dict$keys(
+						A2(
+							$elm$core$Dict$filter,
+							F2(
+								function (_v0, b) {
+									return _Utils_eq(b, block);
+								}),
+							builder.blocks)))));
+	});
+var $author$project$Puzzle$Builder$generateLevel = function (args) {
 	return A2(
 		$elm$random$Random$map,
 		$author$project$Puzzle$Builder$build,
 		A3(
 			$author$project$Puzzle$Builder$andThenRepeat,
-			args.newFruitPairs,
+			(args.fishAndRod / 2) | 0,
 			A2(
 				$author$project$Puzzle$Builder$addRandomPair,
-				$author$project$Level$FruitBlock($author$project$Level$Apple),
-				$author$project$Level$FruitBlock($author$project$Level$Orange)),
+				$author$project$Level$FishingRod,
+				$author$project$Level$OptionalBlock($author$project$Level$Fish)),
 			A3(
 				$author$project$Puzzle$Builder$andThenRepeat,
-				args.newGrapePairs,
-				function (b) {
-					return A2(
-						$elm$random$Random$andThen,
-						function (fruit) {
-							return A3(
-								$author$project$Puzzle$Builder$addRandomPair,
-								$author$project$Level$FruitBlock(fruit),
-								$author$project$Level$FruitBlock($author$project$Level$Grapes),
-								b);
-						},
-						A2(
-							$elm$random$Random$uniform,
-							$author$project$Level$Apple,
-							_List_fromArray(
-								[$author$project$Level$Orange, $author$project$Level$Lemon])));
-				},
+				args.newFruitPairs,
+				A2(
+					$author$project$Puzzle$Builder$addRandomPair,
+					$author$project$Level$FruitBlock($author$project$Level$Apple),
+					$author$project$Level$FruitBlock($author$project$Level$Orange)),
 				A3(
 					$author$project$Puzzle$Builder$andThenRepeat,
-					args.newLemonPairs,
+					args.newGrapePairs,
 					function (b) {
 						return A2(
 							$elm$random$Random$andThen,
@@ -6640,37 +6543,94 @@ var $author$project$Puzzle$Builder$generateLevel = function (args) {
 								return A3(
 									$author$project$Puzzle$Builder$addRandomPair,
 									$author$project$Level$FruitBlock(fruit),
-									$author$project$Level$FruitBlock($author$project$Level$Lemon),
+									$author$project$Level$FruitBlock($author$project$Level$Grapes),
 									b);
 							},
 							A2(
 								$elm$random$Random$uniform,
 								$author$project$Level$Apple,
 								_List_fromArray(
-									[$author$project$Level$Orange])));
+									[$author$project$Level$Orange, $author$project$Level$Lemon])));
 					},
 					A3(
 						$author$project$Puzzle$Builder$andThenRepeat,
-						$elm$core$Set$size(oldSprouts),
-						$author$project$Puzzle$Builder$addFruitPairFromOldSprout,
+						args.newLemonPairs,
+						function (b) {
+							return A2(
+								$elm$random$Random$andThen,
+								function (fruit) {
+									return A3(
+										$author$project$Puzzle$Builder$addRandomPair,
+										$author$project$Level$FruitBlock(fruit),
+										$author$project$Level$FruitBlock($author$project$Level$Lemon),
+										b);
+								},
+								A2(
+									$elm$random$Random$uniform,
+									$author$project$Level$Apple,
+									_List_fromArray(
+										[$author$project$Level$Orange])));
+						},
 						A3(
 							$author$project$Puzzle$Builder$andThenRepeat,
-							args.newSprouts,
-							$author$project$Puzzle$Builder$addRandomSolid($author$project$Level$Sprout),
+							args.rabbitAndCarrotPairs,
+							function (b) {
+								return A2(
+									$elm$random$Random$andThen,
+									function (fruit) {
+										return A3(
+											$author$project$Puzzle$Builder$addRandomPair,
+											$author$project$Level$FruitBlock(fruit),
+											$author$project$Level$FruitBlock($author$project$Level$Carrot),
+											b);
+									},
+									A2(
+										$elm$random$Random$uniform,
+										$author$project$Level$Apple,
+										_List_fromArray(
+											[$author$project$Level$Orange])));
+							},
 							A3(
 								$author$project$Puzzle$Builder$andThenRepeat,
-								args.newDynamite,
-								$author$project$Puzzle$Builder$addDynamiteNearStone,
+								(args.fishAndRod / 2) | 0,
+								A2(
+									$author$project$Puzzle$Builder$addRandomPair,
+									$author$project$Level$FishingRod,
+									$author$project$Level$OptionalBlock($author$project$Level$Fish)),
 								A3(
 									$author$project$Puzzle$Builder$andThenRepeat,
-									args.newStone,
-									$author$project$Puzzle$Builder$addRandomSolid($author$project$Level$Stone),
-									$elm$random$Random$constant(
-										A2(
-											$author$project$Puzzle$Builder$addBlocks,
-											$elm$core$Dict$toList(args.oldBlocks),
-											$author$project$Puzzle$Builder$new(
-												{columns: args.columns, oldSprouts: oldSprouts, rows: args.rows})))))))))));
+									args.newDynamite,
+									A2(
+										$author$project$Puzzle$Builder$randomAddOptionalNear,
+										$author$project$Level$SolidBlock($author$project$Level$Stone),
+										$author$project$Level$Dynamite),
+									A3(
+										$author$project$Puzzle$Builder$andThenRepeat,
+										args.newStone,
+										$author$project$Puzzle$Builder$addRandomBlock(
+											$author$project$Level$SolidBlock($author$project$Level$Stone)),
+										A3(
+											$author$project$Puzzle$Builder$andThenRepeat,
+											args.rabbitAndCarrotPairs * 2,
+											$author$project$Puzzle$Builder$addRandomBlock(
+												$author$project$Level$OptionalBlock($author$project$Level$Rabbit)),
+											$elm$random$Random$constant(
+												A2(
+													$author$project$Puzzle$Builder$addBlocks,
+													$elm$core$Dict$toList(
+														A2(
+															$elm$core$Dict$filter,
+															F2(
+																function (_v0, block) {
+																	if (block.$ === 'OptionalBlock') {
+																		return false;
+																	} else {
+																		return true;
+																	}
+																}),
+															args.oldBlocks)),
+													$author$project$Puzzle$Builder$new(
+														{columns: args.columns, rows: args.rows})))))))))))));
 };
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6729,7 +6689,27 @@ var $author$project$Level$getBlocks = function (game) {
 					}),
 				game.fields)));
 };
-var $author$project$Puzzle$Generator$generate = F2(
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $author$project$Puzzle$Setting$generate = F2(
 	function (game, setting) {
 		var oldBlocks = $elm$core$Dict$fromList(
 			$author$project$Level$getBlocks(game));
@@ -6753,41 +6733,21 @@ var $author$project$Puzzle$Generator$generate = F2(
 		return $author$project$Puzzle$Builder$generateLevel(
 			{
 				columns: 6,
-				newDynamite: A2(
-					limitedByExisting,
-					$author$project$Level$SolidBlock($author$project$Level$Dynamite),
-					setting.newDynamite),
+				fishAndRod: setting.fishAndRod,
+				newDynamite: setting.newStoneAndDynamite,
 				newFruitPairs: setting.newFruitPairs,
 				newGrapePairs: setting.newGrapePairs,
 				newLemonPairs: setting.newLemonPairs,
-				newSprouts: 0,
 				newStone: A2(
 					limitedByExisting,
 					$author$project$Level$SolidBlock($author$project$Level$Stone),
-					setting.newStone),
+					setting.newStoneAndDynamite),
 				oldBlocks: oldBlocks,
+				rabbitAndCarrotPairs: setting.rabbitAndCarrotPairs,
 				rows: 6
 			});
 	});
-var $author$project$Level$addBlock = F3(
-	function (_v0, block, game) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var fruitId = $elm$core$Dict$size(game.blocks);
-		return _Utils_Tuple2(
-			_Utils_update(
-				game,
-				{
-					blocks: A3($elm$core$Dict$insert, fruitId, block, game.blocks),
-					fields: A3(
-						$elm$core$Dict$insert,
-						_Utils_Tuple2(x, y),
-						fruitId,
-						game.fields)
-				}),
-			fruitId);
-	});
-var $author$project$Main$newEntity = function (_v0) {
+var $author$project$Level$newEntity = function (_v0) {
 	var x = _v0.a;
 	var y = _v0.b;
 	return {
@@ -6797,28 +6757,40 @@ var $author$project$Main$newEntity = function (_v0) {
 		y: y
 	};
 };
+var $author$project$Level$addBlock = F3(
+	function (_v0, block, game) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var fruitId = $elm$core$Dict$size(game.blocks);
+		return _Utils_update(
+			game,
+			{
+				blocks: A3($elm$core$Dict$insert, fruitId, block, game.blocks),
+				entities: A3(
+					$elm$core$Dict$insert,
+					fruitId,
+					$author$project$Level$newEntity(
+						_Utils_Tuple2(x, y)),
+					game.entities),
+				fields: A3(
+					$elm$core$Dict$insert,
+					_Utils_Tuple2(x, y),
+					fruitId,
+					game.fields)
+			});
+	});
 var $author$project$Main$addBlock = F3(
 	function (_v0, block, model) {
 		var x = _v0.a;
 		var y = _v0.b;
-		var _v1 = A3(
+		var level = A3(
 			$author$project$Level$addBlock,
 			_Utils_Tuple2(x, y),
 			block,
-			model.game);
-		var game = _v1.a;
-		var fruitId = _v1.b;
+			model.level);
 		return _Utils_update(
 			model,
-			{
-				entities: A3(
-					$elm$core$Dict$insert,
-					fruitId,
-					$author$project$Main$newEntity(
-						_Utils_Tuple2(x, y)),
-					model.entities),
-				game: game
-			});
+			{level: level});
 	});
 var $author$project$Main$loadPuzzle = F2(
 	function (puzzle, model) {
@@ -6831,6 +6803,23 @@ var $author$project$Main$loadPuzzle = F2(
 			},
 			model,
 			puzzle.blocks);
+	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
+				return _Utils_Tuple2(
+					A2(func, a, b),
+					seed2);
+			});
 	});
 var $elm$random$Random$listHelp = F4(
 	function (revList, n, gen, seed) {
@@ -6864,124 +6853,141 @@ var $elm$random$Random$list = F2(
 	});
 var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$Basics$round = _Basics_round;
-var $author$project$Puzzle$Generator$priceForSetting = function (setting) {
+var $author$project$Puzzle$Setting$priceForSetting = function (setting) {
 	var times = F2(
 		function (_float, n) {
-			return $elm$core$Basics$round(n * _float);
+			return n * _float;
 		});
-	return A2(
-		$elm$core$Basics$max,
-		0,
+	return $elm$core$Basics$round(
 		A2(
-			$elm$core$Basics$pow,
-			(((A2(times, 0.7, setting.newFruitPairs) + A2(times, 1.5, setting.newGrapePairs)) + A2(times, 1, setting.newLemonPairs)) + A2(times, 0.5, setting.newStone)) + A2(times, 0.5, setting.newDynamite),
-			2));
+			$elm$core$Basics$max,
+			0,
+			A2(
+				$elm$core$Basics$pow,
+				((((A2(times, 1, setting.newFruitPairs) + A2(times, 1, setting.newGrapePairs)) + A2(times, 1, setting.newLemonPairs)) + A2(times, 1, setting.newStoneAndDynamite)) + A2(times, 1, setting.fishAndRod)) + A2(times, 2, setting.rabbitAndCarrotPairs),
+				1.6)));
 };
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
-var $author$project$Puzzle$Generator$applesAdvanced = {
-	difficulty: 2,
-	newDynamite: 1,
-	newFruitPairs: 10,
+var $author$project$Puzzle$Setting$empty = {
+	difficulty: 0,
+	fishAndRod: 0,
+	newFruitPairs: 0,
 	newGrapePairs: 0,
 	newLemonPairs: 0,
-	newStone: 1,
+	newStoneAndDynamite: 0,
+	rabbitAndCarrotPairs: 0,
 	symbol: $author$project$Level$FruitBlock($author$project$Level$Apple)
 };
-var $author$project$Puzzle$Generator$applesBasic = {
-	difficulty: 1,
-	newDynamite: 1,
-	newFruitPairs: 5,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Apple)
-};
-var $author$project$Puzzle$Generator$applesTraining = {
-	difficulty: 0,
-	newDynamite: 0,
-	newFruitPairs: 3,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 0,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Apple)
-};
-var $author$project$Puzzle$Generator$grapesAdvanced = {
-	difficulty: 2,
-	newDynamite: 1,
-	newFruitPairs: 6,
-	newGrapePairs: 3,
-	newLemonPairs: 0,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Grapes)
-};
-var $author$project$Puzzle$Generator$grapesBasic = {
-	difficulty: 1,
-	newDynamite: 1,
-	newFruitPairs: 3,
-	newGrapePairs: 2,
-	newLemonPairs: 0,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Grapes)
-};
-var $author$project$Puzzle$Generator$lemonAdvanced = {
-	difficulty: 2,
-	newDynamite: 1,
-	newFruitPairs: 5,
-	newGrapePairs: 0,
-	newLemonPairs: 5,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
-};
-var $author$project$Puzzle$Generator$lemonBasic = {
-	difficulty: 1,
-	newDynamite: 1,
-	newFruitPairs: 2,
-	newGrapePairs: 0,
-	newLemonPairs: 3,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
-};
-var $author$project$Puzzle$Generator$lemonTraining = {
-	difficulty: 0,
-	newDynamite: 0,
-	newFruitPairs: 3,
-	newGrapePairs: 0,
-	newLemonPairs: 1,
-	newStone: 1,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
-};
-var $author$project$Puzzle$Generator$miningAdvanced = {
-	difficulty: 2,
-	newDynamite: 6,
-	newFruitPairs: 6,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 6,
-	symbol: $author$project$Level$SolidBlock($author$project$Level$Dynamite)
-};
-var $author$project$Puzzle$Generator$miningBasic = {
-	difficulty: 1,
-	newDynamite: 3,
-	newFruitPairs: 4,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 3,
-	symbol: $author$project$Level$SolidBlock($author$project$Level$Dynamite)
-};
-var $author$project$Puzzle$Generator$miningTraining = {
-	difficulty: 0,
-	newDynamite: 1,
-	newFruitPairs: 3,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 1,
-	symbol: $author$project$Level$SolidBlock($author$project$Level$Dynamite)
-};
-var $author$project$Puzzle$Generator$settings = _List_fromArray(
-	[$author$project$Puzzle$Generator$applesTraining, $author$project$Puzzle$Generator$applesBasic, $author$project$Puzzle$Generator$applesAdvanced, $author$project$Puzzle$Generator$lemonTraining, $author$project$Puzzle$Generator$lemonBasic, $author$project$Puzzle$Generator$lemonAdvanced, $author$project$Puzzle$Generator$miningTraining, $author$project$Puzzle$Generator$miningBasic, $author$project$Puzzle$Generator$miningAdvanced, $author$project$Puzzle$Generator$grapesBasic, $author$project$Puzzle$Generator$grapesAdvanced]);
+var $author$project$Puzzle$Setting$applesAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 2,
+		newFruitPairs: 10,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Orange)
+	});
+var $author$project$Puzzle$Setting$applesBasic = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 1,
+		newFruitPairs: 5,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Orange)
+	});
+var $author$project$Puzzle$Setting$applesTraining = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 0,
+		newFruitPairs: 3,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Apple)
+	});
+var $author$project$Puzzle$Setting$fishingAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{difficulty: 2, fishAndRod: 6, newFruitPairs: 5, symbol: $author$project$Level$FishingRod});
+var $author$project$Puzzle$Setting$fishingBasic = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{difficulty: 1, fishAndRod: 4, newFruitPairs: 5, symbol: $author$project$Level$FishingRod});
+var $author$project$Puzzle$Setting$grapesAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 2,
+		newFruitPairs: 6,
+		newGrapePairs: 3,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Grapes)
+	});
+var $author$project$Puzzle$Setting$grapesBasic = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 1,
+		newFruitPairs: 3,
+		newGrapePairs: 2,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Grapes)
+	});
+var $author$project$Puzzle$Setting$lemonAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 2,
+		newFruitPairs: 5,
+		newLemonPairs: 5,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
+	});
+var $author$project$Puzzle$Setting$lemonBasic = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 1,
+		newFruitPairs: 2,
+		newLemonPairs: 3,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
+	});
+var $author$project$Puzzle$Setting$lemonTraining = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 0,
+		newFruitPairs: 3,
+		newLemonPairs: 1,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Lemon)
+	});
+var $author$project$Puzzle$Setting$miningAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 2,
+		newFruitPairs: 6,
+		newStoneAndDynamite: 6,
+		symbol: $author$project$Level$OptionalBlock($author$project$Level$Dynamite)
+	});
+var $author$project$Puzzle$Setting$miningBasic = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 1,
+		newFruitPairs: 4,
+		newStoneAndDynamite: 3,
+		symbol: $author$project$Level$OptionalBlock($author$project$Level$Dynamite)
+	});
+var $author$project$Puzzle$Setting$miningTraining = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 0,
+		newFruitPairs: 3,
+		newStoneAndDynamite: 1,
+		symbol: $author$project$Level$OptionalBlock($author$project$Level$Dynamite)
+	});
+var $author$project$Puzzle$Setting$rabbitAdvanced = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 2,
+		newFruitPairs: 6,
+		rabbitAndCarrotPairs: 3,
+		symbol: $author$project$Level$OptionalBlock($author$project$Level$Rabbit)
+	});
+var $author$project$Puzzle$Setting$settings = _List_fromArray(
+	[$author$project$Puzzle$Setting$applesTraining, $author$project$Puzzle$Setting$applesBasic, $author$project$Puzzle$Setting$applesAdvanced, $author$project$Puzzle$Setting$lemonTraining, $author$project$Puzzle$Setting$lemonBasic, $author$project$Puzzle$Setting$lemonAdvanced, $author$project$Puzzle$Setting$miningTraining, $author$project$Puzzle$Setting$miningBasic, $author$project$Puzzle$Setting$miningAdvanced, $author$project$Puzzle$Setting$grapesBasic, $author$project$Puzzle$Setting$grapesAdvanced, $author$project$Puzzle$Setting$fishingBasic, $author$project$Puzzle$Setting$fishingAdvanced, $author$project$Puzzle$Setting$rabbitAdvanced]);
 var $elm$core$List$sortBy = _List_sortBy;
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -7109,16 +7115,16 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
-var $author$project$Puzzle$Generator$pickSettings = function (args) {
+var $author$project$Puzzle$Setting$pickSettings = function (args) {
 	var validSettings = $elm$core$List$reverse(
 		A2(
 			$elm$core$List$filter,
 			function (setting) {
 				return _Utils_cmp(
-					$author$project$Puzzle$Generator$priceForSetting(setting),
+					$author$project$Puzzle$Setting$priceForSetting(setting),
 					args.money) < 1;
 			},
-			$author$project$Puzzle$Generator$settings));
+			$author$project$Puzzle$Setting$settings));
 	return A2(
 		$elm$random$Random$map,
 		function (randomFloat) {
@@ -7138,22 +7144,42 @@ var $author$project$Puzzle$Generator$pickSettings = function (args) {
 			$elm$core$List$length(validSettings),
 			A2($elm$random$Random$float, 0, 1)));
 };
-var $author$project$Main$openShop = function (model) {
+var $author$project$Puzzle$Setting$shuffle = function (list) {
 	return A2(
 		$elm$random$Random$map,
-		function (list) {
-			return _Utils_update(
-				model,
-				{
-					shop: $elm$core$Maybe$Just(
-						{buyableSettings: list, selected: $elm$core$Maybe$Nothing})
-				});
+		function (randomList) {
+			return A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2(
+					$elm$core$List$sortBy,
+					$elm$core$Tuple$second,
+					A3($elm$core$List$map2, $elm$core$Tuple$pair, list, randomList)));
 		},
-		$author$project$Puzzle$Generator$pickSettings(
-			{amount: 2, money: model.money}));
+		A2(
+			$elm$random$Random$list,
+			$elm$core$List$length(list),
+			A2($elm$random$Random$float, 0, 1)));
+};
+var $author$project$Main$openShop = function (model) {
+	return A3(
+		$elm$random$Random$map2,
+		F2(
+			function (buyableSettings, possibleSettings) {
+				return _Utils_update(
+					model,
+					{
+						possibleSettings: possibleSettings,
+						shop: $elm$core$Maybe$Just(
+							{buyableSettings: buyableSettings, selected: $elm$core$Maybe$Nothing})
+					});
+			}),
+		$author$project$Puzzle$Setting$pickSettings(
+			{amount: 2, money: model.money}),
+		$author$project$Puzzle$Setting$shuffle(model.possibleSettings));
 };
 var $author$project$Main$loadNextLevel = function (model) {
-	var _v0 = model.nextLevels;
+	var _v0 = model.nextEvents;
 	if (_v0.b) {
 		var head = _v0.a;
 		var tail = _v0.b;
@@ -7168,50 +7194,45 @@ var $author$project$Main$loadNextLevel = function (model) {
 						$author$project$Main$clearLevel(
 							_Utils_update(
 								model,
-								{nextLevels: tail, setting: head})));
+								{event: head, nextEvents: tail})));
 				},
-				A2($author$project$Puzzle$Generator$generate, model.game, weather));
+				A2($author$project$Puzzle$Setting$generate, model.level, weather));
 		} else {
 			return $author$project$Main$openShop(
 				$author$project$Main$clearLevel(
 					_Utils_update(
 						model,
-						{nextLevels: tail, setting: head})));
+						{event: head, nextEvents: tail})));
 		}
 	} else {
 		return $elm$random$Random$constant(model);
 	}
 };
-var $author$project$Puzzle$Generator$startingLevel = {
-	difficulty: 0,
-	newDynamite: 0,
-	newFruitPairs: 2,
-	newGrapePairs: 0,
-	newLemonPairs: 0,
-	newStone: 0,
-	symbol: $author$project$Level$FruitBlock($author$project$Level$Apple)
-};
-var $author$project$Puzzle$Generator$tutorials = _List_fromArray(
-	[$author$project$Puzzle$Generator$applesTraining, $author$project$Puzzle$Generator$applesTraining, $author$project$Puzzle$Generator$applesTraining, $author$project$Puzzle$Generator$applesTraining, $author$project$Puzzle$Generator$lemonTraining, $author$project$Puzzle$Generator$miningTraining]);
+var $author$project$Puzzle$Setting$startingLevel = _Utils_update(
+	$author$project$Puzzle$Setting$empty,
+	{
+		difficulty: 0,
+		newFruitPairs: 2,
+		symbol: $author$project$Level$FruitBlock($author$project$Level$Orange)
+	});
+var $author$project$Puzzle$Setting$tutorials = _List_fromArray(
+	[$author$project$Puzzle$Setting$startingLevel, $author$project$Puzzle$Setting$applesTraining, $author$project$Puzzle$Setting$applesTraining, $author$project$Puzzle$Setting$applesTraining, $author$project$Puzzle$Setting$lemonTraining, $author$project$Puzzle$Setting$miningTraining]);
 var $author$project$Main$init = function (_v0) {
 	var seed = $elm$random$Random$initialSeed(42);
 	var model = {
-		coins: $elm$core$Dict$empty,
 		day: 1,
 		endOfDay: false,
-		entities: $elm$core$Dict$empty,
-		game: $author$project$Level$empty(
-			{columns: 6, rows: 6}),
+		event: $author$project$Event$WeatherEvent($author$project$Puzzle$Setting$startingLevel),
 		history: _List_Nil,
+		level: $author$project$Level$empty(
+			{columns: 6, rows: 6}),
 		money: 0,
-		nextCoinId: 0,
-		nextLevels: _Utils_ap(
-			A2($elm$core$List$map, $author$project$Event$WeatherEvent, $author$project$Puzzle$Generator$tutorials),
+		nextEvents: _Utils_ap(
+			A2($elm$core$List$map, $author$project$Event$WeatherEvent, $author$project$Puzzle$Setting$tutorials),
 			_List_fromArray(
 				[$author$project$Event$ShopEvent])),
-		possibleSettings: $author$project$Puzzle$Generator$tutorials,
+		possibleSettings: $author$project$Puzzle$Setting$tutorials,
 		seed: seed,
-		setting: $author$project$Event$WeatherEvent($author$project$Puzzle$Generator$startingLevel),
 		shop: $elm$core$Maybe$Nothing
 	};
 	return _Utils_Tuple2(
@@ -7280,18 +7301,14 @@ var $author$project$Main$buyAndReplaceSetting = F2(
 					return _Utils_update(
 						model,
 						{
+							money: model.money - $author$project$Puzzle$Setting$priceForSetting(setting),
 							possibleSettings: A2(
-								$elm$core$List$sortBy,
-								function ($) {
-									return $.difficulty;
-								},
-								A2(
-									$elm$core$List$indexedMap,
-									F2(
-										function (j, s) {
-											return _Utils_eq(replaceWith, j) ? setting : s;
-										}),
-									model.possibleSettings))
+								$elm$core$List$indexedMap,
+								F2(
+									function (j, s) {
+										return _Utils_eq(replaceWith, j) ? setting : s;
+									}),
+								model.possibleSettings)
 						});
 				},
 				A2(
@@ -7331,18 +7348,24 @@ var $author$project$Main$checkWinCondition = function (model) {
 		$elm$core$List$all,
 		function (_v1) {
 			var blockId = _v1.b;
-			var _v2 = A2($elm$core$Dict$get, blockId, model.game.blocks);
+			var _v2 = A2($elm$core$Dict$get, blockId, model.level.blocks);
 			if (_v2.$ === 'Just') {
-				if (_v2.a.$ === 'FruitBlock') {
-					return false;
-				} else {
-					return true;
+				switch (_v2.a.$) {
+					case 'FruitBlock':
+						return false;
+					case 'FishingRod':
+						var _v3 = _v2.a;
+						return false;
+					case 'SolidBlock':
+						return true;
+					default:
+						return true;
 				}
 			} else {
 				return true;
 			}
 		},
-		$elm$core$Dict$toList(model.game.fields));
+		$elm$core$Dict$toList(model.level.fields));
 	return _Utils_Tuple2(
 		model,
 		$elm$core$Platform$Cmd$batch(
@@ -7351,7 +7374,7 @@ var $author$project$Main$checkWinCondition = function (model) {
 					A2(
 					$elm$core$Task$perform,
 					function (_v0) {
-						return $author$project$Main$CollectCoin(model.nextCoinId - 1);
+						return $author$project$Main$CollectCoin(model.level.nextCoinId - 1);
 					},
 					$elm$core$Process$sleep(100)),
 					hasWon ? $author$project$Main$sequence(
@@ -7377,64 +7400,51 @@ var $elm$core$Dict$values = function (dict) {
 		_List_Nil,
 		dict);
 };
+var $author$project$Level$collectCoins = function (model) {
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{
+				coins: A2(
+					$elm$core$Dict$map,
+					F2(
+						function (_v0, coin) {
+							return _Utils_update(
+								coin,
+								{x: 2.5, y: -1});
+						}),
+					model.coins)
+			}),
+		$elm$core$List$sum(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.value;
+				},
+				$elm$core$Dict$values(model.coins))));
+};
 var $author$project$Main$collectCoins = function (model) {
+	var _v0 = $author$project$Level$collectCoins(model.level);
+	var level = _v0.a;
+	var amount = _v0.b;
 	return _Utils_update(
 		model,
-		{
-			coins: A2(
-				$elm$core$Dict$map,
-				F2(
-					function (_v0, coin) {
-						return _Utils_update(
-							coin,
-							{x: 2.5, y: -1});
-					}),
-				model.coins),
-			money: model.money + $elm$core$List$sum(
-				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.value;
-					},
-					$elm$core$Dict$values(model.coins)))
-		});
+		{level: level, money: amount + model.money});
 };
 var $author$project$Main$endDay = function (model) {
 	return _Utils_update(
 		model,
 		{endOfDay: true});
 };
-var $author$project$Puzzle$Generator$sort = function (list) {
-	return A2(
-		$elm$random$Random$map,
-		function (randomList) {
-			return A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2(
-					$elm$core$List$sortBy,
-					$elm$core$Tuple$second,
-					A3($elm$core$List$map2, $elm$core$Tuple$pair, list, randomList)));
-		},
-		A2(
-			$elm$random$Random$list,
-			$elm$core$List$length(list),
-			A2($elm$random$Random$float, 0, 1)));
-};
 var $author$project$Main$generateNextWeek = function (model) {
-	return A2(
-		$elm$random$Random$map,
-		function (nextLevels) {
-			return _Utils_update(
-				model,
-				{
-					nextLevels: _Utils_ap(
-						A2($elm$core$List$map, $author$project$Event$WeatherEvent, nextLevels),
-						_List_fromArray(
-							[$author$project$Event$ShopEvent]))
-				});
-		},
-		$author$project$Puzzle$Generator$sort(model.possibleSettings));
+	return _Utils_update(
+		model,
+		{
+			nextEvents: _Utils_ap(
+				A2($elm$core$List$map, $author$project$Event$WeatherEvent, model.possibleSettings),
+				_List_fromArray(
+					[$author$project$Event$ShopEvent]))
+		});
 };
 var $author$project$Level$getBlockAndIdAt = F2(
 	function (pos, game) {
@@ -7496,42 +7506,31 @@ var $author$project$Level$isValidPair = F3(
 		var isValidBlock = F2(
 			function (p1, p2) {
 				var _v2 = _Utils_Tuple2(p1, p2);
-				_v2$3:
-				while (true) {
-					if (_v2.a.$ === 'FruitBlock') {
-						if (_v2.b.$ === 'FruitBlock') {
-							return true;
-						} else {
-							break _v2$3;
-						}
-					} else {
-						if (_v2.b.$ === 'SolidBlock') {
-							switch (_v2.a.a.$) {
-								case 'Dynamite':
-									if (_v2.b.a.$ === 'Stone') {
-										var _v3 = _v2.a.a;
-										var _v4 = _v2.b.a;
-										return true;
-									} else {
-										break _v2$3;
-									}
-								case 'Stone':
-									if (_v2.b.a.$ === 'Dynamite') {
-										var _v5 = _v2.a.a;
-										var _v6 = _v2.b.a;
-										return true;
-									} else {
-										break _v2$3;
-									}
-								default:
-									break _v2$3;
-							}
-						} else {
-							break _v2$3;
-						}
-					}
+				if ((_v2.a.$ === 'FruitBlock') && (_v2.b.$ === 'FruitBlock')) {
+					return true;
+				} else {
+					return A2(
+						$elm$core$List$any,
+						function (pair) {
+							return _Utils_eq(
+								_Utils_Tuple2(p1, p2),
+								pair) || _Utils_eq(
+								_Utils_Tuple2(p2, p1),
+								pair);
+						},
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								$author$project$Level$OptionalBlock($author$project$Level$Dynamite),
+								$author$project$Level$SolidBlock($author$project$Level$Stone)),
+								_Utils_Tuple2(
+								$author$project$Level$FishingRod,
+								$author$project$Level$OptionalBlock($author$project$Level$Fish)),
+								_Utils_Tuple2(
+								$author$project$Level$OptionalBlock($author$project$Level$Rabbit),
+								$author$project$Level$FruitBlock($author$project$Level$Carrot))
+							]));
 				}
-				return false;
 			});
 		return ((_Utils_eq(x1, x2) && A2(
 			$elm$core$List$all,
@@ -7578,18 +7577,29 @@ var $author$project$Level$isValidPair = F3(
 					_Utils_Tuple2(x2, y2),
 					game))));
 	});
+var $author$project$Level$addCoin = F3(
+	function (_v0, value, level) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_update(
+			level,
+			{
+				coins: A3(
+					$elm$core$Dict$insert,
+					level.nextCoinId,
+					{shrink: true, value: value, x: x, y: y},
+					level.coins),
+				nextCoinId: level.nextCoinId + 1
+			});
+	});
 var $author$project$Main$coinsEarnedFromMatching = F2(
 	function (block1, block2) {
 		var coinsEarned = function (block) {
-			if (block.$ === 'FruitBlock') {
-				return 1;
+			if ((block.$ === 'OptionalBlock') && (block.a.$ === 'Rabbit')) {
+				var _v1 = block.a;
+				return 20;
 			} else {
-				if (block.a.$ === 'Stone') {
-					var _v1 = block.a;
-					return 2;
-				} else {
-					return 0;
-				}
+				return 1;
 			}
 		};
 		return ((coinsEarned(block1) + coinsEarned(block2)) / 2) | 0;
@@ -7626,6 +7636,34 @@ var $author$project$Maths$intersect = F2(
 		var y2 = _v1.b;
 		return _Utils_Tuple2((x1 + x2) / 2, (y1 + y2) / 2);
 	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Level$moveEntity = F3(
+	function (blockId, args, level) {
+		return _Utils_update(
+			level,
+			{
+				entities: A3(
+					$elm$core$Dict$update,
+					blockId,
+					$elm$core$Maybe$map(
+						function (entity) {
+							return _Utils_update(
+								entity,
+								{shrink: args.shrink, x: args.x, y: args.y});
+						}),
+					level.entities)
+			});
+	});
 var $author$project$Maths$plus = F2(
 	function (_v0, _v1) {
 		var x1 = _v0.a;
@@ -7647,17 +7685,6 @@ var $author$project$Level$setSelected = F2(
 		return _Utils_update(
 			game,
 			{selected: selected});
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
 	});
 var $author$project$Main$join = F3(
 	function (p1, p2, model) {
@@ -7681,51 +7708,30 @@ var $author$project$Main$join = F3(
 					return _Utils_update(
 						model,
 						{
-							coins: A3(
-								$elm$core$Dict$insert,
-								model.nextCoinId,
-								{
-									shrink: true,
-									value: A2($author$project$Main$coinsEarnedFromMatching, block1, block2),
-									x: x,
-									y: y
-								},
-								model.coins),
-							entities: A3(
-								$elm$core$Dict$update,
-								fruit2,
-								$elm$core$Maybe$map(
-									function (entity) {
-										return _Utils_update(
-											entity,
-											{shrink: true, x: x, y: y});
-									}),
-								A3(
-									$elm$core$Dict$update,
-									fruit1,
-									$elm$core$Maybe$map(
-										function (entity) {
-											return _Utils_update(
-												entity,
-												{shrink: true, x: x, y: y});
-										}),
-									model.entities)),
-							game: A2(
-								$author$project$Level$setSelected,
-								$elm$core$Maybe$Nothing,
+							history: A2($elm$core$List$cons, model.level, model.history),
+							level: A3(
+								$author$project$Level$addCoin,
+								_Utils_Tuple2(x, y),
+								A2($author$project$Main$coinsEarnedFromMatching, block1, block2),
 								A2(
-									$author$project$Level$removeField,
-									p2,
-									A2($author$project$Level$removeField, p1, model.game))),
-							history: A2(
-								$elm$core$List$cons,
-								{coins: model.coins, entities: model.entities, game: model.game, nextCoinId: model.nextCoinId},
-								model.history),
-							nextCoinId: model.nextCoinId + 1
+									$author$project$Level$setSelected,
+									$elm$core$Maybe$Nothing,
+									A3(
+										$author$project$Level$moveEntity,
+										fruit2,
+										{shrink: true, x: x, y: y},
+										A2(
+											$author$project$Level$removeField,
+											p2,
+											A3(
+												$author$project$Level$moveEntity,
+												fruit1,
+												{shrink: true, x: x, y: y},
+												A2($author$project$Level$removeField, p1, model.level))))))
 						});
 				}),
-			A2($author$project$Level$getBlockAndIdAt, p1, model.game),
-			A2($author$project$Level$getBlockAndIdAt, p2, model.game));
+			A2($author$project$Level$getBlockAndIdAt, p1, model.level),
+			A2($author$project$Level$getBlockAndIdAt, p2, model.level));
 	});
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
@@ -7755,14 +7761,32 @@ var $author$project$Main$selectSettingToBuy = F2(
 					model.shop)
 			});
 	});
+var $author$project$Level$showCoin = F2(
+	function (coinId, level) {
+		return _Utils_update(
+			level,
+			{
+				coins: A3(
+					$elm$core$Dict$update,
+					coinId,
+					$elm$core$Maybe$map(
+						function (coin) {
+							return _Utils_update(
+								coin,
+								{shrink: false});
+						}),
+					level.coins)
+			});
+	});
+var $author$project$View$Header$undoPrice = 2;
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Click':
 				var pos = msg.a;
-				var _v1 = model.game.selected;
+				var _v1 = model.level.selected;
 				if (_v1.$ === 'Nothing') {
-					var _v2 = A2($author$project$Level$getBlockAndIdAt, pos, model.game);
+					var _v2 = A2($author$project$Level$getBlockAndIdAt, pos, model.level);
 					if (((_v2.$ === 'Just') && (_v2.a.b.$ === 'SolidBlock')) && (_v2.a.b.a.$ === 'Sprout')) {
 						var _v3 = _v2.a;
 						var _v4 = _v3.b.a;
@@ -7772,10 +7796,10 @@ var $author$project$Main$update = F2(
 							_Utils_update(
 								model,
 								{
-									game: A2(
+									level: A2(
 										$author$project$Level$setSelected,
 										$elm$core$Maybe$Just(pos),
-										model.game)
+										model.level)
 								}),
 							$elm$core$Platform$Cmd$none);
 					}
@@ -7785,9 +7809,9 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								game: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, model.game)
+								level: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, model.level)
 							}),
-						$elm$core$Platform$Cmd$none) : (A3($author$project$Level$isValidPair, pos, p, model.game) ? $author$project$Main$checkWinCondition(
+						$elm$core$Platform$Cmd$none) : (A3($author$project$Level$isValidPair, pos, p, model.level) ? $author$project$Main$checkWinCondition(
 						A2(
 							$elm$core$Maybe$withDefault,
 							model,
@@ -7795,7 +7819,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								game: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, model.game)
+								level: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, model.level)
 							}),
 						$elm$core$Platform$Cmd$none));
 				}
@@ -7808,12 +7832,9 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
-								coins: history.coins,
-								entities: history.entities,
-								game: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, history.game),
 								history: tail,
-								money: model.money - 1,
-								nextCoinId: history.nextCoinId
+								level: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, history),
+								money: model.money - $author$project$View$Header$undoPrice
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -7825,16 +7846,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							coins: A3(
-								$elm$core$Dict$update,
-								coinId,
-								$elm$core$Maybe$map(
-									function (coin) {
-										return _Utils_update(
-											coin,
-											{shrink: false});
-									}),
-								model.coins)
+							level: A2($author$project$Level$showCoin, coinId, model.level)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'EndDay':
@@ -7887,14 +7899,11 @@ var $author$project$Main$update = F2(
 			case 'BuySettingAndReplaceWith':
 				var i = msg.a;
 				return _Utils_Tuple2(
-					A2(
-						$author$project$Main$applyGenerator,
-						model.seed,
-						$author$project$Main$generateNextWeek(
-							A2(
-								$author$project$Main$selectSettingToBuy,
-								$elm$core$Maybe$Nothing,
-								A2($author$project$Main$buyAndReplaceSetting, i, model)))),
+					$author$project$Main$generateNextWeek(
+						A2(
+							$author$project$Main$selectSettingToBuy,
+							$elm$core$Maybe$Nothing,
+							A2($author$project$Main$buyAndReplaceSetting, i, model))),
 					$author$project$Main$sequence(
 						_List_fromArray(
 							[
@@ -8090,41 +8099,48 @@ var $Orasund$elm_html_style$Html$Style$boxSizing = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'box-sizing', value);
 };
 var $Orasund$elm_html_style$Html$Style$boxSizingBorderBox = $Orasund$elm_html_style$Html$Style$boxSizing('border-box');
-var $author$project$View$Block$apple = '🍎';
-var $author$project$View$Block$dynamite = '💣';
-var $author$project$View$Block$grapes = '🍇';
-var $author$project$View$Block$lemon = '🍋';
-var $author$project$View$Block$orange = '🍊';
-var $author$project$View$Block$sprout = '🌱';
-var $author$project$View$Block$stone = '🪨';
 var $author$project$View$Block$toString = function (block) {
-	if (block.$ === 'FruitBlock') {
-		switch (block.a.$) {
-			case 'Apple':
-				var _v1 = block.a;
-				return $author$project$View$Block$apple;
-			case 'Orange':
-				var _v2 = block.a;
-				return $author$project$View$Block$orange;
-			case 'Lemon':
-				var _v3 = block.a;
-				return $author$project$View$Block$lemon;
-			default:
-				var _v4 = block.a;
-				return $author$project$View$Block$grapes;
-		}
-	} else {
-		switch (block.a.$) {
-			case 'Stone':
-				var _v5 = block.a;
-				return $author$project$View$Block$stone;
-			case 'Sprout':
+	switch (block.$) {
+		case 'FruitBlock':
+			switch (block.a.$) {
+				case 'Apple':
+					var _v1 = block.a;
+					return '🍎';
+				case 'Orange':
+					var _v2 = block.a;
+					return '🍊';
+				case 'Lemon':
+					var _v3 = block.a;
+					return '🍋';
+				case 'Grapes':
+					var _v4 = block.a;
+					return '🍇';
+				default:
+					var _v5 = block.a;
+					return '🥕';
+			}
+		case 'FishingRod':
+			return '🎣';
+		case 'SolidBlock':
+			if (block.a.$ === 'Stone') {
 				var _v6 = block.a;
-				return $author$project$View$Block$sprout;
-			default:
+				return '🪨';
+			} else {
 				var _v7 = block.a;
-				return $author$project$View$Block$dynamite;
-		}
+				return '🌱';
+			}
+		default:
+			switch (block.a.$) {
+				case 'Dynamite':
+					var _v8 = block.a;
+					return '💣';
+				case 'Fish':
+					var _v9 = block.a;
+					return '🐟';
+				default:
+					var _v10 = block.a;
+					return '🐇';
+			}
 	}
 };
 var $author$project$View$CalenderDay$eventToString = function (event) {
@@ -8423,8 +8439,10 @@ var $Orasund$elm_layout$Layout$asButton = function (args) {
 				},
 				args.onPress)));
 };
+var $Orasund$elm_html_style$Html$Style$border = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border', value);
+};
 var $author$project$View$Shop$calenderSize = 60;
-var $author$project$View$Shop$columns = 3;
 var $Orasund$elm_html_style$Html$Style$flex = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex', value);
 };
@@ -8434,8 +8452,38 @@ var $Orasund$elm_html_style$Html$Style$flexWrap = function (value) {
 };
 var $Orasund$elm_html_style$Html$Style$flexWrapWrap = $Orasund$elm_html_style$Html$Style$flexWrap('wrap');
 var $author$project$View$Shop$gap = 16;
+var $Orasund$elm_html_style$Html$Style$gridRowGap = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'grid-row-gap', value);
+};
+var $Orasund$elm_html_style$Html$Style$gridRowGapPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$gridRowGap(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
 var $Orasund$elm_html_style$Html$Style$justifyContentEnd = $Orasund$elm_html_style$Html$Style$justifyContent('end');
 var $Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween = $Orasund$elm_html_style$Html$Style$justifyContent('space-between');
+var $Orasund$elm_html_style$Html$Style$left = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'left', value);
+};
+var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$left(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$padding = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'padding', value);
+};
+var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$padding(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
 var $Orasund$elm_html_style$Html$Style$animation = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'animation', value);
 };
@@ -8457,11 +8505,12 @@ var $author$project$View$Background$shop = function (attrs) {
 			attrs));
 };
 var $author$project$View$Block$small = $Orasund$elm_html_style$Html$Style$scale('0.5');
+var $Orasund$elm_html_style$Html$Style$textAlign = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'text-align', value);
+};
+var $Orasund$elm_html_style$Html$Style$textAlignCenter = $Orasund$elm_html_style$Html$Style$textAlign('center');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $Orasund$elm_html_style$Html$Style$padding = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'padding', value);
-};
 var $author$project$View$Button$toHtml = function (args) {
 	return A2(
 		$elm$html$Html$button,
@@ -8487,9 +8536,6 @@ var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
 var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
 var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
-};
-var $Orasund$elm_html_style$Html$Style$border = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border', value);
 };
 var $Orasund$elm_html_style$Html$Style$fontWeight = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'font-weight', value);
@@ -8522,8 +8568,11 @@ var $author$project$View$Coin$toHtml = F2(
 						$elm$html$Html$text(
 							$elm$core$String$fromInt(n))))));
 	});
-var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$padding(
+var $Orasund$elm_html_style$Html$Style$top = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'top', value);
+};
+var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$top(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
@@ -8640,7 +8689,7 @@ var $author$project$View$Shop$toHtml = function (args) {
 					[
 						$Orasund$elm_html_style$Html$Style$displayFlex,
 						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$gapPx(16),
+						$Orasund$elm_html_style$Html$Style$gapPx(32),
 						$Orasund$elm_html_style$Html$Style$widthPx(360),
 						$Orasund$elm_html_style$Html$Style$heightPx(360),
 						$Orasund$elm_html_style$Html$Style$alignItemsCenter
@@ -8653,7 +8702,7 @@ var $author$project$View$Shop$toHtml = function (args) {
 							[
 								$Orasund$elm_html_style$Html$Style$displayFlex,
 								$Orasund$elm_html_style$Html$Style$flexDirectionRow,
-								$Orasund$elm_html_style$Html$Style$widthPx(150),
+								$Orasund$elm_html_style$Html$Style$widthPx(166),
 								$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween
 							]),
 						A2(
@@ -8713,65 +8762,93 @@ var $author$project$View$Shop$toHtml = function (args) {
 													label: 'Buy',
 													onPress: args.onSelectSettingToBuy(
 														$elm$core$Maybe$Just(i)),
-													price: $author$project$Puzzle$Generator$priceForSetting(weather)
+													price: $author$project$Puzzle$Setting$priceForSetting(weather)
 												})
 											]));
 								}),
 							args.buyableSettings)),
 						A2(
 						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$flexDirectionRow,
-								$Orasund$elm_html_style$Html$Style$flexWrapWrap,
-								$Orasund$elm_html_style$Html$Style$gapPx($author$project$View$Shop$gap),
-								$Orasund$elm_html_style$Html$Style$widthPx(($author$project$View$Shop$columns * $author$project$View$Shop$calenderSize) + (($author$project$View$Shop$columns - 1) * $author$project$View$Shop$gap))
-							]),
-						A2(
-							$elm$core$List$indexedMap,
-							F2(
-								function (i, weather) {
-									return A3(
-										$author$project$View$CalenderDay$calenderDay,
-										$author$project$View$Shop$calenderSize,
-										_Utils_ap(
-											$Orasund$elm_layout$Layout$asButton(
-												{
-													label: 'Select',
-													onPress: _Utils_eq(args.selected, $elm$core$Maybe$Nothing) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-														args.onBuy(i))
+						_List_Nil,
+						$elm$core$List$singleton(
+							A2(
+								$author$project$View$Background$endOfDay,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$positionRelative,
+										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+										$Orasund$elm_html_style$Html$Style$paddingPx(16),
+										$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
+										$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+										$Orasund$elm_html_style$Html$Style$border('2px solid black')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$positionAbsolute,
+												$Orasund$elm_html_style$Html$Style$topPx(-40),
+												$Orasund$elm_html_style$Html$Style$leftPx(-40),
+												$Orasund$elm_html_style$Html$Style$heightPx(80),
+												$Orasund$elm_html_style$Html$Style$widthPx(80),
+												$Orasund$elm_html_style$Html$Style$fontSizePx(64),
+												$Orasund$elm_html_style$Html$Style$textAlignCenter
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('🔮')
+											])),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$displayFlex,
+												$Orasund$elm_html_style$Html$Style$flexDirectionRow,
+												$Orasund$elm_html_style$Html$Style$flexWrapWrap,
+												$Orasund$elm_html_style$Html$Style$gridRowGapPx($author$project$View$Shop$gap),
+												$Orasund$elm_html_style$Html$Style$widthPx(240)
+											]),
+										A2(
+											$elm$core$List$indexedMap,
+											F2(
+												function (i, weather) {
+													return A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$Orasund$elm_html_style$Html$Style$displayFlex,
+																$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+																$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+																$Orasund$elm_html_style$Html$Style$widthPx(80)
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text(
+																$author$project$View$EndOfDay$title(i + 1)),
+																A3(
+																$author$project$View$CalenderDay$calenderDay,
+																$author$project$View$Shop$calenderSize,
+																_Utils_ap(
+																	$Orasund$elm_layout$Layout$asButton(
+																		{
+																			label: 'Select',
+																			onPress: _Utils_eq(args.selected, $elm$core$Maybe$Nothing) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+																				args.onBuy(i))
+																		}),
+																	_Utils_eq(args.selected, $elm$core$Maybe$Nothing) ? _List_Nil : _List_fromArray(
+																		[$author$project$View$Block$rocking])),
+																$author$project$Event$WeatherEvent(weather))
+															]));
 												}),
-											_Utils_eq(args.selected, $elm$core$Maybe$Nothing) ? _List_Nil : _List_fromArray(
-												[$author$project$View$Block$rocking])),
-										$author$project$Event$WeatherEvent(weather));
-								}),
-							args.settings))
+											args.settings))
+									]))))
 					]))
 			]));
 };
-var $Orasund$elm_html_style$Html$Style$left = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'left', value);
-};
-var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$left(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
 var $author$project$View$Block$shrink = $Orasund$elm_html_style$Html$Style$scale('0');
 var $author$project$View$Field$size = 60;
-var $Orasund$elm_html_style$Html$Style$top = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'top', value);
-};
-var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$top(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
 var $Orasund$elm_html_style$Html$Style$rotate = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'rotate', value);
 };
@@ -8940,7 +9017,7 @@ var $author$project$View$Game$viewGame = function (args) {
 												},
 												A2($elm$core$Dict$get, blockId, args.game.blocks));
 										},
-										$elm$core$Dict$toList(args.entities))),
+										$elm$core$Dict$toList(args.game.entities))),
 									A2(
 									$elm$core$List$map,
 									function (_v2) {
@@ -8955,7 +9032,7 @@ var $author$project$View$Game$viewGame = function (args) {
 										$elm$core$Tuple$first,
 										$elm$core$List$concat(
 											$elm$core$List$singleton(
-												$elm$core$Dict$toList(args.coins)))))
+												$elm$core$Dict$toList(args.game.coins)))))
 								])))
 					]),
 					A2(
@@ -9026,7 +9103,7 @@ var $author$project$View$Header$viewHeader = function (args) {
 					]),
 				$elm$core$List$singleton(
 					$author$project$View$Button$withPrice(
-						{label: 'Undo', onPress: args.onUndo, price: 1}))),
+						{label: 'Undo', onPress: args.onUndo, price: $author$project$View$Header$undoPrice}))),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -9056,7 +9133,8 @@ var $author$project$View$Header$viewHeader = function (args) {
 						$Orasund$elm_html_style$Html$Style$displayFlex,
 						$Orasund$elm_html_style$Html$Style$justifyContentEnd
 					]),
-				_List_Nil)
+				$elm$core$List$singleton(
+					A3($author$project$View$CalenderDay$calenderDay, 40, _List_Nil, args.currentEvent)))
 			]));
 };
 var $author$project$Main$view = function (model) {
@@ -9089,9 +9167,9 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$author$project$View$Header$viewHeader(
-								{money: model.money, onOpenShop: $author$project$Main$OpenShop, onUndo: $author$project$Main$Undo}),
+								{currentEvent: model.event, money: model.money, onOpenShop: $author$project$Main$OpenShop, onUndo: $author$project$Main$Undo}),
 								$author$project$View$Game$viewGame(
-								{coins: model.coins, entities: model.entities, game: model.game, onClick: $author$project$Main$Click})
+								{game: model.level, onClick: $author$project$Main$Click})
 							]));
 				} else {
 					var shop = _v0.a;
@@ -9100,7 +9178,7 @@ var $author$project$Main$view = function (model) {
 				}
 			}(),
 				$author$project$View$EndOfDay$toHtml(
-				{currentEvent: model.setting, day: model.day, endOfDay: model.endOfDay, money: model.money, nextEvents: model.nextLevels}),
+				{currentEvent: model.event, day: model.day, endOfDay: model.endOfDay, money: model.money, nextEvents: model.nextEvents}),
 				$author$project$Stylesheet$stylesheet,
 				A3(
 				$elm$html$Html$node,
