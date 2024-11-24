@@ -1,22 +1,19 @@
 module View.Game exposing (..)
 
-import Dict exposing (Dict)
-import Entity exposing (Entity)
+import Dict
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
 import Layout
-import Level exposing (BlockId, Level)
+import Level exposing (Level)
 import View.Block
-import View.Coin exposing (Coin, CoinId)
+import View.Coin
 import View.Field
 import View.Fruit
 
 
 viewGame :
     { game : Level
-    , coins : Dict CoinId Coin
-    , entities : Dict BlockId Entity
     , onClick : ( Int, Int ) -> msg
     }
     -> Html msg
@@ -26,7 +23,7 @@ viewGame args =
             { columns = args.game.columns
             , rows = args.game.rows
             }
-      , [ args.entities
+      , [ args.game.entities
             |> Dict.toList
             |> List.filterMap
                 (\( blockId, entity ) ->
@@ -54,7 +51,7 @@ viewGame args =
                             }
                     )
                 )
-        , args.coins
+        , args.game.coins
             |> Dict.toList
             |> List.singleton
             |> List.concat

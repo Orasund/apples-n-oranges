@@ -2,16 +2,9 @@ module View.Coin exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
+import Level exposing (Coin)
 import View.Block
 import View.Field
-
-
-type alias CoinId =
-    Int
-
-
-type alias Coin =
-    { x : Float, y : Float, shrink : Bool, value : Int }
 
 
 asBlock : Coin -> Html msg
