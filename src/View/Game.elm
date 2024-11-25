@@ -26,7 +26,7 @@ viewGame args =
       , [ args.game.entities
             |> Dict.toList
             |> List.filterMap
-                (\( blockId, entity ) ->
+                (\( blockId, { entity, pos } ) ->
                     args.game.blocks
                         |> Dict.get blockId
                         |> Maybe.map
@@ -34,11 +34,12 @@ viewGame args =
                                 { blockId = blockId
                                 , entity = entity
                                 , block = block
+                                , pos = pos
                                 }
                             )
                 )
             |> List.map
-                (\{ blockId, entity, block } ->
+                (\{ blockId, entity, block, pos } ->
                     ( "block_" ++ String.fromInt blockId
                     , block
                         |> View.Block.toString
@@ -47,19 +48,20 @@ viewGame args =
                         |> View.Fruit.viewFruit
                             { blockId = blockId
                             , entity = entity
+                            , pos = pos
                             , game = args.game
                             }
                     )
                 )
-        , args.game.coins
+        , args.game.items
             |> Dict.toList
             |> List.singleton
             |> List.concat
             |> List.sortBy Tuple.first
             |> List.map
-                (\( id, coin ) ->
+                (\( id, { entity, sort } ) ->
                     ( "coin_" ++ String.fromInt id
-                    , View.Coin.asBlock coin
+                    , View.Coin.asBlock entity sort
                     )
                 )
         ]

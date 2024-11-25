@@ -41,8 +41,7 @@ title n =
 
 
 toHtml :
-    { money : Int
-    , currentEvent : Event
+    { currentEvent : Event
     , nextEvents : List Event
     , endOfDay : Bool
     , day : Int

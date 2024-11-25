@@ -77,8 +77,8 @@ generateLevel args =
             )
         |> Random.constant
         |> andThenRepeat (args.rabbitAndCarrotPairs * 2) (addRandomBlock (OptionalBlock Rabbit))
-        |> andThenRepeat args.newStone (addRandomBlock (SolidBlock Stone))
-        |> andThenRepeat args.newDynamite (randomAddOptionalNear (SolidBlock Stone) Dynamite)
+        |> andThenRepeat args.newStone (addRandomBlock (SolidBlock Rock))
+        |> andThenRepeat args.newDynamite (randomAddOptionalNear (SolidBlock Rock) Dynamite)
         |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
         |> andThenRepeat args.rabbitAndCarrotPairs
             (\b ->

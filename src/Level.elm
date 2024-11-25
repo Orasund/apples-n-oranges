@@ -1,7 +1,13 @@
 module Level exposing (..)
 
+import Bag exposing (Item(..))
 import Dict exposing (Dict)
-import Entity exposing (Entity)
+import Maths
+import Random exposing (Generator)
+
+
+type alias Random a =
+    Generator a
 
 
 type alias BlockId =
@@ -24,8 +30,7 @@ type Fruit
 
 
 type Solid
-    = Stone
-    | Sprout
+    = Rock
 
 
 type Optional
@@ -45,8 +50,11 @@ type alias CoinId =
     Int
 
 
-type alias Coin =
-    { x : Float, y : Float, shrink : Bool, value : Int }
+type alias Entity =
+    { x : Float
+    , y : Float
+    , shrink : Bool
+    }
 
 
 type alias Level =
@@ -55,8 +63,14 @@ type alias Level =
     , blocks : Dict BlockId Block
     , fields : Dict ( Int, Int ) BlockId
     , selected : Maybe ( Int, Int )
-    , entities : Dict BlockId Entity
-    , coins : Dict CoinId Coin
+    , entities :
+        Dict
+            BlockId
+            { entity : Entity
+            , pos : ( Int, Int )
+            , item : Item
+            }
+    , items : Dict CoinId { entity : Entity, sort : Item }
     , nextCoinId : CoinId
     }
 
@@ -69,7 +83,7 @@ empty args =
     , fields = Dict.empty
     , selected = Nothing
     , entities = Dict.empty
-    , coins = Dict.empty
+    , items = Dict.empty
     , nextCoinId = 0
     }
 
@@ -86,24 +100,47 @@ newEntity : ( Int, Int ) -> Entity
 newEntity ( x, y ) =
     { x = toFloat x
     , y = toFloat y
-    , pos = ( x, y )
     , shrink = False
     }
 
 
-addBlock : ( Int, Int ) -> Block -> Level -> Level
+blockToItem : Block -> Random Item
+blockToItem block =
+    case block of
+        OptionalBlock Rabbit ->
+            Random.uniform Diamant
+                [ Stone
+                ]
+
+        _ ->
+            Random.uniform Coin
+                [ Worm
+                , Snail
+                , Stone
+                ]
+
+
+addBlock : ( Int, Int ) -> Block -> Level -> Random Level
 addBlock ( x, y ) block game =
     let
         fruitId =
             Dict.size game.blocks
     in
-    { game
-        | blocks = Dict.insert fruitId block game.blocks
-        , fields = game.fields |> Dict.insert ( x, y ) fruitId
-        , entities =
-            game.entities
-                |> Dict.insert fruitId (newEntity ( x, y ))
-    }
+    blockToItem block
+        |> Random.map
+            (\item ->
+                { game
+                    | blocks = Dict.insert fruitId block game.blocks
+                    , fields = game.fields |> Dict.insert ( x, y ) fruitId
+                    , entities =
+                        Dict.insert fruitId
+                            { entity = newEntity ( x, y )
+                            , pos = ( x, y )
+                            , item = item
+                            }
+                            game.entities
+                }
+            )
 
 
 getBlockAt : ( Int, Int ) -> Level -> Maybe Block
@@ -116,14 +153,17 @@ getBlockAt pos game =
             )
 
 
-getBlockAndIdAt : ( Int, Int ) -> Level -> Maybe ( BlockId, Block )
-getBlockAndIdAt pos game =
+getEntityAndItem : ( Int, Int ) -> Level -> Maybe ( BlockId, ( Entity, Item ) )
+getEntityAndItem pos game =
     game.fields
         |> Dict.get pos
         |> Maybe.andThen
             (\blockId ->
-                Dict.get blockId game.blocks
-                    |> Maybe.map (Tuple.pair blockId)
+                Dict.get blockId game.entities
+                    |> Maybe.map
+                        (\args ->
+                            ( blockId, ( args.entity, args.item ) )
+                        )
             )
 
 
@@ -146,7 +186,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                     True
 
                 _ ->
-                    [ ( OptionalBlock Dynamite, SolidBlock Stone )
+                    [ ( OptionalBlock Dynamite, SolidBlock Rock )
                     , ( FishingRod, OptionalBlock Fish )
                     , ( OptionalBlock Rabbit, FruitBlock Carrot )
                     ]
@@ -194,28 +234,43 @@ getBlocks game =
             )
 
 
-collectCoins : Level -> ( Level, Int )
+collectCoins : Level -> ( Level, List Item )
 collectCoins model =
+    let
+        updateEntity entity =
+            { entity | x = 2.5, y = -1 }
+    in
     ( { model
-        | coins = Dict.map (\_ coin -> { coin | x = 2.5, y = -1 }) model.coins
+        | items =
+            Dict.map
+                (\_ coin ->
+                    { coin | entity = updateEntity coin.entity }
+                )
+                model.items
       }
-    , model.coins
+    , model.items
         |> Dict.values
-        |> List.map .value
-        |> List.sum
+        |> List.map .sort
     )
 
 
-addCoin : ( Float, Float ) -> Int -> Level -> Level
-addCoin ( x, y ) value level =
+addItem : ( Float, Float ) -> Item -> Level -> Level
+addItem p item level =
+    let
+        ( x, y ) =
+            fromPolar ( 0.2, toFloat level.nextCoinId * 2.5 )
+                |> Maths.plus p
+    in
     { level
-        | coins =
-            level.coins
+        | items =
+            level.items
                 |> Dict.insert level.nextCoinId
-                    { x = x
-                    , y = y
-                    , shrink = True
-                    , value = value
+                    { entity =
+                        { x = x
+                        , y = y
+                        , shrink = True
+                        }
+                    , sort = item
                     }
         , nextCoinId = level.nextCoinId + 1
     }
@@ -223,29 +278,33 @@ addCoin ( x, y ) value level =
 
 showCoin : Int -> Level -> Level
 showCoin coinId level =
+    let
+        updateEntity entity =
+            { entity
+                | shrink = False
+            }
+    in
     { level
-        | coins =
+        | items =
             Dict.update coinId
                 (Maybe.map
                     (\coin ->
-                        { coin
-                            | shrink = False
-                        }
+                        { coin | entity = updateEntity coin.entity }
                     )
                 )
-                level.coins
+                level.items
     }
 
 
-moveEntity : BlockId -> { x : Float, y : Float, shrink : Bool } -> Level -> Level
-moveEntity blockId args level =
+moveEntity : BlockId -> Entity -> Level -> Level
+moveEntity blockId entity level =
     { level
         | entities =
-            level.entities
-                |> Dict.update blockId
-                    (Maybe.map
-                        (\entity ->
-                            { entity | x = args.x, y = args.y, shrink = args.shrink }
-                        )
+            Dict.update blockId
+                (Maybe.map
+                    (\args ->
+                        { args | entity = entity }
                     )
+                )
+                level.entities
     }

@@ -1,33 +1,32 @@
 module View.Coin exposing (..)
 
+import Bag exposing (Item(..))
 import Html exposing (Attribute, Html)
 import Html.Style
-import Level exposing (Coin)
+import Level exposing (Entity)
 import View.Block
 import View.Field
 
 
-asBlock : Coin -> Html msg
-asBlock money =
+asBlock : Entity -> Item -> Html msg
+asBlock entity item =
     View.Block.withContent
-        ([ Html.Style.topPx (money.y * View.Field.size)
-         , Html.Style.leftPx (money.x * View.Field.size)
+        ([ Html.Style.topPx (entity.y * View.Field.size)
+         , Html.Style.leftPx (entity.x * View.Field.size)
          , Html.Style.heightPx View.Field.size
          ]
-            ++ (if money.shrink then
+            ++ (if entity.shrink then
                     [ View.Block.shrink ]
 
                 else
                     []
                )
         )
-        [ toHtml
-            [ Html.Style.fontSizePx (View.Field.size / 4)
-            , Html.Style.heightPx (View.Field.size / 2)
-            , Html.Style.borderWidthPx 4
-            , Html.Style.displayFlex
-            ]
-            money.value
+        [ item
+            |> Bag.toString
+            |> Html.text
+            |> List.singleton
+            |> Html.div [ Html.Style.fontSizePx (View.Field.size / 2) ]
         ]
 
 

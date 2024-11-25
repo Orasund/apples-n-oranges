@@ -27,11 +27,8 @@ toString block =
         FishingRod ->
             "🎣"
 
-        SolidBlock Stone ->
+        SolidBlock Rock ->
             "🪨"
-
-        SolidBlock Sprout ->
-            "🌱"
 
         OptionalBlock Dynamite ->
             "💣"

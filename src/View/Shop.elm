@@ -30,7 +30,6 @@ toHtml :
     , buyableSettings : List Setting
     , onSelectSettingToBuy : Maybe Int -> msg
     , selected : Maybe Int
-    , money : Int
     , onBuy : Int -> msg
     }
     -> Html msg
@@ -49,7 +48,15 @@ toHtml args =
             , Html.Style.heightPx 100
             , Html.Style.borderWidthPx 8
             ]
-            (args.money |> min 999 |> max -99)
+            --args.money
+            ((args.settings
+                |> List.map Puzzle.Setting.priceForSetting
+                |> List.sum
+             )
+                // 2
+                |> min 999
+                |> max -99
+            )
             |> List.singleton
             |> Html.div
                 [ Html.Style.flex "1"

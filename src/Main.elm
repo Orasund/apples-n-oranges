@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Bag exposing (Bag, Item(..))
 import Browser
 import Dict
 import Event exposing (Event(..))
@@ -26,8 +27,8 @@ type alias Random a =
 
 type alias Model =
     { level : Level
+    , bag : Bag
     , day : Int
-    , money : Int
     , event : Event
     , nextEvents : List Event
     , seed : Seed
@@ -44,7 +45,8 @@ type alias Model =
 
 type Msg
     = Click ( Int, Int )
-    | CollectCoin CoinId
+    | ShowCoins (List CoinId)
+    | CollectCoin
     | Undo
     | EndDay
     | SetSeed Seed
@@ -58,10 +60,6 @@ type Msg
     | Sequence (List Msg)
 
 
-
---| BuySetting Setting
-
-
 collectCoins : Model -> Model
 collectCoins model =
     let
@@ -70,7 +68,10 @@ collectCoins model =
                 |> Level.collectCoins
     in
     { model
-        | money = amount + model.money
+        | bag =
+            amount
+                |> List.foldl Bag.insert
+                    model.bag
         , level = level
     }
 
@@ -102,7 +103,12 @@ openShop model =
         )
         (Puzzle.Setting.pickSettings
             { amount = 2
-            , money = model.money
+            , money =
+                (model.possibleSettings
+                    |> List.map Puzzle.Setting.priceForSetting
+                    |> List.sum
+                )
+                    // 2
             }
         )
         (model.possibleSettings |> Puzzle.Setting.shuffle)
@@ -118,13 +124,13 @@ nextDay model =
     { model | day = model.day + 1 }
 
 
-loadPuzzle : Puzzle -> Model -> Model
+loadPuzzle : Puzzle -> Model -> Random Model
 loadPuzzle puzzle model =
     List.foldl
         (\( pos, fruit ) ->
-            addBlock pos fruit
+            Random.andThen (addBlock pos fruit)
         )
-        model
+        (Random.constant model)
         puzzle.blocks
 
 
@@ -144,7 +150,7 @@ loadNextLevel model =
                 WeatherEvent weather ->
                     weather
                         |> Puzzle.Setting.generate model.level
-                        |> Random.map
+                        |> Random.andThen
                             (\puzzle ->
                                 { model
                                     | event = head
@@ -164,11 +170,6 @@ loadNextLevel model =
 
         [] ->
             Random.constant model
-
-
-
---model
---    |> gotoShop
 
 
 applyGenerator : Seed -> Random Model -> Model
@@ -234,7 +235,6 @@ buyAndReplaceSetting replaceWith model =
                                     else
                                         s
                                 )
-                    , money = model.money - Puzzle.Setting.priceForSetting setting
                 }
             )
         |> Maybe.withDefault model
@@ -269,7 +269,7 @@ init () =
         model : Model
         model =
             { level = Level.empty { columns = 6, rows = 6 }
-            , money = 0
+            , bag = Bag.empty
             , day = 1
             , event = WeatherEvent Puzzle.Setting.startingLevel
             , nextEvents =
@@ -289,40 +289,21 @@ init () =
     )
 
 
-addBlock : ( Int, Int ) -> Block -> Model -> Model
+addBlock : ( Int, Int ) -> Block -> Model -> Random Model
 addBlock ( x, y ) block model =
-    let
-        level =
-            model.level |> Level.addBlock ( x, y ) block
-    in
-    { model
-        | level = level
-    }
-
-
-coinsEarnedFromMatching : Block -> Block -> Int
-coinsEarnedFromMatching block1 block2 =
-    let
-        coinsEarned block =
-            case block of
-                OptionalBlock Rabbit ->
-                    20
-
-                _ ->
-                    1
-    in
-    (coinsEarned block1 + coinsEarned block2) // 2
+    model.level
+        |> Level.addBlock ( x, y ) block
+        |> Random.map (\level -> { model | level = level })
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
 join p1 p2 model =
     let
         ( x, y ) =
-            fromPolar ( 0.1, Maths.distance p1 p2 )
-                |> Maths.plus (Maths.intersect p1 p2)
+            Maths.intersect p1 p2
     in
     Maybe.map2
-        (\( fruit1, block1 ) ( fruit2, block2 ) ->
+        (\( fruit1, ( _, item1 ) ) ( fruit2, ( _, item2 ) ) ->
             { model
                 | level =
                     model.level
@@ -333,12 +314,13 @@ join p1 p2 model =
                         |> Level.moveEntity fruit2
                             { x = x, y = y, shrink = True }
                         |> Level.setSelected Nothing
-                        |> Level.addCoin ( x, y ) (coinsEarnedFromMatching block1 block2)
+                        |> Level.addItem ( x, y ) item1
+                        |> Level.addItem ( x, y ) item2
                 , history = model.level :: model.history
             }
         )
-        (model.level |> Level.getBlockAndIdAt p1)
-        (model.level |> Level.getBlockAndIdAt p2)
+        (model.level |> Level.getEntityAndItem p1)
+        (model.level |> Level.getEntityAndItem p2)
 
 
 checkWinCondition : Model -> ( Model, Cmd Msg )
@@ -366,18 +348,22 @@ checkWinCondition model =
                     )
     in
     ( model
-    , [ Process.sleep 100
-            |> Task.perform (\() -> CollectCoin (model.level.nextCoinId - 1))
-      , if hasWon then
-            sequence
-                [ shortWaitThenPerform EndDay
+    , shortWaitThenPerform
+        (ShowCoins
+            [ model.level.nextCoinId - 2
+            , model.level.nextCoinId - 1
+            ]
+        )
+        :: (if hasWon then
+                [ longWaitThenPerform CollectCoin
+                , shortWaitThenPerform EndDay
                 , longWaitThenPerform LoadNextLevel
                 ]
 
-        else
-            Cmd.none
-      ]
-        |> Cmd.batch
+            else
+                []
+           )
+        |> sequence
     )
 
 
@@ -387,12 +373,7 @@ update msg model =
         Click pos ->
             case model.level.selected of
                 Nothing ->
-                    case Level.getBlockAndIdAt pos model.level of
-                        Just ( _, SolidBlock Sprout ) ->
-                            ( model, Cmd.none )
-
-                        _ ->
-                            ( { model | level = Level.setSelected (Just pos) model.level }, Cmd.none )
+                    ( { model | level = Level.setSelected (Just pos) model.level }, Cmd.none )
 
                 Just p ->
                     if p == pos then
@@ -414,7 +395,6 @@ update msg model =
                     ( { model
                         | level = history |> Level.setSelected Nothing
                         , history = tail
-                        , money = model.money - View.Header.undoPrice
                       }
                     , Cmd.none
                     )
@@ -422,18 +402,20 @@ update msg model =
                 [] ->
                     ( model, Cmd.none )
 
-        CollectCoin coinId ->
+        CollectCoin ->
+            ( model |> collectCoins, Cmd.none )
+
+        ShowCoins list ->
             ( { model
                 | level =
-                    model.level
-                        |> Level.showCoin coinId
+                    list
+                        |> List.foldl Level.showCoin model.level
               }
             , Cmd.none
             )
 
         EndDay ->
             ( model
-                |> collectCoins
                 |> endDay
             , Cmd.none
             )
@@ -508,8 +490,7 @@ view model =
     [ case model.shop of
         Nothing ->
             [ View.Header.viewHeader
-                { money = model.money
-                , onUndo = Undo
+                { onUndo = Undo
                 , onOpenShop = OpenShop
                 , currentEvent = model.event
                 }
@@ -530,12 +511,10 @@ view model =
                 , buyableSettings = shop.buyableSettings
                 , selected = shop.selected
                 , onSelectSettingToBuy = SelectSettingToBuy
-                , money = model.money
                 , onBuy = BuySettingAndReplaceWith
                 }
     , View.EndOfDay.toHtml
-        { money = model.money
-        , currentEvent = model.event
+        { currentEvent = model.event
         , nextEvents = model.nextEvents
         , endOfDay = model.endOfDay
         , day = model.day

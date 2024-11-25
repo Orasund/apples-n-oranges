@@ -281,7 +281,7 @@ generate game setting =
 
         --, newSprouts = 0
         , newFruitPairs = setting.newFruitPairs
-        , newStone = setting.newStoneAndDynamite |> limitedByExisting (SolidBlock Stone)
+        , newStone = setting.newStoneAndDynamite |> limitedByExisting (SolidBlock Rock)
         , newDynamite = setting.newStoneAndDynamite
         , newLemonPairs = setting.newLemonPairs
         , newGrapePairs = setting.newGrapePairs
