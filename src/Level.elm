@@ -29,10 +29,6 @@ type Fruit
     | Carrot
 
 
-type Solid
-    = Rock
-
-
 type Optional
     = Dynamite
     | Fish
@@ -41,9 +37,9 @@ type Optional
 
 type Block
     = FruitBlock Fruit
-    | FishingRod
     | OptionalBlock Optional
-    | SolidBlock Solid
+    | FishingRod
+    | Rock
 
 
 type alias CoinId =
@@ -186,7 +182,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                     True
 
                 _ ->
-                    [ ( OptionalBlock Dynamite, SolidBlock Rock )
+                    [ ( OptionalBlock Dynamite, Rock )
                     , ( FishingRod, OptionalBlock Fish )
                     , ( OptionalBlock Rabbit, FruitBlock Carrot )
                     ]

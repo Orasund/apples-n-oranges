@@ -1,7 +1,7 @@
 module Puzzle.Setting exposing (Setting, generate, pickSettings, priceForSetting, settings, shuffle, startingLevel, tutorials)
 
 import Dict
-import Level exposing (Block(..), Fruit(..), Level, Optional(..), Puzzle, Solid(..))
+import Level exposing (Block(..), Fruit(..), Level, Optional(..), Puzzle)
 import Puzzle.Builder
 import Random
 
@@ -200,13 +200,10 @@ tutorials =
 
 settings : List Setting
 settings =
-    [ applesTraining
-    , applesBasic
+    [ applesBasic
     , applesAdvanced
-    , lemonTraining
     , lemonBasic
     , lemonAdvanced
-    , miningTraining
     , miningBasic
     , miningAdvanced
     , grapesBasic
@@ -281,7 +278,7 @@ generate game setting =
 
         --, newSprouts = 0
         , newFruitPairs = setting.newFruitPairs
-        , newStone = setting.newStoneAndDynamite |> limitedByExisting (SolidBlock Rock)
+        , newStone = setting.newStoneAndDynamite |> limitedByExisting Rock
         , newDynamite = setting.newStoneAndDynamite
         , newLemonPairs = setting.newLemonPairs
         , newGrapePairs = setting.newGrapePairs

@@ -7,7 +7,7 @@ import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import Level exposing (Block(..), CoinId, Fruit(..), Level, Optional(..), Puzzle, Solid(..))
+import Level exposing (Block(..), CoinId, Fruit(..), Level, Optional(..), Puzzle)
 import Maths
 import Process
 import Puzzle.Setting exposing (Setting)
@@ -337,7 +337,7 @@ checkWinCondition model =
                             Just FishingRod ->
                                 False
 
-                            Just (SolidBlock _) ->
+                            Just Rock ->
                                 True
 
                             Just (OptionalBlock _) ->

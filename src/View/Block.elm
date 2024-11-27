@@ -2,7 +2,7 @@ module View.Block exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
-import Level exposing (Block(..), Fruit(..), Optional(..), Solid(..))
+import Level exposing (Block(..), Fruit(..), Optional(..))
 import View.Field
 
 
@@ -27,7 +27,7 @@ toString block =
         FishingRod ->
             "🎣"
 
-        SolidBlock Rock ->
+        Rock ->
             "🪨"
 
         OptionalBlock Dynamite ->

@@ -1,7 +1,7 @@
 module Puzzle.Builder exposing (generateLevel)
 
 import Dict exposing (Dict)
-import Level exposing (Block(..), Fruit(..), Optional(..), Puzzle, Solid(..), isValidPair)
+import Level exposing (Block(..), Fruit(..), Optional(..), Puzzle, isValidPair)
 import Random exposing (Generator)
 import Set exposing (Set)
 
@@ -13,8 +13,6 @@ type alias Random a =
 type alias Builder =
     { blocks : Dict ( Int, Int ) Block
     , remainingPositions : Set ( Int, Int )
-
-    --, remainingOldSprouts : Set ( Int, Int )
     , columns : Int
     , rows : Int
     }
@@ -23,8 +21,6 @@ type alias Builder =
 new :
     { columns : Int
     , rows : Int
-
-    --, oldSprouts : Set ( Int, Int )
     }
     -> Builder
 new args =
@@ -37,8 +33,6 @@ new args =
                         |> List.map (Tuple.pair x)
                 )
             |> Set.fromList
-
-    --, remainingOldSprouts = args.oldSprouts
     , columns = args.columns
     , rows = args.rows
     }
@@ -77,8 +71,8 @@ generateLevel args =
             )
         |> Random.constant
         |> andThenRepeat (args.rabbitAndCarrotPairs * 2) (addRandomBlock (OptionalBlock Rabbit))
-        |> andThenRepeat args.newStone (addRandomBlock (SolidBlock Rock))
-        |> andThenRepeat args.newDynamite (randomAddOptionalNear (SolidBlock Rock) Dynamite)
+        |> andThenRepeat args.newStone (addRandomBlock Rock)
+        |> andThenRepeat args.newDynamite (randomAddOptionalNear Rock Dynamite)
         |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
         |> andThenRepeat args.rabbitAndCarrotPairs
             (\b ->
