@@ -71,7 +71,7 @@ toHtml args =
 
                       else
                         View.Button.toHtml
-                            { label = "Buy"
+                            { label = "Select"
                             , onPress = args.onSelectSettingToBuy (Just i)
                             }
                     ]
