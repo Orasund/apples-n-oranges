@@ -5,12 +5,14 @@ import Html exposing (Html)
 import Html.Style
 import View.Button
 import View.CalenderDay
+import View.EndOfDay
 
 
 viewHeader :
     { onUndo : msg
     , onOpenShop : msg
     , currentEvent : Event
+    , currentDay : Int
     }
     -> Html msg
 viewHeader args =
@@ -29,19 +31,23 @@ viewHeader args =
             }
             |> List.singleton
             |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
-        , args.currentEvent
-            |> View.CalenderDay.calenderDay 40
-                []
-            {--View.Button.toHtml
+        , [ Html.text (View.EndOfDay.dayOfTheWeek args.currentDay)
+          , args.currentEvent
+                |> View.CalenderDay.calenderDay 40
+                    []
+
+          {--View.Button.toHtml
             { label = "Open Shop"
             , onPress = args.onOpenShop
             }
             |> List.singleton--}
-            --[]
-            |> List.singleton
+          --[]
+          ]
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
                 , Html.Style.justifyContentEnd
+                , Html.Style.alignItemsCenter
+                , Html.Style.gapPx 8
                 ]
         ]

@@ -144,8 +144,8 @@ loadPuzzle puzzle model =
         puzzle.blocks
 
 
-clearLevel : Model -> Model
-clearLevel model =
+clearHistory : Model -> Model
+clearHistory model =
     { model
         | level = Level.clear model.level
         , history = []
@@ -166,7 +166,7 @@ loadNextLevel model =
                                     | event = head
                                     , nextEvents = tail
                                 }
-                                    |> clearLevel
+                                    |> clearHistory
                                     |> loadPuzzle puzzle
                             )
 
@@ -175,7 +175,7 @@ loadNextLevel model =
                         | event = head
                         , nextEvents = tail
                     }
-                        |> clearLevel
+                        -- |> clearHistory
                         |> openShop
 
         [] ->
@@ -542,6 +542,7 @@ view model =
                 { onUndo = Undo
                 , onOpenShop = OpenShop
                 , currentEvent = model.event
+                , currentDay = model.day
                 }
             , View.Game.viewGame
                 { game = model.level

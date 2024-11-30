@@ -1,4 +1,4 @@
-module Puzzle.Builder exposing (generateLevel)
+module Puzzle.Builder exposing (Group(..), generateFromGroup)
 
 import Block exposing (Block(..), Fruit(..), Optional(..))
 import Dict exposing (Dict)
@@ -9,6 +9,11 @@ import Set exposing (Set)
 
 type alias Random a =
     Generator a
+
+
+type Group
+    = Pair Block Block
+    | SingleBlock Block
 
 
 type alias Builder =
@@ -39,68 +44,46 @@ new args =
     }
 
 
-generateLevel :
+generateFromGroup :
     { columns : Int
     , rows : Int
     , oldBlocks : Dict ( Int, Int ) Block
-    , newStone : Int
-    , newDynamite : Int
-    , newFruitPairs : Int
-    , newLemonPairs : Int
-    , newGrapePairs : Int
-    , rabbitAndCarrotPairs : Int
-    , fishAndRod : Int
     }
+    -> List Group
     -> Random Puzzle
-generateLevel args =
-    new
-        { columns = args.columns
-        , rows = args.rows
-        }
-        |> addBlocks
-            (args.oldBlocks
-                |> Dict.filter
-                    (\_ block ->
-                        case block of
-                            OptionalBlock _ ->
-                                False
+generateFromGroup args groups =
+    let
+        initial =
+            new
+                { columns = args.columns
+                , rows = args.rows
+                }
+                |> addBlocks
+                    (args.oldBlocks
+                        |> Dict.filter
+                            (\_ block ->
+                                case block of
+                                    OptionalBlock _ ->
+                                        False
 
-                            _ ->
-                                True
+                                    _ ->
+                                        True
+                            )
+                        |> Dict.toList
                     )
-                |> Dict.toList
+                |> Random.constant
+    in
+    groups
+        |> List.foldl
+            (\group ->
+                case group of
+                    Pair block1 block2 ->
+                        Random.andThen (addRandomPair block1 block2)
+
+                    SingleBlock block ->
+                        Random.andThen (addRandomBlock block)
             )
-        |> Random.constant
-        |> andThenRepeat (args.rabbitAndCarrotPairs * 2) (addRandomBlock (OptionalBlock Rabbit))
-        |> andThenRepeat args.newStone (addRandomBlock Rock)
-        |> andThenRepeat args.newDynamite (randomAddOptionalNear Rock Dynamite)
-        |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
-        |> andThenRepeat args.rabbitAndCarrotPairs
-            (\b ->
-                Random.uniform Apple [ Orange ]
-                    |> Random.andThen
-                        (\fruit ->
-                            addRandomPair (FruitBlock fruit) (FruitBlock Carrot) b
-                        )
-            )
-        |> andThenRepeat args.newLemonPairs
-            (\b ->
-                Random.uniform Apple [ Orange ]
-                    |> Random.andThen
-                        (\fruit ->
-                            addRandomPair (FruitBlock fruit) (FruitBlock Lemon) b
-                        )
-            )
-        |> andThenRepeat args.newGrapePairs
-            (\b ->
-                Random.uniform Apple [ Orange, Lemon ]
-                    |> Random.andThen
-                        (\fruit ->
-                            addRandomPair (FruitBlock fruit) (FruitBlock Grapes) b
-                        )
-            )
-        |> andThenRepeat args.newFruitPairs (addRandomPair (FruitBlock Apple) (FruitBlock Orange))
-        |> andThenRepeat (args.fishAndRod // 2) (addRandomPair FishingRod (OptionalBlock Fish))
+            initial
         |> Random.map build
 
 
@@ -132,28 +115,6 @@ addRandomBlock block builder =
             (\pos ->
                 addBlock pos block builder
             )
-
-
-randomAddOptionalNear : Block -> Optional -> Builder -> Random Builder
-randomAddOptionalNear block optional builder =
-    builder.blocks
-        |> Dict.filter (\_ b -> b == block)
-        |> Dict.keys
-        |> randomFromList
-        |> Maybe.map
-            (Random.andThen
-                (\p1 ->
-                    builder.remainingPositions
-                        |> findValidPair
-                            (isValidPair builder
-                                [ block ]
-                                p1
-                            )
-                        |> Maybe.map (Random.map (\p2 -> addBlock p2 (OptionalBlock optional) builder))
-                        |> Maybe.withDefault (Random.constant builder)
-                )
-            )
-        |> Maybe.withDefault (Random.constant builder)
 
 
 addBlock : ( Int, Int ) -> Block -> Builder -> Builder
@@ -254,10 +215,3 @@ randomFromList list =
 
         [] ->
             Nothing
-
-
-andThenRepeat : Int -> (a -> Random a) -> Random a -> Random a
-andThenRepeat n fun rand =
-    List.repeat n ()
-        |> List.foldl (\() -> Random.andThen fun)
-            rand

@@ -111,7 +111,7 @@ toHtml args =
         , args.settings
             |> List.indexedMap
                 (\i weather ->
-                    [ Html.text (View.EndOfDay.title (i + 1))
+                    [ Html.text (View.EndOfDay.dayOfTheWeek (i + 1))
                     , View.CalenderDay.calenderDay calenderSize
                         (Layout.asButton
                             { label = "Select"

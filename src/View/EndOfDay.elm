@@ -12,8 +12,8 @@ calenderSize =
     300
 
 
-title : Int -> String
-title n =
+dayOfTheWeek : Int -> String
+dayOfTheWeek n =
     case modBy 7 n of
         1 ->
             "Monday"
@@ -48,7 +48,7 @@ toHtml :
     }
     -> Html msg
 toHtml args =
-    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (title args.day) ]
+    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (dayOfTheWeek args.day) ]
     , ( args.day, args.currentEvent )
         :: List.indexedMap (\i -> Tuple.pair (i + 1 + args.day)) args.nextEvents
         |> List.map

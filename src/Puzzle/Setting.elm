@@ -1,9 +1,9 @@
 module Puzzle.Setting exposing (Setting, generate, pickSettings, priceForSetting, settings, shuffle, startingLevel, tutorials)
 
 import Block exposing (Block(..), Fruit(..), Optional(..))
-import Dict
+import Dict exposing (Dict)
 import Level exposing (Level, Puzzle)
-import Puzzle.Builder
+import Puzzle.Builder exposing (Group(..))
 import Random
 
 
@@ -272,7 +272,7 @@ generate game setting =
         limitedByExisting block n =
             min n (8 - oldStones block)
     in
-    Puzzle.Builder.generateLevel
+    generateLevel
         { columns = 6
         , rows = 6
         , oldBlocks = oldBlocks
@@ -286,6 +286,42 @@ generate game setting =
         , rabbitAndCarrotPairs = setting.rabbitAndCarrotPairs
         , fishAndRod = setting.fishAndRod
         }
+
+
+generateLevel :
+    { columns : Int
+    , rows : Int
+    , oldBlocks : Dict ( Int, Int ) Block
+    , newStone : Int
+    , newDynamite : Int
+    , newFruitPairs : Int
+    , newLemonPairs : Int
+    , newGrapePairs : Int
+    , rabbitAndCarrotPairs : Int
+    , fishAndRod : Int
+    }
+    -> Random Puzzle
+generateLevel args =
+    [ SingleBlock (OptionalBlock Rabbit) |> List.repeat (args.rabbitAndCarrotPairs * 2)
+    , Pair Rock (OptionalBlock Dynamite) |> List.repeat args.newStone
+    , SingleBlock (OptionalBlock Dynamite) |> List.repeat args.newDynamite
+    , Pair FishingRod (OptionalBlock Fish) |> List.repeat (args.fishAndRod // 2)
+    , Pair (FruitBlock Carrot) (FruitBlock Apple) |> List.repeat (args.rabbitAndCarrotPairs // 2)
+    , Pair (FruitBlock Carrot) (FruitBlock Orange) |> List.repeat (args.rabbitAndCarrotPairs - args.rabbitAndCarrotPairs // 2)
+    , Pair (FruitBlock Lemon) (FruitBlock Apple) |> List.repeat (args.newLemonPairs // 2)
+    , Pair (FruitBlock Lemon) (FruitBlock Orange) |> List.repeat (args.newLemonPairs - args.newLemonPairs // 2)
+    , Pair (FruitBlock Grapes) (FruitBlock Apple) |> List.repeat (args.newGrapePairs // 3)
+    , Pair (FruitBlock Grapes) (FruitBlock Orange) |> List.repeat (args.newGrapePairs // 3)
+    , Pair (FruitBlock Grapes) (FruitBlock Lemon) |> List.repeat (args.newGrapePairs - (args.newGrapePairs // 3) * 2)
+    , Pair (FruitBlock Apple) (FruitBlock Orange) |> List.repeat args.newFruitPairs
+    , Pair FishingRod (OptionalBlock Fish) |> List.repeat (args.fishAndRod // 2)
+    ]
+        |> List.concat
+        |> Puzzle.Builder.generateFromGroup
+            { columns = args.columns
+            , rows = args.rows
+            , oldBlocks = args.oldBlocks
+            }
 
 
 shuffle : List a -> Random (List a)
