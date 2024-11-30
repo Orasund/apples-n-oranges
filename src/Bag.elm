@@ -1,5 +1,6 @@
 module Bag exposing (..)
 
+import Block exposing (Block)
 import Dict exposing (Dict)
 
 
@@ -12,7 +13,7 @@ type Item
 
 
 type alias Bag =
-    Dict String ( Item, Int )
+    Dict String ( Block, Int )
 
 
 toString : Item -> String
@@ -39,9 +40,9 @@ empty =
     Dict.empty
 
 
-insert : Item -> Bag -> Bag
+insert : Block -> Bag -> Bag
 insert item =
-    Dict.update (toString item)
+    Dict.update (Block.toString item)
         (\maybe ->
             maybe
                 |> Maybe.map
@@ -53,7 +54,7 @@ insert item =
         )
 
 
-toList : Bag -> List ( Item, Int )
+toList : Bag -> List ( Block, Int )
 toList bag =
     bag
         |> Dict.toList

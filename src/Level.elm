@@ -1,6 +1,7 @@
 module Level exposing (..)
 
 import Bag exposing (Item(..))
+import Block exposing (Block(..), Fruit(..), Optional(..))
 import Dict exposing (Dict)
 import Maths
 import Random exposing (Generator)
@@ -19,27 +20,6 @@ type alias Puzzle =
     , rows : Int
     , blocks : List ( ( Int, Int ), Block )
     }
-
-
-type Fruit
-    = Apple
-    | Orange
-    | Lemon
-    | Grapes
-    | Carrot
-
-
-type Optional
-    = Dynamite
-    | Fish
-    | Rabbit
-
-
-type Block
-    = FruitBlock Fruit
-    | OptionalBlock Optional
-    | FishingRod
-    | Rock
 
 
 type alias CoinId =
@@ -64,9 +44,9 @@ type alias Level =
             BlockId
             { entity : Entity
             , pos : ( Int, Int )
-            , item : Item
+            , item : Maybe Block
             }
-    , items : Dict CoinId { entity : Entity, sort : Item }
+    , items : Dict CoinId { entity : Entity, sort : Block }
     , nextCoinId : CoinId
     }
 
@@ -100,43 +80,37 @@ newEntity ( x, y ) =
     }
 
 
-blockToItem : Block -> Random Item
+blockToItem : Block -> Random (Maybe Item)
 blockToItem block =
     case block of
-        OptionalBlock Rabbit ->
-            Random.uniform Diamant
-                [ Stone
-                ]
-
         _ ->
-            Random.uniform Coin
-                [ Worm
-                , Snail
-                , Stone
+            Random.weighted ( 20, Just Coin )
+                [ ( 5, Nothing )
+
+                --, ( 1, Just Diamant )
+                --, ( 1, Just Worm )
+                --, ( 1, Just Snail )
+                --, ( 1, Just Stone )
                 ]
 
 
-addBlock : ( Int, Int ) -> Block -> Level -> Random Level
+addBlock : ( Int, Int ) -> Block -> Level -> Level
 addBlock ( x, y ) block game =
     let
         fruitId =
             Dict.size game.blocks
     in
-    blockToItem block
-        |> Random.map
-            (\item ->
-                { game
-                    | blocks = Dict.insert fruitId block game.blocks
-                    , fields = game.fields |> Dict.insert ( x, y ) fruitId
-                    , entities =
-                        Dict.insert fruitId
-                            { entity = newEntity ( x, y )
-                            , pos = ( x, y )
-                            , item = item
-                            }
-                            game.entities
+    { game
+        | blocks = Dict.insert fruitId block game.blocks
+        , fields = game.fields |> Dict.insert ( x, y ) fruitId
+        , entities =
+            Dict.insert fruitId
+                { entity = newEntity ( x, y )
+                , pos = ( x, y )
+                , item = Just block
                 }
-            )
+                game.entities
+    }
 
 
 getBlockAt : ( Int, Int ) -> Level -> Maybe Block
@@ -149,7 +123,7 @@ getBlockAt pos game =
             )
 
 
-getEntityAndItem : ( Int, Int ) -> Level -> Maybe ( BlockId, ( Entity, Item ) )
+getEntityAndItem : ( Int, Int ) -> Level -> Maybe ( BlockId, ( Entity, Maybe Block ) )
 getEntityAndItem pos game =
     game.fields
         |> Dict.get pos
@@ -230,31 +204,31 @@ getBlocks game =
             )
 
 
-collectCoins : Level -> ( Level, List Item )
-collectCoins model =
+collectCoins : Level -> ( Level, List Block )
+collectCoins level =
     let
         updateEntity entity =
             { entity | x = 2.5, y = -1 }
     in
-    ( { model
+    ( { level
         | items =
             Dict.map
                 (\_ coin ->
                     { coin | entity = updateEntity coin.entity }
                 )
-                model.items
+                level.items
       }
-    , model.items
+    , level.items
         |> Dict.values
         |> List.map .sort
     )
 
 
-addItem : ( Float, Float ) -> Item -> Level -> Level
+addItem : ( Float, Float ) -> Block -> Level -> Level
 addItem p item level =
     let
         ( x, y ) =
-            fromPolar ( 0.2, toFloat level.nextCoinId * 2.5 )
+            fromPolar ( 0.1, toFloat level.nextCoinId * 2.5 )
                 |> Maths.plus p
     in
     { level

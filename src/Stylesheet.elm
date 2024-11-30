@@ -46,14 +46,15 @@ stylesheet =
         border: 2px solid black;
         padding: 8px 4px;
         background-color: white;
+        border-bottom-width: 6px;
     }
 
     .button:hover {
-        background-color: rgba(255,255,255,0.9);
+        border-bottom-width: 4px;
     }
 
     .button:active {
-        background-color: rgba(255,255,255,0.7);
+        border-bottom-width: 2px;
     }
     """
         |> Html.text

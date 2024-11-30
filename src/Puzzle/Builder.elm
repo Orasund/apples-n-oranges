@@ -1,7 +1,8 @@
 module Puzzle.Builder exposing (generateLevel)
 
+import Block exposing (Block(..), Fruit(..), Optional(..))
 import Dict exposing (Dict)
-import Level exposing (Block(..), Fruit(..), Optional(..), Puzzle, isValidPair)
+import Level exposing (Puzzle, isValidPair)
 import Random exposing (Generator)
 import Set exposing (Set)
 

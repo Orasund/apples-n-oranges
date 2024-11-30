@@ -1,9 +1,9 @@
 module View.CalenderDay exposing (..)
 
+import Block
 import Event exposing (Event(..))
 import Html exposing (Attribute, Html)
 import Html.Style
-import View.Block
 
 
 eventToString : Event -> String
@@ -11,7 +11,7 @@ eventToString event =
     case event of
         WeatherEvent weather ->
             weather.symbol
-                |> View.Block.toString
+                |> Block.toString
 
         ShopEvent ->
             "🔮"

@@ -15,7 +15,10 @@ withPrice args =
         , Html.Style.borderWidthPx 3
         ]
         args.price
-    , Html.div [ Html.Style.padding "4px 8px" ]
+    , Html.div
+        [ Html.Style.padding "4px 8px"
+        , Html.Style.fontSizePx 16
+        ]
         [ Html.text args.label ]
     ]
         |> Html.button
@@ -39,6 +42,7 @@ toHtml args =
                 { onPress = Just args.onPress, label = args.label }
                 ++ [ Html.Attributes.class "button"
                    , Html.Style.padding "6px 12px"
+                   , Html.Style.fontSizePx 16
                    , Html.Style.displayFlex
                    , Html.Style.alignItemsCenter
                    ]

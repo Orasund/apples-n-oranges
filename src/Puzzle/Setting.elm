@@ -1,7 +1,8 @@
 module Puzzle.Setting exposing (Setting, generate, pickSettings, priceForSetting, settings, shuffle, startingLevel, tutorials)
 
+import Block exposing (Block(..), Fruit(..), Optional(..))
 import Dict
-import Level exposing (Block(..), Fruit(..), Level, Optional(..), Puzzle)
+import Level exposing (Level, Puzzle)
 import Puzzle.Builder
 import Random
 

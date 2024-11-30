@@ -9,7 +9,6 @@ import View.Background
 import View.Block
 import View.Button
 import View.CalenderDay
-import View.Coin
 import View.EndOfDay
 
 
@@ -34,43 +33,7 @@ toHtml :
     }
     -> Html msg
 toHtml args =
-    [ Html.div
-        [ Html.Style.displayFlex
-        , Html.Style.alignItemsCenter
-        , Html.Style.justifyContentCenter
-        , Html.Style.gapPx 4
-        , Html.Style.widthPx 360
-        ]
-        [ []
-            |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
-        , View.Coin.toHtml
-            [ Html.Style.fontSizePx 48
-            , Html.Style.heightPx 100
-            , Html.Style.borderWidthPx 8
-            ]
-            --args.money
-            ((args.settings
-                |> List.map Puzzle.Setting.priceForSetting
-                |> List.sum
-             )
-                // 2
-                |> min 999
-                |> max -99
-            )
-            |> List.singleton
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentCenter
-                ]
-        , []
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentEnd
-                ]
-        ]
-    , [ args.buyableSettings
+    [ [ args.buyableSettings
             |> List.indexedMap
                 (\i weather ->
                     [ View.CalenderDay.calenderDay calenderSize
@@ -107,9 +70,8 @@ toHtml args =
                             }
 
                       else
-                        View.Button.withPrice
-                            { price = Puzzle.Setting.priceForSetting weather
-                            , label = "Buy"
+                        View.Button.toHtml
+                            { label = "Buy"
                             , onPress = args.onSelectSettingToBuy (Just i)
                             }
                     ]
@@ -127,6 +89,16 @@ toHtml args =
                 , Html.Style.justifyContentSpaceBetween
                 ]
       , [ Html.div
+            [ Html.Style.positionAbsolute
+            , Html.Style.topPx 0
+            , Html.Style.textAlignCenter
+            , Html.Style.padding "8px 32px"
+            , Html.Style.borderRadiusPx 16
+            , Html.Style.backgroundColor "white"
+            , Html.Style.transform "translate(0,-50%)"
+            ]
+            [ Html.text "Forcast" ]
+        , Html.div
             [ Html.Style.positionAbsolute
             , Html.Style.topPx -40
             , Html.Style.leftPx -40
@@ -181,11 +153,19 @@ toHtml args =
                 [ Html.Style.positionRelative
                 , Html.Style.alignItemsCenter
                 , Html.Style.paddingPx 16
+                , Html.Style.paddingTopPx 32
                 , Html.Style.borderRadiusPx 16
                 , Html.Style.boxSizingBorderBox
                 ]
             |> List.singleton
             |> Html.div []
+      , Html.text "Replace a day in the forcast to start the next week"
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.padding "8px 16px"
+                , Html.Style.background "white"
+                , Html.Style.borderRadiusPx 32
+                ]
       ]
         |> Html.div
             [ Html.Style.displayFlex

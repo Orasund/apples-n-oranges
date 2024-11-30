@@ -1,24 +1,28 @@
 module Main exposing (main)
 
 import Bag exposing (Bag, Item(..))
+import Block exposing (Block(..))
 import Browser
 import Dict
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import Level exposing (Block(..), CoinId, Fruit(..), Level, Optional(..), Puzzle)
+import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
 import Puzzle.Setting exposing (Setting)
 import Random exposing (Generator, Seed)
+import Set exposing (Set)
 import Stylesheet
 import Task
 import View.Background
 import View.EndOfDay
+import View.Field
 import View.Game
 import View.Header
 import View.Shop
+import View.TitleScreen
 
 
 type alias Random a =
@@ -35,6 +39,10 @@ type alias Model =
     , history : List Level
     , possibleSettings : List Setting
     , endOfDay : Bool
+    , titleScreen :
+        Maybe
+            { selected : Set Int
+            }
     , shop :
         Maybe
             { buyableSettings : List Setting
@@ -58,6 +66,8 @@ type Msg
     | BuySettingAndReplaceWith Int
     | Wait Float Msg
     | Sequence (List Msg)
+    | CloseTitleScreen
+    | SelectFruitOnTitleScreen Int
 
 
 collectCoins : Model -> Model
@@ -128,7 +138,7 @@ loadPuzzle : Puzzle -> Model -> Random Model
 loadPuzzle puzzle model =
     List.foldl
         (\( pos, fruit ) ->
-            Random.andThen (addBlock pos fruit)
+            Random.map (addBlock pos fruit)
         )
         (Random.constant model)
         puzzle.blocks
@@ -249,6 +259,32 @@ generateNextWeek model =
     }
 
 
+closeTitleScreen : Model -> Model
+closeTitleScreen model =
+    { model | titleScreen = Nothing }
+
+
+selectFruitOnTitleScreen : Int -> Model -> Model
+selectFruitOnTitleScreen int model =
+    case model.titleScreen of
+        Just args ->
+            { model
+                | titleScreen =
+                    { args
+                        | selected =
+                            if Set.member int args.selected then
+                                Set.remove int args.selected
+
+                            else
+                                Set.insert int args.selected
+                    }
+                        |> Just
+            }
+
+        Nothing ->
+            model
+
+
 
 {------------------------------------------------------------
  -
@@ -280,6 +316,7 @@ init () =
             , seed = seed
             , endOfDay = False
             , shop = Nothing
+            , titleScreen = Nothing
             }
     in
     ( model
@@ -289,11 +326,11 @@ init () =
     )
 
 
-addBlock : ( Int, Int ) -> Block -> Model -> Random Model
+addBlock : ( Int, Int ) -> Block -> Model -> Model
 addBlock ( x, y ) block model =
     model.level
         |> Level.addBlock ( x, y ) block
-        |> Random.map (\level -> { model | level = level })
+        |> (\level -> { model | level = level })
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
@@ -314,8 +351,14 @@ join p1 p2 model =
                         |> Level.moveEntity fruit2
                             { x = x, y = y, shrink = True }
                         |> Level.setSelected Nothing
-                        |> Level.addItem ( x, y ) item1
-                        |> Level.addItem ( x, y ) item2
+                        |> (item1
+                                |> Maybe.map (Level.addItem ( x, y ))
+                                |> Maybe.withDefault identity
+                           )
+                        |> (item2
+                                |> Maybe.map (Level.addItem ( x, y ))
+                                |> Maybe.withDefault identity
+                           )
                 , history = model.level :: model.history
             }
         )
@@ -484,6 +527,12 @@ update msg model =
                                     ]
                             )
 
+        CloseTitleScreen ->
+            ( closeTitleScreen model, Cmd.none )
+
+        SelectFruitOnTitleScreen int ->
+            ( selectFruitOnTitleScreen int model, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -498,11 +547,19 @@ view model =
                 { game = model.level
                 , onClick = Click
                 }
+            , Html.text "Click on two different fruits in a row or column to collect them."
+                |> List.singleton
+                |> Html.div
+                    [ Html.Style.padding "8px 16px"
+                    , Html.Style.background "white"
+                    , Html.Style.borderRadiusPx 32
+                    ]
             ]
                 |> Html.div
                     [ Html.Style.displayFlex
                     , Html.Style.flexDirectionColumn
                     , Html.Style.gapPx 16
+                    , Html.Style.widthPx (View.Field.size * 6)
                     ]
 
         Just shop ->
@@ -513,6 +570,10 @@ view model =
                 , onSelectSettingToBuy = SelectSettingToBuy
                 , onBuy = BuySettingAndReplaceWith
                 }
+    , View.TitleScreen.toHtml
+        { show = model.titleScreen /= Nothing
+        , onSelect = SelectFruitOnTitleScreen
+        }
     , View.EndOfDay.toHtml
         { currentEvent = model.event
         , nextEvents = model.nextEvents
