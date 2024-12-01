@@ -1,6 +1,6 @@
 module View.Group exposing (..)
 
-import Block
+import Data.Block
 import Html exposing (Html)
 import Html.Style
 import Puzzle.Builder exposing (Group(..))
@@ -10,7 +10,7 @@ toHtml : Group -> Html msg
 toHtml group =
     (case group of
         Pair b1 b2 ->
-            [ Html.text (Block.toString b2)
+            [ Html.text (Data.Block.toString b2)
                 |> List.singleton
                 |> Html.div
                     [ Html.Style.fontSizePx 8
@@ -18,7 +18,7 @@ toHtml group =
                     , Html.Style.bottomPx -2
                     , Html.Style.leftPx 2
                     ]
-            , Html.text (Block.toString b1)
+            , Html.text (Data.Block.toString b1)
                 |> List.singleton
                 |> Html.div
                     [ Html.Style.fontSizePx 14
@@ -30,7 +30,7 @@ toHtml group =
                 |> Html.div [ Html.Style.positionRelative ]
 
         SingleBlock b ->
-            Html.text (Block.toString b)
+            Html.text (Data.Block.toString b)
                 |> List.singleton
                 |> Html.div [ Html.Style.fontSizePx 16 ]
     )

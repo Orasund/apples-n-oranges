@@ -1,7 +1,7 @@
 module Level exposing (..)
 
 import Bag exposing (Item(..))
-import Block exposing (Block(..), Fruit(..), Optional(..))
+import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Dict exposing (Dict)
 import Maths
 import Random exposing (Generator)
@@ -152,13 +152,13 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
     let
         isValidBlock p1 p2 =
             case ( p1, p2 ) of
-                ( FruitBlock _, FruitBlock _ ) ->
+                ( OrganicBlock _, OrganicBlock _ ) ->
                     True
 
                 _ ->
                     [ ( OptionalBlock Dynamite, Rock )
                     , ( FishingRod, OptionalBlock Fish )
-                    , ( OptionalBlock Rabbit, FruitBlock Carrot )
+                    , ( OptionalBlock Rabbit, OrganicBlock Carrot )
                     ]
                         |> List.any
                             (\pair ->

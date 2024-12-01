@@ -34,8 +34,8 @@ endOfDay attrs =
         )
 
 
-shop : List (Attribute msg) -> List (Html msg) -> Html msg
-shop attrs =
+wood : List (Attribute msg) -> List (Html msg) -> Html msg
+wood attrs =
     toHtml
         ([ Html.Style.backgroundImage
             "linear-gradient(0deg, #998c5e 50%,#a79d7a 50%)"

@@ -1,7 +1,7 @@
 module Puzzle.Setting exposing (Setting, pickSettings, priceForSetting, settings, shuffle, startingLevel, toBag, toGroups, tutorials)
 
 import Bag exposing (Bag)
-import Block exposing (Block(..), Fruit(..), Optional(..))
+import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
 import Random
 
@@ -19,12 +19,14 @@ type alias Setting =
     , newGrapePairs : Int
     , rabbitAndCarrotPairs : Int
     , fishAndRod : Int
+    , singles : List Block
+    , pairs : List ( Block, Block )
     }
 
 
 empty : Setting
 empty =
-    { symbol = FruitBlock Apple
+    { symbol = OrganicBlock Apple
     , difficulty = 0
     , newFruitPairs = 0
     , newStoneAndDynamite = 0
@@ -32,13 +34,15 @@ empty =
     , newGrapePairs = 0
     , rabbitAndCarrotPairs = 0
     , fishAndRod = 0
+    , singles = []
+    , pairs = []
     }
 
 
 startingLevel : Setting
 startingLevel =
     { empty
-        | symbol = FruitBlock Orange
+        | symbol = OrganicBlock Orange
         , difficulty = 0
         , newFruitPairs = 2
     }
@@ -47,7 +51,7 @@ startingLevel =
 applesTraining : Setting
 applesTraining =
     { empty
-        | symbol = FruitBlock Apple
+        | symbol = OrganicBlock Apple
         , difficulty = 0
         , newFruitPairs = 3
     }
@@ -56,7 +60,7 @@ applesTraining =
 applesBasic : Setting
 applesBasic =
     { empty
-        | symbol = FruitBlock Orange
+        | symbol = OrganicBlock Orange
         , difficulty = 1
         , newFruitPairs = 5
         , newStoneAndDynamite = 1
@@ -66,7 +70,7 @@ applesBasic =
 applesAdvanced : Setting
 applesAdvanced =
     { empty
-        | symbol = FruitBlock Orange
+        | symbol = OrganicBlock Orange
         , difficulty = 2
         , newFruitPairs = 8
         , newStoneAndDynamite = 1
@@ -76,7 +80,7 @@ applesAdvanced =
 lemonTraining : Setting
 lemonTraining =
     { empty
-        | symbol = FruitBlock Lemon
+        | symbol = OrganicBlock Lemon
         , difficulty = 0
         , newFruitPairs = 3
         , newLemonPairs = 1
@@ -86,7 +90,7 @@ lemonTraining =
 lemonBasic : Setting
 lemonBasic =
     { empty
-        | symbol = FruitBlock Lemon
+        | symbol = OrganicBlock Lemon
         , difficulty = 1
         , newFruitPairs = 2
         , newStoneAndDynamite = 1
@@ -97,7 +101,7 @@ lemonBasic =
 lemonAdvanced : Setting
 lemonAdvanced =
     { empty
-        | symbol = FruitBlock Lemon
+        | symbol = OrganicBlock Lemon
         , difficulty = 2
         , newFruitPairs = 5
         , newStoneAndDynamite = 1
@@ -138,7 +142,7 @@ miningAdvanced =
 grapesBasic : Setting
 grapesBasic =
     { empty
-        | symbol = FruitBlock Grapes
+        | symbol = OrganicBlock Grapes
         , difficulty = 1
         , newFruitPairs = 3
         , newStoneAndDynamite = 1
@@ -149,7 +153,7 @@ grapesBasic =
 grapesAdvanced : Setting
 grapesAdvanced =
     { empty
-        | symbol = FruitBlock Grapes
+        | symbol = OrganicBlock Grapes
         , difficulty = 2
         , newFruitPairs = 6
         , newStoneAndDynamite = 1
@@ -187,6 +191,20 @@ rabbitAdvanced =
     }
 
 
+winter : Int -> Setting
+winter n =
+    { empty
+        | symbol = OrganicBlock Potato
+        , difficulty = n
+        , pairs =
+            ( OrganicBlock Potato, OrganicBlock Carrot )
+                |> List.repeat (n * 2)
+        , singles =
+            Rock
+                |> List.repeat (n - 1)
+    }
+
+
 tutorials : List Setting
 tutorials =
     [ startingLevel
@@ -211,6 +229,9 @@ settings =
     , fishingBasic
     , fishingAdvanced
     , rabbitAdvanced
+    , winter 1
+    , winter 2
+    , winter 3
     ]
 
 
@@ -264,7 +285,6 @@ toGroups setting =
         newStone =
             setting.newStoneAndDynamite
 
-        --|> limitedByExisting Rock
         newDynamite =
             setting.newStoneAndDynamite
 
@@ -280,19 +300,23 @@ toGroups setting =
         fishAndRod =
             setting.fishAndRod
     in
-    [ SingleBlock (OptionalBlock Rabbit) |> List.repeat (rabbitAndCarrotPairs * 2)
+    [ setting.singles
+        |> List.map SingleBlock
+    , SingleBlock (OptionalBlock Rabbit) |> List.repeat (rabbitAndCarrotPairs * 2)
     , Pair Rock (OptionalBlock Dynamite) |> List.repeat newStone
     , SingleBlock (OptionalBlock Dynamite) |> List.repeat newDynamite
     , Pair FishingRod (OptionalBlock Fish) |> List.repeat (fishAndRod // 2)
-    , Pair (FruitBlock Carrot) (FruitBlock Apple) |> List.repeat (rabbitAndCarrotPairs // 2)
-    , Pair (FruitBlock Carrot) (FruitBlock Orange) |> List.repeat (rabbitAndCarrotPairs - rabbitAndCarrotPairs // 2)
-    , Pair (FruitBlock Lemon) (FruitBlock Apple) |> List.repeat (newLemonPairs // 2)
-    , Pair (FruitBlock Lemon) (FruitBlock Orange) |> List.repeat (newLemonPairs - newLemonPairs // 2)
-    , Pair (FruitBlock Grapes) (FruitBlock Apple) |> List.repeat (newGrapePairs // 3)
-    , Pair (FruitBlock Grapes) (FruitBlock Orange) |> List.repeat (newGrapePairs // 3)
-    , Pair (FruitBlock Grapes) (FruitBlock Lemon) |> List.repeat (newGrapePairs - (newGrapePairs // 3) * 2)
-    , Pair (FruitBlock Apple) (FruitBlock Orange) |> List.repeat newFruitPairs
+    , Pair (OrganicBlock Carrot) (OrganicBlock Apple) |> List.repeat (rabbitAndCarrotPairs // 2)
+    , Pair (OrganicBlock Carrot) (OrganicBlock Orange) |> List.repeat (rabbitAndCarrotPairs - rabbitAndCarrotPairs // 2)
+    , Pair (OrganicBlock Lemon) (OrganicBlock Apple) |> List.repeat (newLemonPairs // 2)
+    , Pair (OrganicBlock Lemon) (OrganicBlock Orange) |> List.repeat (newLemonPairs - newLemonPairs // 2)
+    , Pair (OrganicBlock Grapes) (OrganicBlock Apple) |> List.repeat (newGrapePairs // 3)
+    , Pair (OrganicBlock Grapes) (OrganicBlock Orange) |> List.repeat (newGrapePairs // 3)
+    , Pair (OrganicBlock Grapes) (OrganicBlock Lemon) |> List.repeat (newGrapePairs - (newGrapePairs // 3) * 2)
+    , Pair (OrganicBlock Apple) (OrganicBlock Orange) |> List.repeat newFruitPairs
     , Pair FishingRod (OptionalBlock Fish) |> List.repeat (fishAndRod // 2)
+    , setting.pairs
+        |> List.map (\( a, b ) -> Pair a b)
     ]
         |> List.concat
 

@@ -5,12 +5,12 @@ import Html exposing (Html)
 import Html.Style
 import View.Button
 import View.CalenderDay
-import View.EndOfDay
+import View.DayOfTheWeek
 
 
 viewHeader :
     { onUndo : msg
-    , onOpenShop : msg
+    , onOpenCalender : msg
     , currentEvent : Event
     , currentDay : Int
     }
@@ -18,7 +18,7 @@ viewHeader :
 viewHeader args =
     Html.div
         [ Html.Style.displayFlex
-        , Html.Style.alignItemsCenter
+        , Html.Style.alignItemsEnd
         , Html.Style.justifyContentCenter
         , Html.Style.gapPx 4
         , Html.Style.width "100%"
@@ -31,23 +31,25 @@ viewHeader args =
             }
             |> List.singleton
             |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
-        , [ Html.text (View.EndOfDay.dayOfTheWeek args.currentDay)
+        , [ Html.text (View.DayOfTheWeek.toLongString args.currentDay)
           , args.currentEvent
                 |> View.CalenderDay.calenderDay 40
                     []
-
-          {--View.Button.toHtml
-            { label = "Open Shop"
-            , onPress = args.onOpenShop
-            }
-            |> List.singleton--}
-          --[]
           ]
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
-                , Html.Style.justifyContentEnd
+                , Html.Style.flexDirectionColumn
                 , Html.Style.alignItemsCenter
-                , Html.Style.gapPx 8
+                ]
+        , View.Button.toHtml
+            { label = "Calender"
+            , onPress = args.onOpenCalender
+            }
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentEnd
                 ]
         ]

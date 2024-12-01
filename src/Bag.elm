@@ -1,6 +1,6 @@
 module Bag exposing (..)
 
-import Block exposing (Block)
+import Data.Block exposing (Block)
 import Dict exposing (Dict)
 
 
@@ -42,7 +42,7 @@ empty =
 
 insert : Block -> Bag -> Bag
 insert item =
-    Dict.update (Block.toString item)
+    Dict.update (Data.Block.toString item)
         (\maybe ->
             maybe
                 |> Maybe.map
@@ -65,7 +65,7 @@ insertAll list bag =
 get : Block -> Bag -> Int
 get block bag =
     bag
-        |> Dict.get (Block.toString block)
+        |> Dict.get (Data.Block.toString block)
         |> Maybe.map Tuple.second
         |> Maybe.withDefault 0
 

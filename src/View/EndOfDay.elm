@@ -6,38 +6,11 @@ import Html.Keyed
 import Html.Style
 import View.Background
 import View.CalenderDay
+import View.DayOfTheWeek
 
 
 calenderSize =
     300
-
-
-dayOfTheWeek : Int -> String
-dayOfTheWeek n =
-    case modBy 7 n of
-        1 ->
-            "Monday"
-
-        2 ->
-            "Tuesday"
-
-        3 ->
-            "Wednesday"
-
-        4 ->
-            "Thursday"
-
-        5 ->
-            "Friday"
-
-        6 ->
-            "Saturday"
-
-        0 ->
-            "Sunday"
-
-        _ ->
-            "Day " ++ String.fromInt n
 
 
 toHtml :
@@ -48,7 +21,7 @@ toHtml :
     }
     -> Html msg
 toHtml args =
-    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (dayOfTheWeek args.day) ]
+    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
     , ( args.day, args.currentEvent )
         :: List.indexedMap (\i -> Tuple.pair (i + 1 + args.day)) args.nextEvents
         |> List.map

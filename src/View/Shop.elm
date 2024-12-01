@@ -1,7 +1,7 @@
 module View.Shop exposing (..)
 
 import Bag
-import Block
+import Data.Block
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
@@ -11,7 +11,7 @@ import View.Background
 import View.Block
 import View.Button
 import View.CalenderDay
-import View.EndOfDay
+import View.DayOfTheWeek
 
 
 calenderSize =
@@ -73,7 +73,7 @@ toHtml args =
                             (\( block, amount ) ->
                                 [ String.fromInt amount
                                     ++ " "
-                                    ++ Block.toString block
+                                    ++ Data.Block.toString block
                                     |> Html.text
                                 ]
                                     |> Html.div
@@ -107,6 +107,7 @@ toHtml args =
                             , Html.Style.flexDirectionColumn
                             , Html.Style.alignItemsCenter
                             , Html.Style.gapPx 8
+                            , Html.Style.widthPx 130
                             ]
                 )
             |> Html.div
@@ -140,7 +141,7 @@ toHtml args =
         , args.settings
             |> List.indexedMap
                 (\i weather ->
-                    [ Html.text (View.EndOfDay.dayOfTheWeek (i + 1))
+                    [ Html.text (View.DayOfTheWeek.toLongString (i + 1))
                     , View.CalenderDay.calenderDay calenderSize
                         (Layout.asButton
                             { label = "Select"
@@ -205,7 +206,7 @@ toHtml args =
             , Html.Style.alignItemsCenter
             ]
     ]
-        |> View.Background.shop
+        |> View.Background.wood
             [ Html.Style.displayFlex
             , Html.Style.alignItemsCenter
             , Html.Style.justifyContentCenter

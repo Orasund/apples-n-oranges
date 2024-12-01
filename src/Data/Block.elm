@@ -1,12 +1,13 @@
-module Block exposing (..)
+module Data.Block exposing (..)
 
 
-type Fruit
+type Organic
     = Apple
     | Orange
     | Lemon
     | Grapes
     | Carrot
+    | Potato
 
 
 type Optional
@@ -16,7 +17,7 @@ type Optional
 
 
 type Block
-    = FruitBlock Fruit
+    = OrganicBlock Organic
     | OptionalBlock Optional
     | FishingRod
     | Rock
@@ -25,20 +26,23 @@ type Block
 toString : Block -> String
 toString block =
     case block of
-        FruitBlock Apple ->
+        OrganicBlock Apple ->
             "🍎"
 
-        FruitBlock Orange ->
+        OrganicBlock Orange ->
             "🍊"
 
-        FruitBlock Lemon ->
+        OrganicBlock Lemon ->
             "🍋"
 
-        FruitBlock Grapes ->
+        OrganicBlock Grapes ->
             "🍇"
 
-        FruitBlock Carrot ->
+        OrganicBlock Carrot ->
             "🥕"
+
+        OrganicBlock Potato ->
+            "🥔"
 
         FishingRod ->
             "🎣"

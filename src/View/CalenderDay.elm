@@ -1,6 +1,6 @@
 module View.CalenderDay exposing (..)
 
-import Block
+import Data.Block
 import Event exposing (Event(..))
 import Html exposing (Attribute, Html)
 import Html.Style
@@ -11,7 +11,7 @@ eventToString event =
     case event of
         WeatherEvent weather ->
             weather.symbol
-                |> Block.toString
+                |> Data.Block.toString
 
         ShopEvent ->
             "🔮"
@@ -45,6 +45,16 @@ stylingForEvent calenderSize event =
             []
 
 
+difficutlyOfEvent : Event -> Int
+difficutlyOfEvent event =
+    case event of
+        WeatherEvent weather ->
+            weather.difficulty
+
+        ShopEvent ->
+            0
+
+
 calenderDay : Float -> List (Attribute msg) -> Event -> Html msg
 calenderDay calenderSize attrs event =
     Html.div
@@ -59,11 +69,21 @@ calenderDay calenderSize attrs event =
          ]
             ++ attrs
         )
-        [ Html.div
-            [ Html.Style.backgroundColor "red"
-            , Html.Style.heightPx (calenderSize / 5)
-            ]
-            []
+        [ "⭐"
+            |> List.repeat (difficutlyOfEvent event)
+            |> String.join " "
+            |> Html.text
+            |> List.singleton
+            |> Html.span [ Html.Style.filter "brightness(0)" ]
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
+                , Html.Style.alignItemsCenter
+                , Html.Style.backgroundColor "red"
+                , Html.Style.heightPx (calenderSize / 4)
+                , Html.Style.fontSizePx (calenderSize * 0.1)
+                ]
         , eventToString event
             |> Html.text
             |> List.singleton

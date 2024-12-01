@@ -1,8 +1,8 @@
 module Main exposing (main)
 
 import Bag exposing (Bag, Item(..))
-import Block exposing (Block(..))
 import Browser
+import Data.Block exposing (Block(..))
 import Dict
 import Event exposing (Event(..))
 import Html exposing (Html)
@@ -14,18 +14,15 @@ import Process
 import Puzzle.Builder
 import Puzzle.Setting exposing (Setting)
 import Random exposing (Generator, Seed)
-import Set exposing (Set)
 import Stylesheet
 import Task
 import View.Background
+import View.Calender
 import View.EndOfDay
 import View.Field
-import View.Fruit
 import View.Game
-import View.Group
 import View.Header
 import View.Shop
-import View.TitleScreen
 
 
 type alias Random a =
@@ -42,15 +39,12 @@ type alias Model =
     , history : List Level
     , possibleSettings : List Setting
     , endOfDay : Bool
-    , titleScreen :
-        Maybe
-            { selected : Set Int
-            }
     , shop :
         Maybe
             { buyableSettings : List Setting
             , selected : Maybe Int
             }
+    , showCalender : Bool
     }
 
 
@@ -69,8 +63,8 @@ type Msg
     | BuySettingAndReplaceWith Int
     | Wait Float Msg
     | Sequence (List Msg)
-    | CloseTitleScreen
-    | SelectFruitOnTitleScreen Int
+    | OpenCalender
+    | CloseCalender
 
 
 collectCoins : Model -> Model
@@ -263,30 +257,14 @@ generateNextWeek model =
     }
 
 
-closeTitleScreen : Model -> Model
-closeTitleScreen model =
-    { model | titleScreen = Nothing }
+showCalender : Model -> Model
+showCalender model =
+    { model | showCalender = True }
 
 
-selectFruitOnTitleScreen : Int -> Model -> Model
-selectFruitOnTitleScreen int model =
-    case model.titleScreen of
-        Just args ->
-            { model
-                | titleScreen =
-                    { args
-                        | selected =
-                            if Set.member int args.selected then
-                                Set.remove int args.selected
-
-                            else
-                                Set.insert int args.selected
-                    }
-                        |> Just
-            }
-
-        Nothing ->
-            model
+closeCalender : Model -> Model
+closeCalender model =
+    { model | showCalender = False }
 
 
 
@@ -320,7 +298,7 @@ init () =
             , seed = seed
             , endOfDay = False
             , shop = Nothing
-            , titleScreen = Nothing
+            , showCalender = False
             }
     in
     ( model
@@ -378,7 +356,7 @@ checkWinCondition model =
                 |> List.all
                     (\( _, blockId ) ->
                         case model.level.blocks |> Dict.get blockId of
-                            Just (FruitBlock _) ->
+                            Just (OrganicBlock _) ->
                                 False
 
                             Just FishingRod ->
@@ -531,11 +509,11 @@ update msg model =
                                     ]
                             )
 
-        CloseTitleScreen ->
-            ( closeTitleScreen model, Cmd.none )
+        OpenCalender ->
+            ( model |> showCalender, Cmd.none )
 
-        SelectFruitOnTitleScreen int ->
-            ( selectFruitOnTitleScreen int model, Cmd.none )
+        CloseCalender ->
+            ( model |> closeCalender, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -544,7 +522,7 @@ view model =
         Nothing ->
             [ View.Header.viewHeader
                 { onUndo = Undo
-                , onOpenShop = OpenShop
+                , onOpenCalender = OpenCalender
                 , currentEvent = model.event
                 , currentDay = model.day
                 }
@@ -575,9 +553,9 @@ view model =
                 , onSelectSettingToBuy = SelectSettingToBuy
                 , onBuy = BuySettingAndReplaceWith
                 }
-    , View.TitleScreen.toHtml
-        { show = model.titleScreen /= Nothing
-        , onSelect = SelectFruitOnTitleScreen
+    , View.Calender.toHtml
+        { show = model.showCalender
+        , onClose = CloseCalender
         }
     , View.EndOfDay.toHtml
         { currentEvent = model.event

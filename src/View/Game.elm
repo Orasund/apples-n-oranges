@@ -1,6 +1,6 @@
 module View.Game exposing (..)
 
-import Block
+import Data.Block
 import Dict
 import Html exposing (Html)
 import Html.Keyed
@@ -42,7 +42,7 @@ viewGame args =
                 (\{ blockId, entity, block, pos } ->
                     ( "block_" ++ String.fromInt blockId
                     , block
-                        |> Block.toString
+                        |> Data.Block.toString
                         |> Html.text
                         |> List.singleton
                         |> View.Fruit.viewFruit

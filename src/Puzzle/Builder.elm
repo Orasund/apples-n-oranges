@@ -1,7 +1,7 @@
 module Puzzle.Builder exposing (Group(..), generateFromGroup)
 
 import Bag exposing (Bag)
-import Block exposing (Block(..), Fruit(..), Optional(..))
+import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Dict exposing (Dict)
 import Level exposing (Puzzle, isValidPair)
 import Random exposing (Generator)

@@ -1,7 +1,7 @@
 module View.Coin exposing (..)
 
 import Bag exposing (Item(..))
-import Block exposing (Block)
+import Data.Block exposing (Block)
 import Html exposing (Attribute, Html)
 import Html.Style
 import Level exposing (Entity)
@@ -24,7 +24,7 @@ asBlock entity item =
                )
         )
         [ item
-            |> Block.toString
+            |> Data.Block.toString
             |> Html.text
             |> List.singleton
             |> Html.div [ Html.Style.fontSizePx (View.Field.size / 3) ]
