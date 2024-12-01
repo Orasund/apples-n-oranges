@@ -107,7 +107,7 @@ toHtml args =
                             , Html.Style.flexDirectionColumn
                             , Html.Style.alignItemsCenter
                             , Html.Style.gapPx 8
-                            , Html.Style.widthPx 130
+                            , Html.Style.widthPx 100
                             ]
                 )
             |> Html.div

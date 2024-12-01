@@ -13,12 +13,6 @@ type alias Random a =
 type alias Setting =
     { symbol : Block
     , difficulty : Int
-    , newFruitPairs : Int
-    , newStoneAndDynamite : Int
-    , newLemonPairs : Int
-    , newGrapePairs : Int
-    , rabbitAndCarrotPairs : Int
-    , fishAndRod : Int
     , singles : List Block
     , pairs : List ( Block, Block )
     }
@@ -28,12 +22,6 @@ empty : Setting
 empty =
     { symbol = OrganicBlock Apple
     , difficulty = 0
-    , newFruitPairs = 0
-    , newStoneAndDynamite = 0
-    , newLemonPairs = 0
-    , newGrapePairs = 0
-    , rabbitAndCarrotPairs = 0
-    , fishAndRod = 0
     , singles = []
     , pairs = []
     }
@@ -44,194 +32,136 @@ startingLevel =
     { empty
         | symbol = OrganicBlock Orange
         , difficulty = 0
-        , newFruitPairs = 2
-    }
-
-
-applesTraining : Setting
-applesTraining =
-    { empty
-        | symbol = OrganicBlock Apple
-        , difficulty = 0
-        , newFruitPairs = 3
-    }
-
-
-applesBasic : Setting
-applesBasic =
-    { empty
-        | symbol = OrganicBlock Orange
-        , difficulty = 1
-        , newFruitPairs = 5
-        , newStoneAndDynamite = 1
-    }
-
-
-applesAdvanced : Setting
-applesAdvanced =
-    { empty
-        | symbol = OrganicBlock Orange
-        , difficulty = 2
-        , newFruitPairs = 8
-        , newStoneAndDynamite = 1
-    }
-
-
-lemonTraining : Setting
-lemonTraining =
-    { empty
-        | symbol = OrganicBlock Lemon
-        , difficulty = 0
-        , newFruitPairs = 3
-        , newLemonPairs = 1
-    }
-
-
-lemonBasic : Setting
-lemonBasic =
-    { empty
-        | symbol = OrganicBlock Lemon
-        , difficulty = 1
-        , newFruitPairs = 2
-        , newStoneAndDynamite = 1
-        , newLemonPairs = 3
-    }
-
-
-lemonAdvanced : Setting
-lemonAdvanced =
-    { empty
-        | symbol = OrganicBlock Lemon
-        , difficulty = 2
-        , newFruitPairs = 5
-        , newStoneAndDynamite = 1
-        , newLemonPairs = 5
-    }
-
-
-miningTraining : Setting
-miningTraining =
-    { empty
-        | symbol = OptionalBlock Dynamite
-        , difficulty = 0
-        , newFruitPairs = 3
-        , newStoneAndDynamite = 1
-    }
-
-
-miningBasic : Setting
-miningBasic =
-    { empty
-        | symbol = OptionalBlock Dynamite
-        , difficulty = 1
-        , newFruitPairs = 4
-        , newStoneAndDynamite = 3
-    }
-
-
-miningAdvanced : Setting
-miningAdvanced =
-    { empty
-        | symbol = OptionalBlock Dynamite
-        , difficulty = 2
-        , newFruitPairs = 6
-        , newStoneAndDynamite = 6
-    }
-
-
-grapesBasic : Setting
-grapesBasic =
-    { empty
-        | symbol = OrganicBlock Grapes
-        , difficulty = 1
-        , newFruitPairs = 3
-        , newStoneAndDynamite = 1
-        , newGrapePairs = 2
-    }
-
-
-grapesAdvanced : Setting
-grapesAdvanced =
-    { empty
-        | symbol = OrganicBlock Grapes
-        , difficulty = 2
-        , newFruitPairs = 6
-        , newStoneAndDynamite = 1
-        , newGrapePairs = 3
-    }
-
-
-fishingBasic : Setting
-fishingBasic =
-    { empty
-        | symbol = FishingRod
-        , difficulty = 1
-        , newFruitPairs = 5
-        , fishAndRod = 4
-    }
-
-
-fishingAdvanced : Setting
-fishingAdvanced =
-    { empty
-        | symbol = FishingRod
-        , difficulty = 2
-        , newFruitPairs = 5
-        , fishAndRod = 6
+        , pairs =
+            ( OrganicBlock Apple, OrganicBlock Orange )
+                |> List.repeat 2
     }
 
 
 rabbitAdvanced : Setting
 rabbitAdvanced =
+    let
+        rabbitAndCarrotPairs =
+            3
+    in
     { empty
         | symbol = OptionalBlock Rabbit
         , difficulty = 2
-        , rabbitAndCarrotPairs = 3
-        , newFruitPairs = 6
+        , pairs =
+            [ ( OrganicBlock Apple, OrganicBlock Orange )
+                |> List.repeat 6
+            , ( OrganicBlock Carrot, OrganicBlock Apple ) |> List.repeat (rabbitAndCarrotPairs // 2)
+            , ( OrganicBlock Carrot, OrganicBlock Orange ) |> List.repeat (rabbitAndCarrotPairs - rabbitAndCarrotPairs // 2)
+            ]
+                |> List.concat
+        , singles =
+            OptionalBlock Rabbit |> List.repeat (rabbitAndCarrotPairs * 2)
     }
 
 
-winter : Int -> Setting
-winter n =
+applesAndOranges : Int -> Setting
+applesAndOranges n =
+    { empty
+        | symbol = OrganicBlock Apple
+        , difficulty = n
+        , pairs =
+            ( OrganicBlock Apple, OrganicBlock Orange )
+                |> List.repeat (3 + n * 2)
+    }
+
+
+potatosAndRocks : Int -> Setting
+potatosAndRocks n =
     { empty
         | symbol = OrganicBlock Potato
         , difficulty = n
         , pairs =
-            ( OrganicBlock Potato, OrganicBlock Carrot )
-                |> List.repeat (n * 2)
-        , singles =
-            Rock
-                |> List.repeat (n - 1)
+            [ ( OrganicBlock Potato, OrganicBlock Carrot )
+            , ( Rock, OptionalBlock Dynamite )
+            , ( OrganicBlock Potato, OrganicBlock Carrot )
+            ]
+                |> List.repeat (n + 1)
+                |> List.concat
+        , singles = [ Rock ]
+    }
+
+
+rocksAndPotatos : Int -> Setting
+rocksAndPotatos n =
+    { empty
+        | symbol = Rock
+        , difficulty = n
+        , pairs =
+            [ ( Rock, OptionalBlock Dynamite )
+            , ( OrganicBlock Potato, OrganicBlock Carrot )
+            , ( Rock, OptionalBlock Dynamite )
+            ]
+                |> List.repeat (n + 1)
+                |> List.concat
+        , singles = [ OptionalBlock Dynamite ]
+    }
+
+
+fishAndApples : Int -> Setting
+fishAndApples n =
+    { empty
+        | symbol = OptionalBlock Fish
+        , pairs =
+            [ ( FishingRod, OptionalBlock Fish )
+            , ( OrganicBlock Apple, OrganicBlock Orange )
+            , ( FishingRod, OptionalBlock Fish )
+            ]
+                |> List.repeat (n + 1)
+                |> List.concat
+        , singles = [ OptionalBlock Fish ]
+    }
+
+
+lemonsAndFish : Int -> Setting
+lemonsAndFish n =
+    { empty
+        | symbol = OrganicBlock Lemon
+        , difficulty = n
+        , pairs =
+            [ ( OrganicBlock Lemon, OrganicBlock Apple )
+            , ( FishingRod, OptionalBlock Fish )
+            , ( OrganicBlock Lemon, OrganicBlock Orange )
+            ]
+                |> List.repeat (n + 1)
+                |> List.concat
+        , singles = [ OptionalBlock Fish ]
     }
 
 
 tutorials : List Setting
 tutorials =
     [ startingLevel
-    , applesTraining
-    , applesTraining
-    , applesTraining
-    , lemonTraining
-    , miningTraining
+    , applesAndOranges 0
+    , applesAndOranges 0
+    , applesAndOranges 1
+    , lemonsAndFish 0
+    , rocksAndPotatos 0
     ]
 
 
 settings : List Setting
 settings =
-    [ applesBasic
-    , applesAdvanced
-    , lemonBasic
-    , lemonAdvanced
-    , miningBasic
-    , miningAdvanced
-    , grapesBasic
-    , grapesAdvanced
-    , fishingBasic
-    , fishingAdvanced
-    , rabbitAdvanced
-    , winter 1
-    , winter 2
-    , winter 3
+    [ rabbitAdvanced
+    , applesAndOranges 1
+    , applesAndOranges 2
+    , applesAndOranges 3
+    , fishAndApples 1
+    , fishAndApples 2
+    , fishAndApples 3
+    , potatosAndRocks 1
+    , potatosAndRocks 2
+    , potatosAndRocks 3
+    , rocksAndPotatos 1
+    , rocksAndPotatos 2
+    , rocksAndPotatos 3
+    , lemonsAndFish 1
+    , lemonsAndFish 2
+    , lemonsAndFish 3
     ]
 
 
@@ -258,63 +188,19 @@ pickSettings args =
 
 priceForSetting : Setting -> Int
 priceForSetting setting =
-    let
-        times float n =
-            toFloat n * float
-    in
     max 0
-        ((times 1 setting.newFruitPairs
-            + times 1 setting.newGrapePairs
-            + times 1 setting.newLemonPairs
-            + times 1 setting.newStoneAndDynamite
-            + times 1 setting.fishAndRod
-            + times 2 setting.rabbitAndCarrotPairs
+        ((toFloat (List.length setting.pairs)
+            + toFloat (List.length setting.singles)
          )
             ^ 1.6
-         -- - 6
         )
         |> round
 
 
 toGroups : Setting -> List Group
 toGroups setting =
-    let
-        newFruitPairs =
-            setting.newFruitPairs
-
-        newStone =
-            setting.newStoneAndDynamite
-
-        newDynamite =
-            setting.newStoneAndDynamite
-
-        newLemonPairs =
-            setting.newLemonPairs
-
-        newGrapePairs =
-            setting.newGrapePairs
-
-        rabbitAndCarrotPairs =
-            setting.rabbitAndCarrotPairs
-
-        fishAndRod =
-            setting.fishAndRod
-    in
     [ setting.singles
         |> List.map SingleBlock
-    , SingleBlock (OptionalBlock Rabbit) |> List.repeat (rabbitAndCarrotPairs * 2)
-    , Pair Rock (OptionalBlock Dynamite) |> List.repeat newStone
-    , SingleBlock (OptionalBlock Dynamite) |> List.repeat newDynamite
-    , Pair FishingRod (OptionalBlock Fish) |> List.repeat (fishAndRod // 2)
-    , Pair (OrganicBlock Carrot) (OrganicBlock Apple) |> List.repeat (rabbitAndCarrotPairs // 2)
-    , Pair (OrganicBlock Carrot) (OrganicBlock Orange) |> List.repeat (rabbitAndCarrotPairs - rabbitAndCarrotPairs // 2)
-    , Pair (OrganicBlock Lemon) (OrganicBlock Apple) |> List.repeat (newLemonPairs // 2)
-    , Pair (OrganicBlock Lemon) (OrganicBlock Orange) |> List.repeat (newLemonPairs - newLemonPairs // 2)
-    , Pair (OrganicBlock Grapes) (OrganicBlock Apple) |> List.repeat (newGrapePairs // 3)
-    , Pair (OrganicBlock Grapes) (OrganicBlock Orange) |> List.repeat (newGrapePairs // 3)
-    , Pair (OrganicBlock Grapes) (OrganicBlock Lemon) |> List.repeat (newGrapePairs - (newGrapePairs // 3) * 2)
-    , Pair (OrganicBlock Apple) (OrganicBlock Orange) |> List.repeat newFruitPairs
-    , Pair FishingRod (OptionalBlock Fish) |> List.repeat (fishAndRod // 2)
     , setting.pairs
         |> List.map (\( a, b ) -> Pair a b)
     ]

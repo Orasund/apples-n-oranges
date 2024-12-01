@@ -5,7 +5,6 @@ type Organic
     = Apple
     | Orange
     | Lemon
-    | Grapes
     | Carrot
     | Potato
 
@@ -34,9 +33,6 @@ toString block =
 
         OrganicBlock Lemon ->
             "🍋"
-
-        OrganicBlock Grapes ->
-            "🍇"
 
         OrganicBlock Carrot ->
             "🥕"

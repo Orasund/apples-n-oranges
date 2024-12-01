@@ -74,7 +74,7 @@ calenderDay calenderSize attrs event =
             |> String.join " "
             |> Html.text
             |> List.singleton
-            |> Html.span [ Html.Style.filter "brightness(0)" ]
+            |> Html.span [ Html.Style.filter "grayscale(1) brightness(2)" ]
             |> List.singleton
             |> Html.div
                 [ Html.Style.displayFlex

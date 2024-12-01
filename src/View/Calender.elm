@@ -7,7 +7,7 @@ import View.Button
 import View.DayOfTheWeek
 
 
-toHtml : { show : Bool, onClose : msg } -> Html msg
+toHtml : { show : Bool, today : Int, onClose : msg } -> Html msg
 toHtml args =
     [ [ List.range 1 7
             |> List.map
@@ -26,11 +26,21 @@ toHtml args =
                 (\n ->
                     [ Html.text (String.fromInt n)
                         |> List.singleton
-                        |> Html.div []
-                    , [ Html.text "A" |> List.singleton |> Html.div []
-                      , Html.text "B" |> List.singleton |> Html.div []
-                      ]
-                        |> Html.div [ Html.Style.displayFlex ]
+                        |> Html.div
+                            ([ Html.Style.aspectRatio "1"
+                             , Html.Style.textAlignCenter
+                             , Html.Style.borderRadius "100%"
+                             , Html.Style.paddingPx 4
+                             ]
+                                ++ (if n == args.today then
+                                        [ Html.Style.backgroundColor "red"
+                                        , Html.Style.color "white"
+                                        ]
+
+                                    else
+                                        []
+                                   )
+                            )
                     ]
                         |> Html.div
                             [ Html.Style.positionRelative

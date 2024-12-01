@@ -556,6 +556,7 @@ view model =
     , View.Calender.toHtml
         { show = model.showCalender
         , onClose = CloseCalender
+        , today = model.day
         }
     , View.EndOfDay.toHtml
         { currentEvent = model.event
