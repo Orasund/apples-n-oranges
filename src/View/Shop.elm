@@ -1,5 +1,7 @@
 module View.Shop exposing (..)
 
+import Bag
+import Block
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
@@ -63,6 +65,31 @@ toHtml args =
                                )
                         )
                         (WeatherEvent weather)
+                    , (weather
+                        |> Puzzle.Setting.toBag
+                        |> Bag.toList
+                      )
+                        |> List.map
+                            (\( block, amount ) ->
+                                [ String.fromInt amount
+                                    ++ " "
+                                    ++ Block.toString block
+                                    |> Html.text
+                                ]
+                                    |> Html.div
+                                        [ Html.Style.padding "4px 8px"
+                                        , Html.Style.background "white"
+                                        , Html.Style.borderRadiusPx 16
+                                        ]
+                            )
+                        |> Html.div
+                            [ Html.Style.displayFlex
+                            , Html.Style.flexDirectionRow
+                            , Html.Style.flexWrapWrap
+                            , Html.Style.justifyContentCenter
+                            , Html.Style.gapPx 4
+                            , Html.Style.fontSizePx 12
+                            ]
                     , if args.selected == Just i then
                         View.Button.toHtml
                             { label = "Cancel"
@@ -85,7 +112,7 @@ toHtml args =
             |> Html.div
                 [ Html.Style.displayFlex
                 , Html.Style.flexDirectionRow
-                , Html.Style.widthPx 166
+                , Html.Style.gapPx 16
                 , Html.Style.justifyContentSpaceBetween
                 ]
       , [ Html.div
@@ -94,7 +121,9 @@ toHtml args =
             , Html.Style.textAlignCenter
             , Html.Style.padding "8px 32px"
             , Html.Style.borderRadiusPx 16
-            , Html.Style.backgroundColor "white"
+            , Html.Style.backgroundColor "#7e3395"
+            , Html.Style.color "white"
+            , Html.Style.fontWeightBold
             , Html.Style.transform "translate(0,-50%)"
             ]
             [ Html.text "Forcast" ]

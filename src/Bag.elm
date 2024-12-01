@@ -54,6 +54,22 @@ insert item =
         )
 
 
+insertAll : List Block -> Bag -> Bag
+insertAll list bag =
+    List.foldl
+        insert
+        bag
+        list
+
+
+get : Block -> Bag -> Int
+get block bag =
+    bag
+        |> Dict.get (Block.toString block)
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault 0
+
+
 toList : Bag -> List ( Block, Int )
 toList bag =
     bag

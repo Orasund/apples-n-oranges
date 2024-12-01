@@ -11,6 +11,7 @@ import Html.Style
 import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
+import Puzzle.Builder
 import Puzzle.Setting exposing (Setting)
 import Random exposing (Generator, Seed)
 import Set exposing (Set)
@@ -19,7 +20,9 @@ import Task
 import View.Background
 import View.EndOfDay
 import View.Field
+import View.Fruit
 import View.Game
+import View.Group
 import View.Header
 import View.Shop
 import View.TitleScreen
@@ -159,7 +162,8 @@ loadNextLevel model =
             case head of
                 WeatherEvent weather ->
                     weather
-                        |> Puzzle.Setting.generate model.level
+                        |> Puzzle.Setting.toGroups
+                        |> Puzzle.Builder.generateFromGroup (Level.getBlocks model.level)
                         |> Random.andThen
                             (\puzzle ->
                                 { model

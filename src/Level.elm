@@ -190,7 +190,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
            )
 
 
-getBlocks : Level -> List ( ( Int, Int ), Block )
+getBlocks : Level -> Dict ( Int, Int ) Block
 getBlocks game =
     game.fields
         |> Dict.map
@@ -202,6 +202,7 @@ getBlocks game =
             (\( pos, maybeBlock ) ->
                 maybeBlock |> Maybe.map (Tuple.pair pos)
             )
+        |> Dict.fromList
 
 
 collectCoins : Level -> ( Level, List Block )
