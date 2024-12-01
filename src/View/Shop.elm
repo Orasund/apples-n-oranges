@@ -65,7 +65,8 @@ toHtml args =
                                )
                         )
                         (WeatherEvent weather)
-                    , (weather
+
+                    {--, (weather
                         |> Puzzle.Setting.toBag
                         |> Bag.toList
                       )
@@ -89,7 +90,7 @@ toHtml args =
                             , Html.Style.justifyContentCenter
                             , Html.Style.gapPx 4
                             , Html.Style.fontSizePx 12
-                            ]
+                            ]--}
                     , if args.selected == Just i then
                         View.Button.toHtml
                             { label = "Cancel"

@@ -13,7 +13,7 @@ type alias Random a =
 type alias Setting =
     { symbol : Block
     , difficulty : Int
-    , singles : List Block
+    , singles : List Optional
     , pairs : List ( Block, Block )
     }
 
@@ -38,27 +38,6 @@ startingLevel =
     }
 
 
-rabbitAdvanced : Setting
-rabbitAdvanced =
-    let
-        rabbitAndCarrotPairs =
-            3
-    in
-    { empty
-        | symbol = OptionalBlock Rabbit
-        , difficulty = 2
-        , pairs =
-            [ ( OrganicBlock Apple, OrganicBlock Orange )
-                |> List.repeat 6
-            , ( OrganicBlock Carrot, OrganicBlock Apple ) |> List.repeat (rabbitAndCarrotPairs // 2)
-            , ( OrganicBlock Carrot, OrganicBlock Orange ) |> List.repeat (rabbitAndCarrotPairs - rabbitAndCarrotPairs // 2)
-            ]
-                |> List.concat
-        , singles =
-            OptionalBlock Rabbit |> List.repeat (rabbitAndCarrotPairs * 2)
-    }
-
-
 applesAndOranges : Int -> Setting
 applesAndOranges n =
     { empty
@@ -77,28 +56,30 @@ potatosAndRocks n =
         , difficulty = n
         , pairs =
             [ ( OrganicBlock Potato, OrganicBlock Carrot )
-            , ( Rock, OptionalBlock Dynamite )
+            , ( Dynamite, OptionalBlock Rock )
             , ( OrganicBlock Potato, OrganicBlock Carrot )
             ]
                 |> List.repeat (n + 1)
                 |> List.concat
-        , singles = [ Rock ]
+        , singles =
+            Rabbit
+                |> List.repeat ((n - 1) * 2)
     }
 
 
 rocksAndPotatos : Int -> Setting
 rocksAndPotatos n =
     { empty
-        | symbol = Rock
+        | symbol = OptionalBlock Rock
         , difficulty = n
         , pairs =
-            [ ( Rock, OptionalBlock Dynamite )
+            [ ( Dynamite, OptionalBlock Rock )
             , ( OrganicBlock Potato, OrganicBlock Carrot )
-            , ( Rock, OptionalBlock Dynamite )
+            , ( Dynamite, OptionalBlock Rock )
             ]
                 |> List.repeat (n + 1)
                 |> List.concat
-        , singles = [ OptionalBlock Dynamite ]
+        , singles = [ Rock ]
     }
 
 
@@ -113,7 +94,7 @@ fishAndApples n =
             ]
                 |> List.repeat (n + 1)
                 |> List.concat
-        , singles = [ OptionalBlock Fish ]
+        , singles = [ Fish ]
     }
 
 
@@ -129,7 +110,7 @@ lemonsAndFish n =
             ]
                 |> List.repeat (n + 1)
                 |> List.concat
-        , singles = [ OptionalBlock Fish ]
+        , singles = [ Fish ]
     }
 
 
@@ -140,49 +121,41 @@ tutorials =
     , applesAndOranges 0
     , applesAndOranges 1
     , lemonsAndFish 0
-    , rocksAndPotatos 0
+    , fishAndApples 0
     ]
 
 
-settings : List Setting
-settings =
-    [ rabbitAdvanced
-    , applesAndOranges 1
-    , applesAndOranges 2
-    , applesAndOranges 3
-    , fishAndApples 1
-    , fishAndApples 2
-    , fishAndApples 3
-    , potatosAndRocks 1
-    , potatosAndRocks 2
-    , potatosAndRocks 3
-    , rocksAndPotatos 1
-    , rocksAndPotatos 2
-    , rocksAndPotatos 3
-    , lemonsAndFish 1
-    , lemonsAndFish 2
-    , lemonsAndFish 3
-    ]
+settings : { difficulty : Int, summer : Bool } -> List Setting
+settings args =
+    if args.summer then
+        [ applesAndOranges args.difficulty
+        , fishAndApples args.difficulty
+        , lemonsAndFish args.difficulty
+        ]
+
+    else
+        [ applesAndOranges args.difficulty
+        , potatosAndRocks args.difficulty
+        , rocksAndPotatos args.difficulty
+        ]
 
 
-pickSettings : { amount : Int, money : Int } -> Random (List Setting)
+pickSettings : { difficulty : Float, summer : Bool } -> Random Setting
 pickSettings args =
-    let
-        validSettings =
-            settings
-                |> List.filter
-                    (\setting ->
-                        priceForSetting setting <= args.money
-                    )
-                |> List.reverse
-    in
-    Random.list (List.length validSettings) (Random.float 0 1)
-        |> Random.map
-            (\randomFloat ->
-                List.map2 Tuple.pair validSettings randomFloat
-                    |> List.sortBy Tuple.second
-                    |> List.take args.amount
-                    |> List.map Tuple.first
+    Random.float args.difficulty (args.difficulty + 1)
+        |> Random.andThen
+            (\float ->
+                case
+                    settings
+                        { difficulty = floor float
+                        , summer = args.summer
+                        }
+                of
+                    head :: tail ->
+                        Random.uniform head tail
+
+                    [] ->
+                        Random.constant empty
             )
 
 
@@ -200,7 +173,7 @@ priceForSetting setting =
 toGroups : Setting -> List Group
 toGroups setting =
     [ setting.singles
-        |> List.map SingleBlock
+        |> List.map (\optional -> SingleBlock (OptionalBlock optional))
     , setting.pairs
         |> List.map (\( a, b ) -> Pair a b)
     ]

@@ -10,16 +10,16 @@ type Organic
 
 
 type Optional
-    = Dynamite
-    | Fish
+    = Fish
     | Rabbit
+    | Rock
 
 
 type Block
     = OrganicBlock Organic
     | OptionalBlock Optional
     | FishingRod
-    | Rock
+    | Dynamite
 
 
 toString : Block -> String
@@ -43,11 +43,11 @@ toString block =
         FishingRod ->
             "🎣"
 
-        Rock ->
-            "🪨"
+        Dynamite ->
+            "⛏️"
 
-        OptionalBlock Dynamite ->
-            "💣"
+        OptionalBlock Rock ->
+            "🪨"
 
         OptionalBlock Fish ->
             "🐟"

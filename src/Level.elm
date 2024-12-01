@@ -156,7 +156,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                     True
 
                 _ ->
-                    [ ( OptionalBlock Dynamite, Rock )
+                    [ ( Dynamite, OptionalBlock Rock )
                     , ( FishingRod, OptionalBlock Fish )
                     , ( OptionalBlock Rabbit, OrganicBlock Carrot )
                     ]

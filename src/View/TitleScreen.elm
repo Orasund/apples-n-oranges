@@ -70,7 +70,7 @@ toHtml args =
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 24 ]
     ]
-        |> View.Background.game
+        |> View.Background.summerGrass
             [ Html.Style.displayFlex
             , Html.Style.alignItemsCenter
             , Html.Style.justifyContentCenter

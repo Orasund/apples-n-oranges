@@ -16,11 +16,20 @@ toHtml attrs =
         )
 
 
-game : List (Attribute msg) -> List (Html msg) -> Html msg
-game attrs =
+summerGrass : List (Attribute msg) -> List (Html msg) -> Html msg
+summerGrass attrs =
     toHtml
         (Html.Style.backgroundImage
             """url(grass.svg)"""
+            :: attrs
+        )
+
+
+winterGrass : List (Attribute msg) -> List (Html msg) -> Html msg
+winterGrass attrs =
+    toHtml
+        (Html.Style.backgroundImage
+            """url(snow.svg)"""
             :: attrs
         )
 

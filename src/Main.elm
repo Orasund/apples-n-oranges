@@ -31,6 +31,7 @@ type alias Random a =
 
 type alias Model =
     { level : Level
+    , difficutly : Float
     , bag : Bag
     , day : Int
     , event : Event
@@ -98,6 +99,14 @@ gotoLevel model =
 
 openShop : Model -> Random Model
 openShop model =
+    let
+        summer =
+            if model.day + 1 == 28 then
+                not model.summer
+
+            else
+                model.summer
+    in
     Random.map2
         (\buyableSettings possibleSettings ->
             { model
@@ -109,17 +118,20 @@ openShop model =
                         }
             }
         )
-        (Puzzle.Setting.pickSettings
-            { amount = 2
-            , money =
-                (model.possibleSettings
-                    |> List.map Puzzle.Setting.priceForSetting
-                    |> List.sum
-                )
-                    // 2
-            }
+        (Random.list 2
+            (Puzzle.Setting.pickSettings
+                { difficulty = model.difficutly
+                , summer = summer
+                }
+            )
         )
-        (model.possibleSettings |> Puzzle.Setting.shuffle)
+        (Random.list 6
+            (Puzzle.Setting.pickSettings
+                { difficulty = model.difficutly
+                , summer = summer
+                }
+            )
+        )
 
 
 closeShop : Model -> Model
@@ -280,6 +292,14 @@ closeCalender model =
     { model | showCalender = False }
 
 
+increaseDifficulty : Model -> Model
+increaseDifficulty model =
+    { model
+        | difficutly =
+            model.difficutly + 1 / 28
+    }
+
+
 
 {------------------------------------------------------------
  -
@@ -300,6 +320,7 @@ init () =
         model : Model
         model =
             { level = Level.empty { columns = 6, rows = 6 }
+            , difficutly = 0
             , bag = Bag.empty
             , day = 1
             , event = WeatherEvent Puzzle.Setting.startingLevel
@@ -376,8 +397,8 @@ checkWinCondition model =
                             Just FishingRod ->
                                 False
 
-                            Just Rock ->
-                                True
+                            Just Dynamite ->
+                                False
 
                             Just (OptionalBlock _) ->
                                 True
@@ -478,7 +499,11 @@ update msg model =
             ( nextDay model, Cmd.none )
 
         StartDay ->
-            ( gotoLevel model, Cmd.none )
+            ( model
+                |> gotoLevel
+                |> increaseDifficulty
+            , Cmd.none
+            )
 
         OpenShop ->
             ( model
@@ -586,7 +611,12 @@ view model =
         ]
         []
     ]
-        |> View.Background.game
+        |> (if model.summer then
+                View.Background.summerGrass
+
+            else
+                View.Background.winterGrass
+           )
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter
