@@ -7,9 +7,24 @@ import View.Button
 import View.DayOfTheWeek
 
 
-toHtml : { show : Bool, today : Int, onClose : msg } -> Html msg
+toHtml :
+    { show : Bool
+    , today : Int
+    , summer : Bool
+    , onClose : msg
+    }
+    -> Html msg
 toHtml args =
-    [ [ List.range 1 7
+    [ (if args.summer then
+        "Summer"
+
+       else
+        "Winter"
+      )
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 32 ]
+    , [ List.range 1 7
             |> List.map
                 (\n ->
                     View.DayOfTheWeek.toShortString n
@@ -80,7 +95,7 @@ toHtml args =
                  else
                     "100vh"
                 )
-            , Html.Style.gapPx 64
+            , Html.Style.gapPx 50
             , Html.Style.width "100%"
             , Html.Style.height "100%"
             ]

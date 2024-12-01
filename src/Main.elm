@@ -39,6 +39,7 @@ type alias Model =
     , history : List Level
     , possibleSettings : List Setting
     , endOfDay : Bool
+    , summer : Bool
     , shop :
         Maybe
             { buyableSettings : List Setting
@@ -128,7 +129,19 @@ closeShop model =
 
 nextDay : Model -> Model
 nextDay model =
-    { model | day = model.day + 1 }
+    let
+        day =
+            model.day + 1
+    in
+    { model
+        | day = day |> modBy 28
+        , summer =
+            if day >= 28 then
+                not model.summer
+
+            else
+                model.summer
+    }
 
 
 loadPuzzle : Puzzle -> Model -> Random Model
@@ -296,6 +309,7 @@ init () =
             , history = []
             , possibleSettings = Puzzle.Setting.tutorials
             , seed = seed
+            , summer = True
             , endOfDay = False
             , shop = Nothing
             , showCalender = False
@@ -557,6 +571,7 @@ view model =
         { show = model.showCalender
         , onClose = CloseCalender
         , today = model.day
+        , summer = model.summer
         }
     , View.EndOfDay.toHtml
         { currentEvent = model.event

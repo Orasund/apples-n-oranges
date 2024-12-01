@@ -8109,6 +8109,16 @@ var $Orasund$elm_html_style$Html$Style$color = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'color', value);
 };
 var $Orasund$elm_html_style$Html$Style$displayGrid = $Orasund$elm_html_style$Html$Style$display('grid');
+var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'font-size', value);
+};
+var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$fontSize(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
 var $Orasund$elm_html_style$Html$Style$gridTemplateColumns = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'grid-template-columns', value);
 };
@@ -8174,16 +8184,6 @@ var $Orasund$elm_layout$Layout$asButton = function (args) {
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'font-size', value);
-};
-var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$fontSize(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
 var $author$project$View$Button$toHtml = function (args) {
 	return A2(
 		$elm$html$Html$button,
@@ -8333,6 +8333,14 @@ var $author$project$View$Calender$toHtml = function (args) {
 			]),
 		_List_fromArray(
 			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$fontSizePx(32)
+					]),
+				$elm$core$List$singleton(
+					$elm$html$Html$text('Summer'))),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
