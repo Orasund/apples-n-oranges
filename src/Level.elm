@@ -158,7 +158,6 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                 _ ->
                     [ ( Dynamite, OptionalBlock Rock )
                     , ( FishingRod, OptionalBlock Fish )
-                    , ( OptionalBlock Rabbit, OrganicBlock Carrot )
                     ]
                         |> List.any
                             (\pair ->

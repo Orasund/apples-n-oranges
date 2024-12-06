@@ -1,9 +1,12 @@
 module View.Calender exposing (..)
 
+import Dict exposing (Dict)
+import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
 import View.Background
 import View.Button
+import View.CalenderDay
 import View.DayOfTheWeek
 
 
@@ -11,6 +14,7 @@ toHtml :
     { show : Bool
     , today : Int
     , summer : Bool
+    , events : Dict Int Event
     , onClose : msg
     }
     -> Html msg
@@ -39,31 +43,50 @@ toHtml args =
       , List.range 1 28
             |> List.map
                 (\n ->
-                    [ Html.text (String.fromInt n)
-                        |> List.singleton
-                        |> Html.div
-                            ([ Html.Style.aspectRatio "1"
-                             , Html.Style.textAlignCenter
-                             , Html.Style.borderRadius "100%"
-                             , Html.Style.paddingPx 4
-                             ]
-                                ++ (if n == args.today then
-                                        [ Html.Style.backgroundColor "red"
-                                        , Html.Style.color "white"
-                                        ]
+                    Dict.get n args.events
+                        |> Maybe.map
+                            (\event ->
+                                [ View.CalenderDay.eventToString event
+                                    |> Maybe.withDefault (String.fromInt n)
+                                    |> Html.text
+                                    |> List.singleton
+                                    |> Html.div
+                                        ([ Html.Style.textAlignCenter
+                                         , Html.Style.borderRadius "100%"
+                                         , Html.Style.paddingPx 4
+                                         , Html.Style.aspectRatio "1"
+                                         ]
+                                            ++ (if n == args.today then
+                                                    [ Html.Style.backgroundColor "red"
+                                                    , Html.Style.color "white"
+                                                    ]
 
-                                    else
-                                        []
-                                   )
+                                                else
+                                                    []
+                                               )
+                                        )
+                                , (case event of
+                                    WeatherEvent weather ->
+                                        List.repeat weather.difficulty "⭐"
+                                            |> String.concat
+
+                                    ShopEvent ->
+                                        ""
+                                  )
+                                    |> Html.text
+                                    |> List.singleton
+                                    |> Html.div [ Html.Style.fontSizePx 8 ]
+                                ]
                             )
-                    ]
+                        |> Maybe.withDefault []
                         |> Html.div
                             [ Html.Style.positionRelative
                             , Html.Style.displayFlex
                             , Html.Style.flexDirectionColumn
                             , Html.Style.alignItemsCenter
-                            , Html.Style.justifyContentCenter
+                            , Html.Style.justifyContentStart
                             , Html.Style.paddingPx 4
+                            , Html.Style.aspectRatio "1"
                             ]
                 )
       ]

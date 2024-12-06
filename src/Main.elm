@@ -3,7 +3,7 @@ module Main exposing (main)
 import Bag exposing (Bag, Item(..))
 import Browser
 import Data.Block exposing (Block(..))
-import Dict
+import Dict exposing (Dict)
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
@@ -12,7 +12,7 @@ import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
 import Puzzle.Builder
-import Puzzle.Setting exposing (Setting)
+import Puzzle.Setting
 import Random exposing (Generator, Seed)
 import Stylesheet
 import Task
@@ -35,17 +35,12 @@ type alias Model =
     , bag : Bag
     , day : Int
     , event : Event
-    , nextEvents : List Event
+    , nextEvents : Dict Int Event
     , seed : Seed
     , history : List Level
-    , possibleSettings : List Setting
     , endOfDay : Bool
     , summer : Bool
-    , shop :
-        Maybe
-            { buyableSettings : List Setting
-            , selected : Maybe Int
-            }
+    , shop : Bool
     , showCalender : Bool
     }
 
@@ -61,8 +56,7 @@ type Msg
     | LoadNextLevel
     | StartDay
     | OpenShop
-    | SelectSettingToBuy (Maybe Int)
-    | BuySettingAndReplaceWith Int
+    | CloseShop
     | Wait Float Msg
     | Sequence (List Msg)
     | OpenCalender
@@ -97,46 +91,16 @@ gotoLevel model =
     }
 
 
-openShop : Model -> Random Model
+openShop : Model -> Model
 openShop model =
-    let
-        summer =
-            if model.day + 1 == 28 then
-                not model.summer
-
-            else
-                model.summer
-    in
-    Random.map2
-        (\buyableSettings possibleSettings ->
-            { model
-                | possibleSettings = possibleSettings
-                , shop =
-                    Just
-                        { buyableSettings = buyableSettings
-                        , selected = Nothing
-                        }
-            }
-        )
-        (Random.list 2
-            (Puzzle.Setting.pickSettings
-                { difficulty = model.difficutly
-                , summer = summer
-                }
-            )
-        )
-        (Random.list 6
-            (Puzzle.Setting.pickSettings
-                { difficulty = model.difficutly
-                , summer = summer
-                }
-            )
-        )
+    { model
+        | shop = True
+    }
 
 
 closeShop : Model -> Model
 closeShop model =
-    { model | shop = Nothing }
+    { model | shop = False }
 
 
 nextDay : Model -> Model
@@ -176,8 +140,8 @@ clearHistory model =
 
 loadNextLevel : Model -> Random Model
 loadNextLevel model =
-    case model.nextEvents of
-        head :: tail ->
+    case Dict.get model.day model.nextEvents of
+        Just head ->
             case head of
                 WeatherEvent weather ->
                     weather
@@ -187,7 +151,6 @@ loadNextLevel model =
                             (\puzzle ->
                                 { model
                                     | event = head
-                                    , nextEvents = tail
                                 }
                                     |> clearHistory
                                     |> loadPuzzle puzzle
@@ -196,13 +159,14 @@ loadNextLevel model =
                 ShopEvent ->
                     { model
                         | event = head
-                        , nextEvents = tail
                     }
-                        -- |> clearHistory
                         |> openShop
+                        |> Random.constant
 
-        [] ->
-            Random.constant model
+        Nothing ->
+            model
+                |> generateNextMonth
+                |> Random.andThen loadNextLevel
 
 
 applyGenerator : Seed -> Random Model -> Model
@@ -230,56 +194,47 @@ sequence list =
         |> Task.perform (\() -> Sequence list)
 
 
-selectSettingToBuy : Maybe Int -> Model -> Model
-selectSettingToBuy selected model =
-    { model
-        | shop =
-            model.shop
-                |> Maybe.map
-                    (\shop ->
-                        { shop | selected = selected }
+generateNextMonth : Model -> Random Model
+generateNextMonth model =
+    let
+        summer =
+            not model.summer
+    in
+    List.range 1 28
+        |> List.foldl
+            (\i ->
+                let
+                    difficulty =
+                        (model.difficutly + toFloat i) / 28
+                in
+                Random.andThen
+                    (\l ->
+                        Puzzle.Setting.pick
+                            { difficulty = difficulty
+                            , summer = summer
+                            }
+                            (if modBy 7 i == 0 then
+                                Puzzle.Setting.specialSettings
+
+                             else
+                                Puzzle.Setting.settings
+                            )
+                            |> Random.map (\s -> s :: l)
                     )
-    }
-
-
-buyAndReplaceSetting : Int -> Model -> Model
-buyAndReplaceSetting replaceWith model =
-    model.shop
-        |> Maybe.andThen
-            (\shop ->
-                shop.selected
-                    |> Maybe.andThen
-                        (\selected ->
-                            shop.buyableSettings
-                                |> List.drop selected
-                                |> List.head
-                        )
             )
-        |> Maybe.map
-            (\setting ->
+            (Random.constant [])
+        |> Random.map
+            (\randomSettings ->
                 { model
-                    | possibleSettings =
-                        model.possibleSettings
-                            |> List.indexedMap
-                                (\j s ->
-                                    if replaceWith == j then
-                                        setting
-
-                                    else
-                                        s
-                                )
+                    | nextEvents =
+                        randomSettings
+                            |> List.reverse
+                            |> List.indexedMap (\i setting -> ( i + 1, WeatherEvent setting ))
+                            |> Dict.fromList
+                    , summer = summer
+                    , day = 1
                 }
             )
-        |> Maybe.withDefault model
-
-
-generateNextWeek : Model -> Model
-generateNextWeek model =
-    { model
-        | nextEvents =
-            List.map WeatherEvent model.possibleSettings
-                ++ [ ShopEvent ]
-    }
 
 
 showCalender : Model -> Model
@@ -325,14 +280,14 @@ init () =
             , day = 1
             , event = WeatherEvent Puzzle.Setting.startingLevel
             , nextEvents =
-                List.map WeatherEvent Puzzle.Setting.tutorials
-                    ++ [ ShopEvent ]
+                Puzzle.Setting.tutorials
+                    |> List.indexedMap (\i setting -> ( i + 1, WeatherEvent setting ))
+                    |> Dict.fromList
             , history = []
-            , possibleSettings = Puzzle.Setting.tutorials
             , seed = seed
             , summer = True
             , endOfDay = False
-            , shop = Nothing
+            , shop = False
             , showCalender = False
             }
     in
@@ -485,7 +440,6 @@ update msg model =
 
         LoadNextLevel ->
             model
-                |> closeShop
                 |> loadNextLevel
                 |> (\m ->
                         ( m
@@ -508,18 +462,11 @@ update msg model =
         OpenShop ->
             ( model
                 |> openShop
-                |> applyGenerator model.seed
             , Cmd.none
             )
 
-        SelectSettingToBuy i ->
-            ( model |> selectSettingToBuy i, Cmd.none )
-
-        BuySettingAndReplaceWith i ->
-            ( model
-                |> buyAndReplaceSetting i
-                |> selectSettingToBuy Nothing
-                |> generateNextWeek
+        CloseShop ->
+            ( model |> closeShop
             , sequence
                 [ shortWaitThenPerform EndDay
                 , longWaitThenPerform LoadNextLevel
@@ -557,45 +504,41 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    [ case model.shop of
-        Nothing ->
-            [ View.Header.viewHeader
-                { onUndo = Undo
-                , onOpenCalender = OpenCalender
-                , currentEvent = model.event
-                , currentDay = model.day
-                }
-            , View.Game.viewGame
-                { game = model.level
-                , onClick = Click
-                }
-            , Html.text "Click on two different fruits in a row or column to collect them."
-                |> List.singleton
-                |> Html.div
-                    [ Html.Style.padding "8px 16px"
-                    , Html.Style.background "white"
-                    , Html.Style.borderRadiusPx 32
-                    ]
-            ]
-                |> Html.div
-                    [ Html.Style.displayFlex
-                    , Html.Style.flexDirectionColumn
-                    , Html.Style.gapPx 16
-                    , Html.Style.widthPx (View.Field.size * 6)
-                    ]
+    [ if model.shop then
+        View.Shop.toHtml
+            { onClose = CloseShop
+            }
 
-        Just shop ->
-            View.Shop.toHtml
-                { settings = model.possibleSettings
-                , buyableSettings = shop.buyableSettings
-                , selected = shop.selected
-                , onSelectSettingToBuy = SelectSettingToBuy
-                , onBuy = BuySettingAndReplaceWith
-                }
+      else
+        [ View.Header.viewHeader
+            { onUndo = Undo
+            , onOpenCalender = OpenCalender
+            , currentEvent = model.event
+            , currentDay = model.day
+            }
+        , View.Game.viewGame
+            { game = model.level
+            , onClick = Click
+            }
+        , Html.text "Click on two different fruits in a row or column to collect them."
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.padding "8px 16px"
+                , Html.Style.background "white"
+                , Html.Style.borderRadiusPx 32
+                ]
+        ]
+            |> Html.div
+                [ Html.Style.displayFlex
+                , Html.Style.flexDirectionColumn
+                , Html.Style.gapPx 16
+                , Html.Style.widthPx (View.Field.size * 6)
+                ]
     , View.Calender.toHtml
         { show = model.showCalender
         , onClose = CloseCalender
         , today = model.day
+        , events = model.nextEvents
         , summer = model.summer
         }
     , View.EndOfDay.toHtml

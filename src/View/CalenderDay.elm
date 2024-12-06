@@ -6,15 +6,15 @@ import Html exposing (Attribute, Html)
 import Html.Style
 
 
-eventToString : Event -> String
+eventToString : Event -> Maybe String
 eventToString event =
     case event of
         WeatherEvent weather ->
             weather.symbol
-                |> Data.Block.toString
+                |> Maybe.map Data.Block.toString
 
         ShopEvent ->
-            "🔮"
+            "🔮" |> Just
 
 
 stylingForEvent : Float -> Event -> List (Attribute msg)
@@ -35,9 +35,15 @@ stylingForEvent calenderSize event =
                     , Html.Style.borderColor "#ddd"
                     ]
 
-                _ ->
+                3 ->
                     [ Html.Style.borderWidthPx (calenderSize * 0.1)
                     , Html.Style.borderStyleDouble
+                    , Html.Style.borderColor "rgb(242 245 122)"
+                    ]
+
+                _ ->
+                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
+                    , Html.Style.borderStyleSolid
                     , Html.Style.borderColor "rgb(242 245 122)"
                     ]
 
@@ -85,6 +91,7 @@ calenderDay calenderSize attrs event =
                 , Html.Style.fontSizePx (calenderSize * 0.1)
                 ]
         , eventToString event
+            |> Maybe.withDefault ""
             |> Html.text
             |> List.singleton
             |> Html.div

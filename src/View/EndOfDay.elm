@@ -1,5 +1,6 @@
 module View.EndOfDay exposing (..)
 
+import Dict exposing (Dict)
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Keyed
@@ -15,15 +16,21 @@ calenderSize =
 
 toHtml :
     { currentEvent : Event
-    , nextEvents : List Event
+    , nextEvents : Dict Int Event
     , endOfDay : Bool
     , day : Int
     }
     -> Html msg
 toHtml args =
     [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
-    , ( args.day, args.currentEvent )
-        :: List.indexedMap (\i -> Tuple.pair (i + 1 + args.day)) args.nextEvents
+    , [ [ ( args.day, args.currentEvent ) ]
+      , args.nextEvents
+            |> Dict.get (args.day + 1)
+            |> Maybe.map (\event -> ( args.day + 1, event ))
+            |> Maybe.map List.singleton
+            |> Maybe.withDefault []
+      ]
+        |> List.concat
         |> List.map
             (\( i, event ) ->
                 ( String.fromInt i

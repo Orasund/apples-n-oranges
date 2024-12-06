@@ -11,7 +11,6 @@ type Organic
 
 type Optional
     = Fish
-    | Rabbit
     | Rock
 
 
@@ -51,6 +50,3 @@ toString block =
 
         OptionalBlock Fish ->
             "🐟"
-
-        OptionalBlock Rabbit ->
-            "🐇"
