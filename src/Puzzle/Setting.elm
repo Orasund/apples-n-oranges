@@ -1,4 +1,4 @@
-module Puzzle.Setting exposing (Setting, pick, priceForSetting, settings, shuffle, specialSettings, startingLevel, toBag, toGroups, tutorials)
+module Puzzle.Setting exposing (Setting, pick, priceForSetting, settings, shuffle, specialSettings, startingLevel, toBag, toGroups)
 
 import Bag exposing (Bag)
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
@@ -72,33 +72,18 @@ rocks args =
         | symbol = OptionalBlock Rock |> Just
         , difficulty = args.difficulty
         , pairs =
-            [ ( Dynamite, OptionalBlock Rock )
+            [ ( Pickaxe, OptionalBlock Rock )
             , ( OrganicBlock f1, OrganicBlock f2 )
-            , ( Dynamite, OptionalBlock Rock )
+            , ( Pickaxe, OptionalBlock Rock )
             ]
                 |> List.repeat (args.difficulty + 1)
                 |> List.concat
-        , singles = [ Rock ]
+        , singles = Rock |> List.repeat args.difficulty
     }
 
 
-fishAndApples : Int -> Setting
-fishAndApples n =
-    { empty
-        | symbol = OptionalBlock Fish |> Just
-        , pairs =
-            [ ( FishingRod, OptionalBlock Fish )
-            , ( OrganicBlock Apple, OrganicBlock Orange )
-            , ( FishingRod, OptionalBlock Fish )
-            ]
-                |> List.repeat (n + 1)
-                |> List.concat
-        , singles = [ Fish ]
-    }
-
-
-lemonsAndFish : { difficulty : Int, summer : Bool } -> Setting
-lemonsAndFish args =
+lemons : { difficulty : Int, summer : Bool } -> Setting
+lemons args =
     let
         ( f1, f2 ) =
             seasonalFruit { summer = args.summer }
@@ -108,30 +93,40 @@ lemonsAndFish args =
         , difficulty = args.difficulty
         , pairs =
             [ ( OrganicBlock Lemon, OrganicBlock f1 )
-            , ( FishingRod, OptionalBlock Fish )
+            , ( OrganicBlock f1, OrganicBlock f2 )
             , ( OrganicBlock Lemon, OrganicBlock f2 )
             ]
                 |> List.repeat (args.difficulty + 1)
                 |> List.concat
-        , singles = [ Fish ]
+        , singles = []
     }
 
 
-seasonal : { difficulty : Int, summer : Bool } -> Setting
-seasonal args =
+fireAndStone : { difficulty : Int, summer : Bool } -> Setting
+fireAndStone args =
+    { empty
+        | symbol = Fire |> Just
+        , difficulty = args.difficulty
+        , pairs =
+            [ ( Fire, Wood )
+            ]
+                |> List.repeat ((args.difficulty + 1) * 2)
+                |> List.concat
+        , singles = Rock |> List.repeat (args.difficulty + 1)
+    }
+
+
+summerDefault : { difficulty : Int, summer : Bool } -> Setting
+summerDefault args =
     let
         ( f1, f2 ) =
             seasonalFruit { summer = args.summer }
 
         ( s1, s2 ) =
-            if args.summer then
-                ( FishingRod, Fish )
-
-            else
-                ( Dynamite, Rock )
+            ( FishingRod, Fish )
     in
     { empty
-        | symbol = OrganicBlock f2 |> Just
+        | symbol = Just (OptionalBlock s2)
         , difficulty = args.difficulty
         , pairs =
             [ ( OrganicBlock f1, OrganicBlock f2 )
@@ -140,43 +135,94 @@ seasonal args =
             ]
                 |> List.repeat (args.difficulty + 1)
                 |> List.concat
-        , singles = [ s2 ]
+        , singles = s2 |> List.repeat args.difficulty
     }
 
 
-tutorials : List Setting
-tutorials =
+fishAndApples : { difficulty : Int, summer : Bool } -> Setting
+fishAndApples args =
     let
-        args =
-            { difficulty = 1, summer = True }
+        ( f1, f2 ) =
+            seasonalFruit { summer = args.summer }
     in
-    [ default { args | difficulty = 0 }
-    , default { args | difficulty = 0 }
-    , default args
-    , seasonal { args | difficulty = 0 }
-    , default args
-    , seasonal { args | difficulty = 0 }
-    , fishAndApples 0
-    ]
+    { empty
+        | symbol = OptionalBlock Fish |> Just
+        , difficulty = args.difficulty
+        , pairs =
+            [ ( FishingRod, OptionalBlock Fish )
+            , ( OrganicBlock f1, OrganicBlock f2 )
+            , ( FishingRod, OptionalBlock Fish )
+            ]
+                |> List.repeat (args.difficulty + 1)
+                |> List.concat
+        , singles = Fish |> List.repeat args.difficulty
+    }
+
+
+winterDefault : { difficulty : Int, summer : Bool } -> Setting
+winterDefault args =
+    let
+        ( f1, f2 ) =
+            seasonalFruit { summer = args.summer }
+
+        ( s1, s2 ) =
+            ( Pickaxe, Rock )
+    in
+    { empty
+        | symbol = Just (OptionalBlock s2)
+        , difficulty = args.difficulty
+        , pairs =
+            [ ( OrganicBlock f1, OrganicBlock f2 )
+            , ( s1, OptionalBlock s2 )
+            , ( OrganicBlock f1, OrganicBlock f2 )
+            ]
+                |> List.repeat (args.difficulty + 1)
+                |> List.concat
+        , singles = s2 |> List.repeat args.difficulty
+    }
 
 
 settings : { difficulty : Int, summer : Bool } -> List Setting
 settings args =
-    [ default args
-    , seasonal args
-    ]
+    if args.summer then
+        [ default args
+        , default args
+        , summerDefault args |> withNoSymbol
+        , summerDefault args |> withNoSymbol
+        , lemons args |> withNoSymbol
+        ]
+
+    else
+        [ default args
+        , default args
+        , winterDefault args |> withNoSymbol
+        , winterDefault args |> withNoSymbol
+        , fireAndStone args |> withNoSymbol
+        ]
 
 
 specialSettings : { difficulty : Int, summer : Bool } -> List Setting
 specialSettings args =
     if args.summer then
-        [ lemonsAndFish args
-        , fishAndApples args.difficulty
+        [ lemons { args | difficulty = args.difficulty + 1 }
+        , lemons { args | difficulty = args.difficulty + 1 }
+        , fishAndApples { args | difficulty = args.difficulty + 1 }
+        , fishAndApples { args | difficulty = args.difficulty + 1 }
+        , winterDefault { args | difficulty = args.difficulty + 1 }
         ]
 
     else
-        [ rocks args
+        [ fireAndStone { args | difficulty = args.difficulty + 1 }
+        , fireAndStone { args | difficulty = args.difficulty + 1 }
+        , rocks { args | difficulty = args.difficulty + 1 }
+        , rocks { args | difficulty = args.difficulty + 1 }
+        , summerDefault { args | difficulty = args.difficulty + 1 }
         ]
+
+
+withNoSymbol : Setting -> Setting
+withNoSymbol setting =
+    { setting | symbol = Nothing }
 
 
 pick : { difficulty : Float, summer : Bool } -> ({ difficulty : Int, summer : Bool } -> List Setting) -> Random Setting

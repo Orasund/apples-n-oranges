@@ -15,26 +15,30 @@ calenderSize =
 
 
 toHtml :
-    { currentEvent : Event
-    , nextEvents : Dict Int Event
+    { nextEvents : Dict Int Event
     , endOfDay : Bool
     , day : Int
     }
     -> Html msg
 toHtml args =
     [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
-    , [ [ ( args.day, args.currentEvent ) ]
-      , args.nextEvents
-            |> Dict.get (args.day + 1)
-            |> Maybe.map (\event -> ( args.day + 1, event ))
-            |> Maybe.map List.singleton
-            |> Maybe.withDefault []
-      ]
+    , [ args.day, args.day + 1 ]
+        |> List.map
+            (\i ->
+                args.nextEvents
+                    |> Dict.get i
+                    |> Maybe.map (\event -> ( i, event ))
+                    |> Maybe.map List.singleton
+                    |> Maybe.withDefault []
+            )
         |> List.concat
         |> List.map
             (\( i, event ) ->
                 ( String.fromInt i
-                , View.CalenderDay.calenderDay calenderSize
+                , View.CalenderDay.calenderDay
+                    { size = calenderSize
+                    , day = i
+                    }
                     [ Html.Style.positionAbsolute
                     , Html.Style.bottomPx (0 - toFloat (i - args.day) * (calenderSize + toFloat 64))
                     , Html.Style.transition "bottom 1s"

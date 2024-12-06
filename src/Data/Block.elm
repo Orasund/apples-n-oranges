@@ -18,7 +18,9 @@ type Block
     = OrganicBlock Organic
     | OptionalBlock Optional
     | FishingRod
-    | Dynamite
+    | Pickaxe
+    | Fire
+    | Wood
 
 
 toString : Block -> String
@@ -39,14 +41,52 @@ toString block =
         OrganicBlock Potato ->
             "🥔"
 
-        FishingRod ->
-            "🎣"
-
-        Dynamite ->
-            "⛏️"
-
         OptionalBlock Rock ->
             "🪨"
 
         OptionalBlock Fish ->
             "🐟"
+
+        FishingRod ->
+            "🎣"
+
+        Pickaxe ->
+            "⛏️"
+
+        Fire ->
+            "🔥"
+
+        Wood ->
+            "🪵"
+
+
+isValidBlock : Block -> Block -> Bool
+isValidBlock p1 p2 =
+    case ( p1, p2 ) of
+        ( OrganicBlock _, OrganicBlock _ ) ->
+            True
+
+        _ ->
+            [ ( Pickaxe, OptionalBlock Rock )
+            , ( FishingRod, OptionalBlock Fish )
+            , ( Fire, Wood )
+            ]
+                |> List.any
+                    (\pair ->
+                        ( p1, p2 ) == pair || ( p2, p1 ) == pair
+                    )
+
+
+isOptional : Block -> Bool
+isOptional block =
+    case block of
+        OptionalBlock _ ->
+            True
+
+        _ ->
+            False
+
+
+isPersistant : Block -> Bool
+isPersistant block =
+    False

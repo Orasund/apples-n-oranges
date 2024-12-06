@@ -65,15 +65,7 @@ generateFromGroup oldBlocks groups =
                 }
                 |> addBlocks
                     (oldBlocks
-                        |> Dict.filter
-                            (\_ block ->
-                                case block of
-                                    OptionalBlock _ ->
-                                        False
-
-                                    _ ->
-                                        True
-                            )
+                        |> Dict.filter (\_ -> Data.Block.isPersistant)
                         |> Dict.toList
                     )
                 |> Random.constant

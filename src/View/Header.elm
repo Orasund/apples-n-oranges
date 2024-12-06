@@ -33,7 +33,10 @@ viewHeader args =
             |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
         , [ Html.text (View.DayOfTheWeek.toLongString args.currentDay)
           , args.currentEvent
-                |> View.CalenderDay.calenderDay 40
+                |> View.CalenderDay.calenderDay
+                    { size = 40
+                    , day = args.currentDay
+                    }
                     []
           ]
             |> Html.div

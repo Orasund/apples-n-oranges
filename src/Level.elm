@@ -149,21 +149,6 @@ removeField pos game =
 
 isValidPair : ( Int, Int ) -> ( Int, Int ) -> Level -> Bool
 isValidPair ( x1, y1 ) ( x2, y2 ) game =
-    let
-        isValidBlock p1 p2 =
-            case ( p1, p2 ) of
-                ( OrganicBlock _, OrganicBlock _ ) ->
-                    True
-
-                _ ->
-                    [ ( Dynamite, OptionalBlock Rock )
-                    , ( FishingRod, OptionalBlock Fish )
-                    ]
-                        |> List.any
-                            (\pair ->
-                                ( p1, p2 ) == pair || ( p2, p1 ) == pair
-                            )
-    in
     (((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
                 |> List.all
@@ -182,7 +167,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
            )
     )
         && (getBlockAt ( x1, y1 ) game /= getBlockAt ( x2, y2 ) game)
-        && (Maybe.map2 isValidBlock
+        && (Maybe.map2 Data.Block.isValidBlock
                 (getBlockAt ( x1, y1 ) game)
                 (getBlockAt ( x2, y2 ) game)
                 |> Maybe.withDefault False

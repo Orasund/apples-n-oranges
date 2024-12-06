@@ -34,7 +34,6 @@ type alias Model =
     , difficutly : Float
     , bag : Bag
     , day : Int
-    , event : Event
     , nextEvents : Dict Int Event
     , seed : Seed
     , history : List Level
@@ -105,19 +104,7 @@ closeShop model =
 
 nextDay : Model -> Model
 nextDay model =
-    let
-        day =
-            model.day + 1
-    in
-    { model
-        | day = day |> modBy 28
-        , summer =
-            if day >= 28 then
-                not model.summer
-
-            else
-                model.summer
-    }
+    { model | day = model.day + 1 }
 
 
 loadPuzzle : Puzzle -> Model -> Random Model
@@ -149,17 +136,13 @@ loadNextLevel model =
                         |> Puzzle.Builder.generateFromGroup (Level.getBlocks model.level)
                         |> Random.andThen
                             (\puzzle ->
-                                { model
-                                    | event = head
-                                }
+                                model
                                     |> clearHistory
                                     |> loadPuzzle puzzle
                             )
 
                 ShopEvent ->
-                    { model
-                        | event = head
-                    }
+                    model
                         |> openShop
                         |> Random.constant
 
@@ -205,7 +188,7 @@ generateNextMonth model =
             (\i ->
                 let
                     difficulty =
-                        (model.difficutly + toFloat i) / 28
+                        model.difficutly + toFloat i / 28
                 in
                 Random.andThen
                     (\l ->
@@ -213,7 +196,7 @@ generateNextMonth model =
                             { difficulty = difficulty
                             , summer = summer
                             }
-                            (if modBy 7 i == 0 then
+                            (if modBy 7 i == 0 || modBy 7 i == 6 then
                                 Puzzle.Setting.specialSettings
 
                              else
@@ -277,15 +260,13 @@ init () =
             { level = Level.empty { columns = 6, rows = 6 }
             , difficutly = 0
             , bag = Bag.empty
-            , day = 1
-            , event = WeatherEvent Puzzle.Setting.startingLevel
+            , day = 0
             , nextEvents =
-                Puzzle.Setting.tutorials
-                    |> List.indexedMap (\i setting -> ( i + 1, WeatherEvent setting ))
+                [ ( 0, WeatherEvent Puzzle.Setting.startingLevel ) ]
                     |> Dict.fromList
             , history = []
             , seed = seed
-            , summer = True
+            , summer = False
             , endOfDay = False
             , shop = False
             , showCalender = False
@@ -338,28 +319,17 @@ join p1 p2 model =
         (model.level |> Level.getEntityAndItem p2)
 
 
-checkWinCondition : Model -> ( Model, Cmd Msg )
-checkWinCondition model =
+endTurn : Model -> ( Model, Cmd Msg )
+endTurn model =
     let
         hasWon =
             Dict.toList model.level.fields
                 |> List.all
                     (\( _, blockId ) ->
-                        case model.level.blocks |> Dict.get blockId of
-                            Just (OrganicBlock _) ->
-                                False
-
-                            Just FishingRod ->
-                                False
-
-                            Just Dynamite ->
-                                False
-
-                            Just (OptionalBlock _) ->
-                                True
-
-                            Nothing ->
-                                True
+                        model.level.blocks
+                            |> Dict.get blockId
+                            |> Maybe.map Data.Block.isOptional
+                            |> Maybe.withDefault True
                     )
     in
     ( model
@@ -397,7 +367,7 @@ update msg model =
                     else if Level.isValidPair pos p model.level then
                         join pos p model
                             |> Maybe.withDefault model
-                            |> checkWinCondition
+                            |> endTurn
 
                     else
                         ( { model | level = Level.setSelected Nothing model.level }
@@ -440,10 +410,10 @@ update msg model =
 
         LoadNextLevel ->
             model
+                |> nextDay
                 |> loadNextLevel
                 |> (\m ->
                         ( m
-                            |> Random.map nextDay
                             |> applyGenerator model.seed
                         , sequence [ longWaitThenPerform StartDay ]
                         )
@@ -504,36 +474,37 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    [ if model.shop then
-        View.Shop.toHtml
-            { onClose = CloseShop
-            }
+    [ case Dict.get model.day model.nextEvents of
+        Just (WeatherEvent weather) ->
+            [ View.Header.viewHeader
+                { onUndo = Undo
+                , onOpenCalender = OpenCalender
+                , currentEvent = WeatherEvent weather
+                , currentDay = model.day
+                }
+            , View.Game.viewGame
+                { game = model.level
+                , onClick = Click
+                }
+            , Html.text "Click on two different fruits in a row or column to collect them."
+                |> List.singleton
+                |> Html.div
+                    [ Html.Style.padding "8px 16px"
+                    , Html.Style.background "white"
+                    , Html.Style.borderRadiusPx 32
+                    ]
+            ]
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.flexDirectionColumn
+                    , Html.Style.gapPx 16
+                    , Html.Style.widthPx (View.Field.size * 6)
+                    ]
 
-      else
-        [ View.Header.viewHeader
-            { onUndo = Undo
-            , onOpenCalender = OpenCalender
-            , currentEvent = model.event
-            , currentDay = model.day
-            }
-        , View.Game.viewGame
-            { game = model.level
-            , onClick = Click
-            }
-        , Html.text "Click on two different fruits in a row or column to collect them."
-            |> List.singleton
-            |> Html.div
-                [ Html.Style.padding "8px 16px"
-                , Html.Style.background "white"
-                , Html.Style.borderRadiusPx 32
-                ]
-        ]
-            |> Html.div
-                [ Html.Style.displayFlex
-                , Html.Style.flexDirectionColumn
-                , Html.Style.gapPx 16
-                , Html.Style.widthPx (View.Field.size * 6)
-                ]
+        _ ->
+            View.Shop.toHtml
+                { onClose = CloseShop
+                }
     , View.Calender.toHtml
         { show = model.showCalender
         , onClose = CloseCalender
@@ -542,8 +513,7 @@ view model =
         , summer = model.summer
         }
     , View.EndOfDay.toHtml
-        { currentEvent = model.event
-        , nextEvents = model.nextEvents
+        { nextEvents = model.nextEvents
         , endOfDay = model.endOfDay
         , day = model.day
         }

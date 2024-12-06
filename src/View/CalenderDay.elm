@@ -23,8 +23,7 @@ stylingForEvent calenderSize event =
         WeatherEvent weather ->
             case weather.difficulty of
                 0 ->
-                    [ Html.Style.filter "contrast(0) brightness(1.5)"
-                    ]
+                    []
 
                 1 ->
                     []
@@ -61,17 +60,17 @@ difficutlyOfEvent event =
             0
 
 
-calenderDay : Float -> List (Attribute msg) -> Event -> Html msg
-calenderDay calenderSize attrs event =
+calenderDay : { size : Float, day : Int } -> List (Attribute msg) -> Event -> Html msg
+calenderDay args attrs event =
     Html.div
         ([ Html.Style.displayFlex
          , Html.Style.flexDirectionColumn
-         , Html.Style.fontSizePx (calenderSize * 0.5)
+         , Html.Style.fontSizePx (args.size * 0.5)
          , Html.Style.backgroundColor "#fff"
-         , Html.Style.borderRadiusPx (calenderSize * 0.1)
+         , Html.Style.borderRadiusPx (args.size * 0.1)
          , Html.Style.overflowHidden
-         , Html.Style.heightPx calenderSize
-         , Html.Style.widthPx calenderSize
+         , Html.Style.heightPx args.size
+         , Html.Style.widthPx args.size
          ]
             ++ attrs
         )
@@ -87,22 +86,22 @@ calenderDay calenderSize attrs event =
                 , Html.Style.justifyContentCenter
                 , Html.Style.alignItemsCenter
                 , Html.Style.backgroundColor "red"
-                , Html.Style.heightPx (calenderSize / 4)
-                , Html.Style.fontSizePx (calenderSize * 0.1)
+                , Html.Style.heightPx (args.size / 4)
+                , Html.Style.fontSizePx (args.size * 0.1)
                 ]
         , eventToString event
-            |> Maybe.withDefault ""
+            |> Maybe.withDefault (args.day |> String.fromInt)
             |> Html.text
             |> List.singleton
             |> Html.div
-                (stylingForEvent calenderSize event
+                (stylingForEvent args.size event
                     ++ [ Html.Style.displayFlex
                        , Html.Style.justifyContentCenter
                        , Html.Style.alignItemsCenter
                        , Html.Style.height "100%"
                        , Html.Style.boxSizingBorderBox
-                       , Html.Style.borderBottomLeftRadiusPx (calenderSize * 0.1)
-                       , Html.Style.borderBottomRightRadiusPx (calenderSize * 0.1)
+                       , Html.Style.borderBottomLeftRadiusPx (args.size * 0.1)
+                       , Html.Style.borderBottomRightRadiusPx (args.size * 0.1)
                        ]
                 )
         ]
