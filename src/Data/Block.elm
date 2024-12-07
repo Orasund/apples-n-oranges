@@ -12,6 +12,7 @@ type Organic
 type Optional
     = Fish
     | Rock
+    | Coin
 
 
 type Block
@@ -47,6 +48,9 @@ toString block =
         OptionalBlock Fish ->
             "🐟"
 
+        OptionalBlock Coin ->
+            "🪙"
+
         FishingRod ->
             "🎣"
 
@@ -69,6 +73,7 @@ isValidBlock p1 p2 =
         _ ->
             [ ( Pickaxe, OptionalBlock Rock )
             , ( FishingRod, OptionalBlock Fish )
+            , ( OptionalBlock Coin, OptionalBlock Fish )
             , ( Axe, Wood )
             ]
                 |> List.any

@@ -13,41 +13,39 @@ eventToString event =
             weather.setting.symbol
                 |> Maybe.map Data.Block.toString
 
+        CoinEvent ->
+            "🪙" |> Just
+
         ShopEvent ->
-            "🔮" |> Just
+            "🛒" |> Just
 
 
 stylingForEvent : Float -> Event -> List (Attribute msg)
 stylingForEvent calenderSize event =
-    case event of
-        WeatherEvent weather ->
-            case weather.setting.difficulty of
-                0 ->
-                    []
-
-                1 ->
-                    []
-
-                2 ->
-                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
-                    , Html.Style.borderStyleDouble
-                    , Html.Style.borderColor "#ddd"
-                    ]
-
-                3 ->
-                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
-                    , Html.Style.borderStyleDouble
-                    , Html.Style.borderColor "rgb(242 245 122)"
-                    ]
-
-                _ ->
-                    [ Html.Style.borderWidthPx (calenderSize * 0.1)
-                    , Html.Style.borderStyleSolid
-                    , Html.Style.borderColor "rgb(242 245 122)"
-                    ]
-
-        ShopEvent ->
+    case difficutlyOfEvent event of
+        0 ->
             []
+
+        1 ->
+            []
+
+        2 ->
+            [ Html.Style.borderWidthPx (calenderSize * 0.1)
+            , Html.Style.borderStyleDouble
+            , Html.Style.borderColor "#ddd"
+            ]
+
+        3 ->
+            [ Html.Style.borderWidthPx (calenderSize * 0.1)
+            , Html.Style.borderStyleDouble
+            , Html.Style.borderColor "rgb(242 245 122)"
+            ]
+
+        _ ->
+            [ Html.Style.borderWidthPx (calenderSize * 0.1)
+            , Html.Style.borderStyleSolid
+            , Html.Style.borderColor "rgb(242 245 122)"
+            ]
 
 
 difficutlyOfEvent : Event -> Int
@@ -56,7 +54,7 @@ difficutlyOfEvent event =
         WeatherEvent weather ->
             weather.setting.difficulty
 
-        ShopEvent ->
+        _ ->
             0
 
 

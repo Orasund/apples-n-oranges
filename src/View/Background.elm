@@ -28,9 +28,10 @@ summerGrass attrs =
 winterGrass : List (Attribute msg) -> List (Html msg) -> Html msg
 winterGrass attrs =
     toHtml
-        (Html.Style.backgroundImage
-            """url(snow.svg)"""
-            :: attrs
+        ([ Html.Style.backgroundImage "url(snow.svg)"
+         , Html.Style.positionRelative
+         ]
+            ++ attrs
         )
 
 

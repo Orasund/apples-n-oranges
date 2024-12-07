@@ -47,9 +47,15 @@ stylesheet =
         to {
               background-color: rgba(171,188,246,1);
         }
-        
-        //from {background: linear-gradient(0deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%); }
-        //to {background: linear-gradient(180deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%);}
+    }
+
+    @keyframes movingBackground {
+        from {
+            background-position-y: 0px;
+        }
+        to {
+            background-position-y: 200px;
+        }
     }
 
     .button {

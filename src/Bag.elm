@@ -4,35 +4,8 @@ import Data.Block exposing (Block)
 import Dict exposing (Dict)
 
 
-type Item
-    = Coin
-    | Diamant
-    | Worm
-    | Snail
-    | Stone
-
-
 type alias Bag =
     Dict String ( Block, Int )
-
-
-toString : Item -> String
-toString item =
-    case item of
-        Coin ->
-            "🪙"
-
-        Worm ->
-            "🪱"
-
-        Diamant ->
-            "💎"
-
-        Snail ->
-            "🐌"
-
-        Stone ->
-            "🪨"
 
 
 empty : Bag

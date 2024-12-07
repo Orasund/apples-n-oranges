@@ -1,6 +1,5 @@
 module Level exposing (..)
 
-import Bag exposing (Item(..))
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Dict exposing (Dict)
 import Maths
@@ -78,20 +77,6 @@ newEntity ( x, y ) =
     , y = toFloat y
     , shrink = False
     }
-
-
-blockToItem : Block -> Random (Maybe Item)
-blockToItem block =
-    case block of
-        _ ->
-            Random.weighted ( 20, Just Coin )
-                [ ( 5, Nothing )
-
-                --, ( 1, Just Diamant )
-                --, ( 1, Just Worm )
-                --, ( 1, Just Snail )
-                --, ( 1, Just Stone )
-                ]
 
 
 addBlock : ( Int, Int ) -> Block -> Level -> Level

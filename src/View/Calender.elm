@@ -70,7 +70,7 @@ toHtml args =
                                         List.repeat weather.setting.difficulty "⭐"
                                             |> String.concat
 
-                                    ShopEvent ->
+                                    _ ->
                                         ""
                                   )
                                     |> Html.text

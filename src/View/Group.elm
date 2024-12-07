@@ -11,36 +11,20 @@ toHtml group =
     (case group of
         Pair b1 b2 ->
             [ Html.text (Data.Block.toString b2)
-                |> List.singleton
-                |> Html.div
-                    [ Html.Style.fontSizePx 8
-                    , Html.Style.positionAbsolute
-                    , Html.Style.bottomPx -2
-                    , Html.Style.leftPx 2
-                    ]
             , Html.text (Data.Block.toString b1)
-                |> List.singleton
-                |> Html.div
-                    [ Html.Style.fontSizePx 14
-                    , Html.Style.positionAbsolute
-                    , Html.Style.topPx -6
-                    , Html.Style.rightPx -4
-                    ]
             ]
-                |> Html.div [ Html.Style.positionRelative ]
 
         SingleBlock b ->
             Html.text (Data.Block.toString b)
                 |> List.singleton
-                |> Html.div [ Html.Style.fontSizePx 16 ]
     )
-        |> List.singleton
         |> Html.div
             [ Html.Style.backgroundColor "white"
-            , Html.Style.borderRadiusPx 16
-            , Html.Style.heightPx 32
-            , Html.Style.widthPx 32
+            , Html.Style.borderRadiusPx 32
             , Html.Style.displayFlex
             , Html.Style.justifyContentCenter
             , Html.Style.alignItemsCenter
+            , Html.Style.paddingPx 8
+            , Html.Style.fontSizePx 24
+            , Html.Style.gapPx 8
             ]

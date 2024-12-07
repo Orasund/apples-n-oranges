@@ -1,4 +1,4 @@
-module Puzzle.Setting exposing (Setting, pick, priceForSetting, settings, shuffle, specialSettings, startingLevel, toBag, toGroups)
+module Puzzle.Setting exposing (Setting, pick, settings, shuffle, specialSettings, startingLevel, toBag, toGroups)
 
 import Bag exposing (Bag)
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
@@ -227,7 +227,7 @@ withNoSymbol setting =
 
 pick : { difficulty : Float, summer : Bool } -> ({ difficulty : Int, summer : Bool } -> List Setting) -> Random Setting
 pick args fun =
-    Random.float 0 (args.difficulty + 1)
+    Random.float 0 (min 3 (args.difficulty + 1))
         |> Random.andThen
             (\float ->
                 case
@@ -242,17 +242,6 @@ pick args fun =
                     [] ->
                         Random.constant empty
             )
-
-
-priceForSetting : Setting -> Int
-priceForSetting setting =
-    max 0
-        ((toFloat (List.length setting.pairs)
-            + toFloat (List.length setting.singles)
-         )
-            ^ 1.6
-        )
-        |> round
 
 
 toGroups : Setting -> List Group

@@ -1,6 +1,5 @@
 module View.Coin exposing (..)
 
-import Bag exposing (Item(..))
 import Data.Block exposing (Block)
 import Html exposing (Attribute, Html)
 import Html.Style
