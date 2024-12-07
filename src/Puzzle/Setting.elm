@@ -105,10 +105,10 @@ lemons args =
 fireAndStone : { difficulty : Int, summer : Bool } -> Setting
 fireAndStone args =
     { empty
-        | symbol = Fire |> Just
+        | symbol = Wood |> Just
         , difficulty = args.difficulty
         , pairs =
-            [ ( Fire, Wood )
+            [ ( Axe, Wood )
             ]
                 |> List.repeat ((args.difficulty + 1) * 2)
                 |> List.concat
@@ -227,7 +227,7 @@ withNoSymbol setting =
 
 pick : { difficulty : Float, summer : Bool } -> ({ difficulty : Int, summer : Bool } -> List Setting) -> Random Setting
 pick args fun =
-    Random.float args.difficulty (args.difficulty + 1)
+    Random.float 0 (args.difficulty + 1)
         |> Random.andThen
             (\float ->
                 case

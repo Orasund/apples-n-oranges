@@ -6,6 +6,16 @@ import Html exposing (Html)
 stylesheet : Html msg
 stylesheet =
     """
+    @font-face {
+        font-family: "NotoEmoji";
+        src: url("fonts/NotoEmoji-Regular.ttf");
+    }
+
+    @font-face {
+        font-family: "NotoColorEmoji";
+        src: url("fonts/NotoColorEmoji-Regular.ttf");
+    }
+
     html {
         height: 100%
     }
@@ -16,6 +26,7 @@ stylesheet =
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        font-family: serif, "NotoColorEmoji";
         
     }
 

@@ -19,7 +19,7 @@ type Block
     | OptionalBlock Optional
     | FishingRod
     | Pickaxe
-    | Fire
+    | Axe
     | Wood
 
 
@@ -53,8 +53,8 @@ toString block =
         Pickaxe ->
             "⛏️"
 
-        Fire ->
-            "🔥"
+        Axe ->
+            "🪓"
 
         Wood ->
             "🪵"
@@ -69,7 +69,7 @@ isValidBlock p1 p2 =
         _ ->
             [ ( Pickaxe, OptionalBlock Rock )
             , ( FishingRod, OptionalBlock Fish )
-            , ( Fire, Wood )
+            , ( Axe, Wood )
             ]
                 |> List.any
                     (\pair ->
@@ -88,5 +88,5 @@ isOptional block =
 
 
 isPersistant : Block -> Bool
-isPersistant block =
+isPersistant _ =
     False

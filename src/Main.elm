@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Bag exposing (Bag, Item(..))
 import Browser
+import Data.Artefact exposing (Artifact)
 import Data.Block exposing (Block(..))
 import Dict exposing (Dict)
 import Event exposing (Event(..))
@@ -14,15 +15,16 @@ import Process
 import Puzzle.Builder
 import Puzzle.Setting
 import Random exposing (Generator, Seed)
+import Screen.EndOfDay
+import Screen.Shop
+import Set exposing (Set)
 import Stylesheet
 import Task
 import View.Background
 import View.Calender
-import View.EndOfDay
 import View.Field
 import View.Game
 import View.Header
-import View.Shop
 
 
 type alias Random a =
@@ -41,6 +43,8 @@ type alias Model =
     , summer : Bool
     , shop : Bool
     , showCalender : Bool
+    , showPresent : Maybe Artifact
+    , artifacts : Set String
     }
 
 
@@ -60,6 +64,8 @@ type Msg
     | Sequence (List Msg)
     | OpenCalender
     | CloseCalender
+    | ShowArtifaact
+    | CloseArtifact
 
 
 collectCoins : Model -> Model
@@ -131,7 +137,7 @@ loadNextLevel model =
         Just head ->
             case head of
                 WeatherEvent weather ->
-                    weather
+                    weather.setting
                         |> Puzzle.Setting.toGroups
                         |> Puzzle.Builder.generateFromGroup (Level.getBlocks model.level)
                         |> Random.andThen
@@ -182,42 +188,54 @@ generateNextMonth model =
     let
         summer =
             not model.summer
-    in
-    List.range 1 28
-        |> List.foldl
-            (\i ->
-                let
-                    difficulty =
-                        model.difficutly + toFloat i / 28
-                in
-                Random.andThen
-                    (\l ->
-                        Puzzle.Setting.pick
-                            { difficulty = difficulty
-                            , summer = summer
-                            }
-                            (if modBy 7 i == 0 || modBy 7 i == 6 then
-                                Puzzle.Setting.specialSettings
 
-                             else
-                                Puzzle.Setting.settings
+        randomSettingsGenerator =
+            List.range 1 28
+                |> List.foldl
+                    (\i ->
+                        let
+                            difficulty =
+                                model.difficutly + toFloat i / 28
+                        in
+                        Random.andThen
+                            (\l ->
+                                Puzzle.Setting.pick
+                                    { difficulty = difficulty
+                                    , summer = summer
+                                    }
+                                    (if modBy 7 i == 0 || modBy 7 i == 6 then
+                                        Puzzle.Setting.specialSettings
+
+                                     else
+                                        Puzzle.Setting.settings
+                                    )
+                                    |> Random.map (\s -> s :: l)
                             )
-                            |> Random.map (\s -> s :: l)
                     )
-            )
-            (Random.constant [])
-        |> Random.map
-            (\randomSettings ->
-                { model
-                    | nextEvents =
-                        randomSettings
-                            |> List.reverse
-                            |> List.indexedMap (\i setting -> ( i + 1, WeatherEvent setting ))
-                            |> Dict.fromList
-                    , summer = summer
-                    , day = 1
-                }
-            )
+                    (Random.constant [])
+    in
+    Random.map2
+        (\randomSettings present ->
+            { model
+                | nextEvents =
+                    randomSettings
+                        |> List.reverse
+                        |> List.indexedMap
+                            (\i setting ->
+                                ( i + 1
+                                , WeatherEvent
+                                    { setting = setting
+                                    , present = present
+                                    }
+                                )
+                            )
+                        |> Dict.fromList
+                , summer = summer
+                , day = 1
+            }
+        )
+        randomSettingsGenerator
+        (Random.int 0 1 |> Random.map ((==) 0))
 
 
 showCalender : Model -> Model
@@ -236,6 +254,25 @@ increaseDifficulty model =
         | difficutly =
             model.difficutly + 1 / 28
     }
+
+
+addPresent : Model -> Random Model
+addPresent model =
+    case Data.Artefact.list of
+        head :: tail ->
+            Random.uniform head tail
+                |> Random.map
+                    (\artficat ->
+                        { model | artifacts = model.artifacts |> Set.insert (Data.Artefact.toString artficat) }
+                    )
+
+        [] ->
+            Random.constant model
+
+
+clearPresent : Model -> Model
+clearPresent model =
+    { model | showPresent = Nothing }
 
 
 
@@ -262,7 +299,7 @@ init () =
             , bag = Bag.empty
             , day = 0
             , nextEvents =
-                [ ( 0, WeatherEvent Puzzle.Setting.startingLevel ) ]
+                [ ( 0, WeatherEvent { setting = Puzzle.Setting.startingLevel, present = False } ) ]
                     |> Dict.fromList
             , history = []
             , seed = seed
@@ -270,6 +307,8 @@ init () =
             , endOfDay = False
             , shop = False
             , showCalender = False
+            , showPresent = Nothing
+            , artifacts = Set.empty
             }
     in
     ( model
@@ -340,10 +379,22 @@ endTurn model =
             ]
         )
         :: (if hasWon then
-                [ longWaitThenPerform CollectCoin
-                , shortWaitThenPerform EndDay
-                , longWaitThenPerform LoadNextLevel
+                [ [ longWaitThenPerform CollectCoin ]
+                , case Dict.get model.day model.nextEvents of
+                    Just (WeatherEvent { present }) ->
+                        if present then
+                            [ ShowArtifaact ]
+
+                        else
+                            []
+
+                    _ ->
+                        []
+                , [ shortWaitThenPerform EndDay
+                  , longWaitThenPerform LoadNextLevel
+                  ]
                 ]
+                    |> List.concat
 
             else
                 []
@@ -471,6 +522,16 @@ update msg model =
         CloseCalender ->
             ( model |> closeCalender, Cmd.none )
 
+        ShowArtifaact ->
+            ( model
+                |> addPresent
+                |> applyGenerator model.seed
+            , Cmd.none
+            )
+
+        CloseArtifact ->
+            ( model |> clearPresent, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -502,7 +563,7 @@ view model =
                     ]
 
         _ ->
-            View.Shop.toHtml
+            Screen.Shop.toHtml
                 { onClose = CloseShop
                 }
     , View.Calender.toHtml
@@ -512,7 +573,7 @@ view model =
         , events = model.nextEvents
         , summer = model.summer
         }
-    , View.EndOfDay.toHtml
+    , Screen.EndOfDay.toHtml
         { nextEvents = model.nextEvents
         , endOfDay = model.endOfDay
         , day = model.day

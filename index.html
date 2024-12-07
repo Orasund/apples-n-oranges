@@ -5282,6 +5282,10 @@ var $author$project$Bag$empty = $elm$core$Dict$empty;
 var $author$project$Level$empty = function (args) {
 	return {blocks: $elm$core$Dict$empty, columns: args.columns, entities: $elm$core$Dict$empty, fields: $elm$core$Dict$empty, items: $elm$core$Dict$empty, nextCoinId: 0, rows: args.rows, selected: $elm$core$Maybe$Nothing};
 };
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5655,8 +5659,8 @@ var $author$project$Data$Block$toString = function (block) {
 			return '🎣';
 		case 'Pickaxe':
 			return '⛏️';
-		case 'Fire':
-			return '🔥';
+		case 'Axe':
+			return '🪓';
 		default:
 			return '🪵';
 	}
@@ -6092,9 +6096,6 @@ var $author$project$Bag$insert = function (item) {
 						maybe)));
 		});
 };
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -6293,41 +6294,25 @@ var $elm$core$List$all = F2(
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
 	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $author$project$Puzzle$Builder$isValidPair = F4(
-	function (builder, validBlocks, _v0, _v1) {
+var $author$project$Puzzle$Builder$isValidPair = F3(
+	function (builder, _v0, _v1) {
 		var x1 = _v0.a;
 		var y1 = _v0.b;
 		var x2 = _v1.a;
 		var y2 = _v1.b;
-		var validBlock = function (block) {
-			return A2($elm$core$List$member, block, validBlocks);
-		};
 		return (_Utils_eq(x1, x2) && A2(
 			$elm$core$List$all,
 			function (y) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					true,
+				return _Utils_eq(
 					A2(
-						$elm$core$Maybe$map,
-						validBlock,
-						A2(
-							$elm$core$Dict$get,
-							_Utils_Tuple2(x1, y),
-							builder.blocks)));
+						$elm$core$Dict$get,
+						_Utils_Tuple2(x1, y),
+						builder.blocks),
+					$elm$core$Maybe$Nothing);
 			},
 			A2(
 				$elm$core$List$range,
@@ -6335,51 +6320,46 @@ var $author$project$Puzzle$Builder$isValidPair = F4(
 				A2($elm$core$Basics$max, y1, y2) - 1))) || (_Utils_eq(y1, y2) && A2(
 			$elm$core$List$all,
 			function (x) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					true,
+				return _Utils_eq(
 					A2(
-						$elm$core$Maybe$map,
-						validBlock,
-						A2(
-							$elm$core$Dict$get,
-							_Utils_Tuple2(x, y1),
-							builder.blocks)));
+						$elm$core$Dict$get,
+						_Utils_Tuple2(x, y1),
+						builder.blocks),
+					$elm$core$Maybe$Nothing);
 			},
 			A2(
 				$elm$core$List$range,
 				A2($elm$core$Basics$min, x1, x2) + 1,
 				A2($elm$core$Basics$max, x1, x2) - 1)));
 	});
-var $author$project$Puzzle$Builder$randomPair = F2(
-	function (validBlocks, builder) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$random$Random$constant(_List_Nil),
-			A2(
-				$elm$core$Maybe$map,
-				$elm$random$Random$andThen(
-					function (p1) {
-						return A2(
-							$elm$core$Maybe$withDefault,
-							$elm$random$Random$constant(
-								_List_fromArray(
-									[p1])),
+var $author$project$Puzzle$Builder$randomPair = function (builder) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		$elm$random$Random$constant(_List_Nil),
+		A2(
+			$elm$core$Maybe$map,
+			$elm$random$Random$andThen(
+				function (p1) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						$elm$random$Random$constant(
+							_List_fromArray(
+								[p1])),
+						A2(
+							$elm$core$Maybe$map,
+							$elm$random$Random$map(
+								function (p2) {
+									return _List_fromArray(
+										[p1, p2]);
+								}),
 							A2(
-								$elm$core$Maybe$map,
-								$elm$random$Random$map(
-									function (p2) {
-										return _List_fromArray(
-											[p1, p2]);
-									}),
-								A2(
-									$author$project$Puzzle$Builder$findValidPair,
-									A3($author$project$Puzzle$Builder$isValidPair, builder, validBlocks, p1),
-									A2($elm$core$Set$remove, p1, builder.remainingPositions))));
-					}),
-				$author$project$Puzzle$Builder$randomFromList(
-					$elm$core$Set$toList(builder.remainingPositions))));
-	});
+								$author$project$Puzzle$Builder$findValidPair,
+								A2($author$project$Puzzle$Builder$isValidPair, builder, p1),
+								A2($elm$core$Set$remove, p1, builder.remainingPositions))));
+				}),
+			$author$project$Puzzle$Builder$randomFromList(
+				$elm$core$Set$toList(builder.remainingPositions))));
+};
 var $author$project$Puzzle$Builder$addRandomPair = F3(
 	function (b1, b2, builder) {
 		return A2(
@@ -6402,11 +6382,7 @@ var $author$project$Puzzle$Builder$addRandomPair = F3(
 					return builder;
 				}
 			},
-			A2(
-				$author$project$Puzzle$Builder$randomPair,
-				_List_fromArray(
-					[b1, b2]),
-				builder));
+			$author$project$Puzzle$Builder$randomPair(builder));
 	});
 var $author$project$Puzzle$Builder$build = function (builder) {
 	return {
@@ -6451,7 +6427,7 @@ var $elm$core$Dict$filter = F2(
 			$elm$core$Dict$empty,
 			dict);
 	});
-var $author$project$Data$Block$isPersistant = function (block) {
+var $author$project$Data$Block$isPersistant = function (_v0) {
 	return false;
 };
 var $elm$core$List$append = F2(
@@ -6470,7 +6446,6 @@ var $elm$core$List$concatMap = F2(
 		return $elm$core$List$concat(
 			A2($elm$core$List$map, f, list));
 	});
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -6536,6 +6511,23 @@ var $author$project$Puzzle$Builder$generateFromGroup = F2(
 				initial,
 				groups));
 	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
+				return _Utils_Tuple2(
+					A2(func, a, b),
+					seed2);
+			});
+	});
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Puzzle$Setting$empty = {difficulty: 0, pairs: _List_Nil, singles: _List_Nil, symbol: $elm$core$Maybe$Nothing};
 var $author$project$Puzzle$Setting$pick = F2(
@@ -6556,7 +6548,7 @@ var $author$project$Puzzle$Setting$pick = F2(
 					return $elm$random$Random$constant($author$project$Puzzle$Setting$empty);
 				}
 			},
-			A2($elm$random$Random$float, args.difficulty, args.difficulty + 1));
+			A2($elm$random$Random$float, 0, args.difficulty + 1));
 	});
 var $author$project$Data$Block$OrganicBlock = function (a) {
 	return {$: 'OrganicBlock', a: a};
@@ -6607,7 +6599,7 @@ var $author$project$Puzzle$Setting$default = function (args) {
 			symbol: $elm$core$Maybe$Nothing
 		});
 };
-var $author$project$Data$Block$Fire = {$: 'Fire'};
+var $author$project$Data$Block$Axe = {$: 'Axe'};
 var $author$project$Data$Block$Rock = {$: 'Rock'};
 var $author$project$Data$Block$Wood = {$: 'Wood'};
 var $author$project$Puzzle$Setting$fireAndStone = function (args) {
@@ -6621,10 +6613,10 @@ var $author$project$Puzzle$Setting$fireAndStone = function (args) {
 					(args.difficulty + 1) * 2,
 					_List_fromArray(
 						[
-							_Utils_Tuple2($author$project$Data$Block$Fire, $author$project$Data$Block$Wood)
+							_Utils_Tuple2($author$project$Data$Block$Axe, $author$project$Data$Block$Wood)
 						]))),
 			singles: A2($elm$core$List$repeat, args.difficulty + 1, $author$project$Data$Block$Rock),
-			symbol: $elm$core$Maybe$Just($author$project$Data$Block$Fire)
+			symbol: $elm$core$Maybe$Just($author$project$Data$Block$Wood)
 		});
 };
 var $author$project$Data$Block$Lemon = {$: 'Lemon'};
@@ -6867,45 +6859,52 @@ var $author$project$Puzzle$Setting$specialSettings = function (args) {
 };
 var $author$project$Main$generateNextMonth = function (model) {
 	var summer = !model.summer;
-	return A2(
-		$elm$random$Random$map,
-		function (randomSettings) {
-			return _Utils_update(
-				model,
-				{
-					day: 1,
-					nextEvents: $elm$core$Dict$fromList(
+	var randomSettingsGenerator = A3(
+		$elm$core$List$foldl,
+		function (i) {
+			var difficulty = model.difficutly + (i / 28);
+			return $elm$random$Random$andThen(
+				function (l) {
+					return A2(
+						$elm$random$Random$map,
+						function (s) {
+							return A2($elm$core$List$cons, s, l);
+						},
 						A2(
-							$elm$core$List$indexedMap,
-							F2(
-								function (i, setting) {
-									return _Utils_Tuple2(
-										i + 1,
-										$author$project$Event$WeatherEvent(setting));
-								}),
-							$elm$core$List$reverse(randomSettings))),
-					summer: summer
+							$author$project$Puzzle$Setting$pick,
+							{difficulty: difficulty, summer: summer},
+							((!A2($elm$core$Basics$modBy, 7, i)) || (A2($elm$core$Basics$modBy, 7, i) === 6)) ? $author$project$Puzzle$Setting$specialSettings : $author$project$Puzzle$Setting$settings));
 				});
 		},
-		A3(
-			$elm$core$List$foldl,
-			function (i) {
-				var difficulty = model.difficutly + (i / 28);
-				return $elm$random$Random$andThen(
-					function (l) {
-						return A2(
-							$elm$random$Random$map,
-							function (s) {
-								return A2($elm$core$List$cons, s, l);
-							},
+		$elm$random$Random$constant(_List_Nil),
+		A2($elm$core$List$range, 1, 28));
+	return A3(
+		$elm$random$Random$map2,
+		F2(
+			function (randomSettings, present) {
+				return _Utils_update(
+					model,
+					{
+						day: 1,
+						nextEvents: $elm$core$Dict$fromList(
 							A2(
-								$author$project$Puzzle$Setting$pick,
-								{difficulty: difficulty, summer: summer},
-								((!A2($elm$core$Basics$modBy, 7, i)) || (A2($elm$core$Basics$modBy, 7, i) === 6)) ? $author$project$Puzzle$Setting$specialSettings : $author$project$Puzzle$Setting$settings));
+								$elm$core$List$indexedMap,
+								F2(
+									function (i, setting) {
+										return _Utils_Tuple2(
+											i + 1,
+											$author$project$Event$WeatherEvent(
+												{present: present, setting: setting}));
+									}),
+								$elm$core$List$reverse(randomSettings))),
+						summer: summer
 					});
-			},
-			$elm$random$Random$constant(_List_Nil),
-			A2($elm$core$List$range, 1, 28)));
+			}),
+		randomSettingsGenerator,
+		A2(
+			$elm$random$Random$map,
+			$elm$core$Basics$eq(0),
+			A2($elm$random$Random$int, 0, 1)));
 };
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -7094,7 +7093,7 @@ var $author$project$Main$loadNextLevel = function (model) {
 				A2(
 					$author$project$Puzzle$Builder$generateFromGroup,
 					$author$project$Level$getBlocks(model.level),
-					$author$project$Puzzle$Setting$toGroups(weather)));
+					$author$project$Puzzle$Setting$toGroups(weather.setting)));
 		} else {
 			return $elm$random$Random$constant(
 				$author$project$Main$openShop(model));
@@ -7121,6 +7120,7 @@ var $author$project$Puzzle$Setting$startingLevel = _Utils_update(
 var $author$project$Main$init = function (_v0) {
 	var seed = $elm$random$Random$initialSeed(42);
 	var model = {
+		artifacts: $elm$core$Set$empty,
 		bag: $author$project$Bag$empty,
 		day: 0,
 		difficutly: 0,
@@ -7133,11 +7133,13 @@ var $author$project$Main$init = function (_v0) {
 				[
 					_Utils_Tuple2(
 					0,
-					$author$project$Event$WeatherEvent($author$project$Puzzle$Setting$startingLevel))
+					$author$project$Event$WeatherEvent(
+						{present: false, setting: $author$project$Puzzle$Setting$startingLevel}))
 				])),
 		seed: seed,
 		shop: false,
 		showCalender: false,
+		showPresent: $elm$core$Maybe$Nothing,
 		summer: false
 	};
 	return _Utils_Tuple2(
@@ -7155,7 +7157,70 @@ var $author$project$Main$Sequence = function (a) {
 	return {$: 'Sequence', a: a};
 };
 var $author$project$Main$StartDay = {$: 'StartDay'};
+var $author$project$Data$Artefact$Alien = {$: 'Alien'};
+var $author$project$Data$Artefact$Bone = {$: 'Bone'};
+var $author$project$Data$Artefact$Coin = {$: 'Coin'};
+var $author$project$Data$Artefact$Compass = {$: 'Compass'};
+var $author$project$Data$Artefact$Crown = {$: 'Crown'};
+var $author$project$Data$Artefact$Diamant = {$: 'Diamant'};
+var $author$project$Data$Artefact$Egg = {$: 'Egg'};
+var $author$project$Data$Artefact$Key = {$: 'Key'};
+var $author$project$Data$Artefact$Mushroom = {$: 'Mushroom'};
+var $author$project$Data$Artefact$Ring = {$: 'Ring'};
+var $author$project$Data$Artefact$list = _List_fromArray(
+	[$author$project$Data$Artefact$Alien, $author$project$Data$Artefact$Crown, $author$project$Data$Artefact$Ring, $author$project$Data$Artefact$Mushroom, $author$project$Data$Artefact$Egg, $author$project$Data$Artefact$Bone, $author$project$Data$Artefact$Compass, $author$project$Data$Artefact$Coin, $author$project$Data$Artefact$Diamant, $author$project$Data$Artefact$Key]);
+var $author$project$Data$Artefact$toString = function (artifact) {
+	switch (artifact.$) {
+		case 'Alien':
+			return '👾';
+		case 'Crown':
+			return '👑';
+		case 'Ring':
+			return '💍';
+		case 'Mushroom':
+			return '🍄';
+		case 'Egg':
+			return '🥚';
+		case 'Bone':
+			return '🦴';
+		case 'Compass':
+			return '🧭';
+		case 'Coin':
+			return '🪙';
+		case 'Diamant':
+			return '💎';
+		default:
+			return '🗝️';
+	}
+};
+var $author$project$Main$addPresent = function (model) {
+	var _v0 = $author$project$Data$Artefact$list;
+	if (_v0.b) {
+		var head = _v0.a;
+		var tail = _v0.b;
+		return A2(
+			$elm$random$Random$map,
+			function (artficat) {
+				return _Utils_update(
+					model,
+					{
+						artifacts: A2(
+							$elm$core$Set$insert,
+							$author$project$Data$Artefact$toString(artficat),
+							model.artifacts)
+					});
+			},
+			A2($elm$random$Random$uniform, head, tail));
+	} else {
+		return $elm$random$Random$constant(model);
+	}
+};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $author$project$Main$clearPresent = function (model) {
+	return _Utils_update(
+		model,
+		{showPresent: $elm$core$Maybe$Nothing});
+};
 var $author$project$Main$closeCalender = function (model) {
 	return _Utils_update(
 		model,
@@ -7222,6 +7287,7 @@ var $author$project$Main$endDay = function (model) {
 		{endOfDay: true});
 };
 var $author$project$Main$CollectCoin = {$: 'CollectCoin'};
+var $author$project$Main$ShowArtifaact = {$: 'ShowArtifaact'};
 var $author$project$Main$ShowCoins = function (a) {
 	return {$: 'ShowCoins', a: a};
 };
@@ -7249,8 +7315,8 @@ var $author$project$Main$shortWaitThenPerform = $author$project$Main$Wait(100);
 var $author$project$Main$endTurn = function (model) {
 	var hasWon = A2(
 		$elm$core$List$all,
-		function (_v0) {
-			var blockId = _v0.b;
+		function (_v1) {
+			var blockId = _v1.b;
 			return A2(
 				$elm$core$Maybe$withDefault,
 				true,
@@ -7269,12 +7335,29 @@ var $author$project$Main$endTurn = function (model) {
 					$author$project$Main$ShowCoins(
 						_List_fromArray(
 							[model.level.nextCoinId - 2, model.level.nextCoinId - 1]))),
-				hasWon ? _List_fromArray(
-					[
-						$author$project$Main$longWaitThenPerform($author$project$Main$CollectCoin),
-						$author$project$Main$shortWaitThenPerform($author$project$Main$EndDay),
-						$author$project$Main$longWaitThenPerform($author$project$Main$LoadNextLevel)
-					]) : _List_Nil)));
+				hasWon ? $elm$core$List$concat(
+					_List_fromArray(
+						[
+							_List_fromArray(
+							[
+								$author$project$Main$longWaitThenPerform($author$project$Main$CollectCoin)
+							]),
+							function () {
+							var _v0 = A2($elm$core$Dict$get, model.day, model.nextEvents);
+							if ((_v0.$ === 'Just') && (_v0.a.$ === 'WeatherEvent')) {
+								var present = _v0.a.a.present;
+								return present ? _List_fromArray(
+									[$author$project$Main$ShowArtifaact]) : _List_Nil;
+							} else {
+								return _List_Nil;
+							}
+						}(),
+							_List_fromArray(
+							[
+								$author$project$Main$shortWaitThenPerform($author$project$Main$EndDay),
+								$author$project$Main$longWaitThenPerform($author$project$Main$LoadNextLevel)
+							])
+						])) : _List_Nil)));
 };
 var $author$project$Main$gotoLevel = function (model) {
 	return _Utils_update(
@@ -7327,7 +7410,7 @@ var $author$project$Data$Block$isValidBlock = F2(
 						_Utils_Tuple2(
 						$author$project$Data$Block$FishingRod,
 						$author$project$Data$Block$OptionalBlock($author$project$Data$Block$Fish)),
-						_Utils_Tuple2($author$project$Data$Block$Fire, $author$project$Data$Block$Wood)
+						_Utils_Tuple2($author$project$Data$Block$Axe, $author$project$Data$Block$Wood)
 					]));
 		}
 	});
@@ -7751,9 +7834,20 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					$author$project$Main$showCalender(model),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'CloseCalender':
 				return _Utils_Tuple2(
 					$author$project$Main$closeCalender(model),
+					$elm$core$Platform$Cmd$none);
+			case 'ShowArtifaact':
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Main$applyGenerator,
+						model.seed,
+						$author$project$Main$addPresent(model)),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(
+					$author$project$Main$clearPresent(model),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -7852,7 +7946,7 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        \n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n        \n        //from {background: linear-gradient(0deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%); }\n        //to {background: linear-gradient(180deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%);}\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: white;\n        border-bottom-width: 6px;\n    }\n\n    .button:hover {\n        border-bottom-width: 4px;\n    }\n\n    .button:active {\n        border-bottom-width: 2px;\n    }\n    ')));
+		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n        \n        //from {background: linear-gradient(0deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%); }\n        //to {background: linear-gradient(180deg, rgba(171,188,246,1) 0%, rgba(171,188,246,1) 50%, rgba(144,165,236,1) 50%);}\n    }\n\n    .button {\n        border-radius: 16px;\n        border: 2px solid black;\n        padding: 8px 4px;\n        background-color: white;\n        border-bottom-width: 6px;\n    }\n\n    .button:hover {\n        border-bottom-width: 4px;\n    }\n\n    .button:active {\n        border-bottom-width: 2px;\n    }\n    ')));
 var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-image', value);
 };
@@ -7878,36 +7972,61 @@ var $author$project$View$Background$summerGrass = function (attrs) {
 			$Orasund$elm_html_style$Html$Style$backgroundImage('url(grass.svg)'),
 			attrs));
 };
-var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
+var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'bottom', value);
+};
+var $Orasund$elm_html_style$Html$Style$bottomPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$bottom(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
 var $Orasund$elm_html_style$Html$Style$backgroundColor = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-color', value);
 };
-var $Orasund$elm_html_style$Html$Style$borderBottom = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-bottom', value);
+var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-bottom-left-radius', value);
 };
-var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'bottom', value);
+var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$borderBottomRightRadius = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-bottom-right-radius', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderBottomRightRadius(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
 var $Orasund$elm_html_style$Html$Style$boxSizing = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'box-sizing', value);
 };
 var $Orasund$elm_html_style$Html$Style$boxSizingBorderBox = $Orasund$elm_html_style$Html$Style$boxSizing('border-box');
-var $Orasund$elm_html_style$Html$Style$color = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'color', value);
+var $author$project$View$CalenderDay$difficutlyOfEvent = function (event) {
+	if (event.$ === 'WeatherEvent') {
+		var weather = event.a;
+		return weather.setting.difficulty;
+	} else {
+		return 0;
+	}
 };
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
-var $Orasund$elm_html_style$Html$Style$displayGrid = $Orasund$elm_html_style$Html$Style$display('grid');
 var $author$project$View$CalenderDay$eventToString = function (event) {
 	if (event.$ === 'WeatherEvent') {
 		var weather = event.a;
-		return A2($elm$core$Maybe$map, $author$project$Data$Block$toString, weather.symbol);
+		return A2($elm$core$Maybe$map, $author$project$Data$Block$toString, weather.setting.symbol);
 	} else {
 		return $elm$core$Maybe$Just('🔮');
 	}
+};
+var $Orasund$elm_html_style$Html$Style$filter = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'filter', value);
 };
 var $Orasund$elm_html_style$Html$Style$fontSize = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'font-size', value);
@@ -7919,92 +8038,162 @@ var $Orasund$elm_html_style$Html$Style$fontSizePx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$gridTemplateColumns = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'grid-template-columns', value);
-};
-var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
-var $Orasund$elm_html_style$Html$Style$paddingBottom = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'padding-bottom', value);
-};
-var $Orasund$elm_html_style$Html$Style$paddingBottomPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$paddingBottom(
+var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$height(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$padding(
+var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'overflow', value);
+};
+var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-color', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-style', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderStyleDouble = $Orasund$elm_html_style$Html$Style$borderStyle('double');
+var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
+var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-width', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderWidth(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
-var $Orasund$elm_html_style$Html$Style$textAlign = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'text-align', value);
-};
-var $Orasund$elm_html_style$Html$Style$textAlignCenter = $Orasund$elm_html_style$Html$Style$textAlign('center');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $Orasund$elm_layout$Layout$asButton = function (args) {
-	return _Utils_ap(
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
-				A2($elm$html$Html$Attributes$attribute, 'aria-label', args.label),
-				A2($elm$html$Html$Attributes$attribute, 'role', 'button')
-			]),
-		A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (msg) {
+var $author$project$View$CalenderDay$stylingForEvent = F2(
+	function (calenderSize, event) {
+		if (event.$ === 'WeatherEvent') {
+			var weather = event.a;
+			var _v1 = weather.setting.difficulty;
+			switch (_v1) {
+				case 0:
+					return _List_Nil;
+				case 1:
+					return _List_Nil;
+				case 2:
 					return _List_fromArray(
 						[
-							$elm$html$Html$Events$onClick(msg)
+							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
+							$Orasund$elm_html_style$Html$Style$borderStyleDouble,
+							$Orasund$elm_html_style$Html$Style$borderColor('#ddd')
 						]);
-				},
-				args.onPress)));
+				case 3:
+					return _List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
+							$Orasund$elm_html_style$Html$Style$borderStyleDouble,
+							$Orasund$elm_html_style$Html$Style$borderColor('rgb(242 245 122)')
+						]);
+				default:
+					return _List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
+							$Orasund$elm_html_style$Html$Style$borderStyleSolid,
+							$Orasund$elm_html_style$Html$Style$borderColor('rgb(242 245 122)')
+						]);
+			}
+		} else {
+			return _List_Nil;
+		}
+	});
+var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$width(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $author$project$View$Button$toHtml = function (args) {
-	return A2(
-		$elm$html$Html$button,
-		_Utils_ap(
-			$Orasund$elm_layout$Layout$asButton(
-				{
-					label: args.label,
-					onPress: $elm$core$Maybe$Just(args.onPress)
-				}),
+var $author$project$View$CalenderDay$calenderDay = F3(
+	function (args, attrs, event) {
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.5),
+						$Orasund$elm_html_style$Html$Style$backgroundColor('#fff'),
+						$Orasund$elm_html_style$Html$Style$borderRadiusPx(args.size * 0.1),
+						$Orasund$elm_html_style$Html$Style$overflowHidden,
+						$Orasund$elm_html_style$Html$Style$heightPx(args.size),
+						$Orasund$elm_html_style$Html$Style$widthPx(args.size)
+					]),
+				attrs),
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('button'),
-					$Orasund$elm_html_style$Html$Style$padding('6px 12px'),
-					$Orasund$elm_html_style$Html$Style$fontSizePx(16),
-					$Orasund$elm_html_style$Html$Style$displayFlex,
-					$Orasund$elm_html_style$Html$Style$alignItemsCenter
-				])),
-		$elm$core$List$singleton(
-			$elm$html$Html$text(args.label)));
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$displayFlex,
+							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+							$Orasund$elm_html_style$Html$Style$backgroundColor('red'),
+							$Orasund$elm_html_style$Html$Style$heightPx(args.size / 4),
+							$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.1)
+						]),
+					$elm$core$List$singleton(
+						A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$Orasund$elm_html_style$Html$Style$filter('grayscale(1) brightness(2)')
+								]),
+							$elm$core$List$singleton(
+								$elm$html$Html$text(
+									A2(
+										$elm$core$String$join,
+										' ',
+										A2(
+											$elm$core$List$repeat,
+											$author$project$View$CalenderDay$difficutlyOfEvent(event),
+											'⭐'))))))),
+					A2(
+					$elm$html$Html$div,
+					_Utils_ap(
+						A2($author$project$View$CalenderDay$stylingForEvent, args.size, event),
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$height('100%'),
+								$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+								$Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx(args.size * 0.1),
+								$Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx(args.size * 0.1)
+							])),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(
+							A2(
+								$elm$core$Maybe$withDefault,
+								$elm$core$String$fromInt(args.day),
+								$author$project$View$CalenderDay$eventToString(event)))))
+				]));
+	});
+var $author$project$Screen$EndOfDay$calenderSize = 300;
+var $author$project$View$Background$endOfDay = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		A2(
+			$elm$core$List$cons,
+			$Orasund$elm_html_style$Html$Style$backgroundImage('url(endOfDay.svg)'),
+			attrs));
 };
+var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
+	return _VirtualDom_keyedNode(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
+var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $elm$core$List$sortBy = _List_sortBy;
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
@@ -8080,27 +8269,230 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
-var $author$project$View$DayOfTheWeek$shortNames = $elm$core$Array$fromList(
+var $author$project$View$DayOfTheWeek$longNames = $elm$core$Array$fromList(
 	_List_fromArray(
-		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']));
-var $author$project$View$DayOfTheWeek$toShortString = function (n) {
+		['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']));
+var $author$project$View$DayOfTheWeek$toLongString = function (n) {
 	return A2(
 		$elm$core$Maybe$withDefault,
 		'',
 		A2(
 			$elm$core$Array$get,
 			A2($elm$core$Basics$modBy, 7, n),
-			$author$project$View$DayOfTheWeek$shortNames));
+			$author$project$View$DayOfTheWeek$longNames));
 };
 var $Orasund$elm_html_style$Html$Style$transition = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'transition', value);
 };
-var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$width(
+var $author$project$Screen$EndOfDay$toHtml = function (args) {
+	return A2(
+		$author$project$View$Background$endOfDay,
+		_List_fromArray(
+			[
+				$Orasund$elm_html_style$Html$Style$positionAbsolute,
+				$Orasund$elm_html_style$Html$Style$height('100vh'),
+				$Orasund$elm_html_style$Html$Style$width('100%'),
+				$Orasund$elm_html_style$Html$Style$transition('bottom 1s'),
+				$Orasund$elm_html_style$Html$Style$bottom(
+				args.endOfDay ? '0vh' : '100vh'),
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$overflowHidden
+			]),
+		$elm$core$List$singleton(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+						$Orasund$elm_html_style$Html$Style$gapPx(32)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$fontSizePx(75)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								$author$project$View$DayOfTheWeek$toLongString(args.day))
+							])),
+						A3(
+						$elm$html$Html$Keyed$node,
+						'div',
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$widthPx($author$project$Screen$EndOfDay$calenderSize),
+								$Orasund$elm_html_style$Html$Style$heightPx($author$project$Screen$EndOfDay$calenderSize),
+								$Orasund$elm_html_style$Html$Style$overflowHidden,
+								$Orasund$elm_html_style$Html$Style$positionRelative
+							]),
+						A2(
+							$elm$core$List$sortBy,
+							$elm$core$Tuple$first,
+							A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var i = _v0.a;
+									var event = _v0.b;
+									return _Utils_Tuple2(
+										$elm$core$String$fromInt(i),
+										A3(
+											$author$project$View$CalenderDay$calenderDay,
+											{day: i, size: $author$project$Screen$EndOfDay$calenderSize},
+											_List_fromArray(
+												[
+													$Orasund$elm_html_style$Html$Style$positionAbsolute,
+													$Orasund$elm_html_style$Html$Style$bottomPx(0 - ((i - args.day) * ($author$project$Screen$EndOfDay$calenderSize + 64))),
+													$Orasund$elm_html_style$Html$Style$transition('bottom 1s')
+												]),
+											event));
+								},
+								$elm$core$List$concat(
+									A2(
+										$elm$core$List$map,
+										function (i) {
+											return A2(
+												$elm$core$Maybe$withDefault,
+												_List_Nil,
+												A2(
+													$elm$core$Maybe$map,
+													$elm$core$List$singleton,
+													A2(
+														$elm$core$Maybe$map,
+														function (event) {
+															return _Utils_Tuple2(i, event);
+														},
+														A2($elm$core$Dict$get, i, args.nextEvents))));
+										},
+										_List_fromArray(
+											[args.day, args.day + 1]))))))
+					]))));
+};
+var $Orasund$elm_html_style$Html$Style$color = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'color', value);
+};
+var $Orasund$elm_html_style$Html$Style$fontWeight = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'font-weight', value);
+};
+var $Orasund$elm_html_style$Html$Style$fontWeightBold = $Orasund$elm_html_style$Html$Style$fontWeight('bold');
+var $author$project$View$Background$fortuneTeller = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		A2(
+			$elm$core$List$cons,
+			$Orasund$elm_html_style$Html$Style$backgroundImage('url(fortuneTeller.svg)'),
+			attrs));
+};
+var $Orasund$elm_html_style$Html$Style$left = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'left', value);
+};
+var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$left(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$paddingPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$padding(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$paddingTop = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'padding-top', value);
+};
+var $Orasund$elm_html_style$Html$Style$paddingTopPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$paddingTop(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$textAlign = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'text-align', value);
+};
+var $Orasund$elm_html_style$Html$Style$textAlignCenter = $Orasund$elm_html_style$Html$Style$textAlign('center');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $Orasund$elm_layout$Layout$asButton = function (args) {
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+				A2($elm$html$Html$Attributes$attribute, 'aria-label', args.label),
+				A2($elm$html$Html$Attributes$attribute, 'role', 'button')
+			]),
+		A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (msg) {
+					return _List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(msg)
+						]);
+				},
+				args.onPress)));
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $author$project$View$Button$toHtml = function (args) {
+	return A2(
+		$elm$html$Html$button,
+		_Utils_ap(
+			$Orasund$elm_layout$Layout$asButton(
+				{
+					label: args.label,
+					onPress: $elm$core$Maybe$Just(args.onPress)
+				}),
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('button'),
+					$Orasund$elm_html_style$Html$Style$padding('6px 12px'),
+					$Orasund$elm_html_style$Html$Style$fontSizePx(16),
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$alignItemsCenter
+				])),
+		$elm$core$List$singleton(
+			$elm$html$Html$text(args.label)));
+};
+var $Orasund$elm_html_style$Html$Style$top = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'top', value);
+};
+var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$top(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$transform = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'transform', value);
 };
 var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-size', value);
@@ -8114,6 +8506,137 @@ var $author$project$View$Background$wood = function (attrs) {
 					$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px')
 				]),
 			attrs));
+};
+var $author$project$Screen$Shop$toHtml = function (args) {
+	return A2(
+		$author$project$View$Background$wood,
+		_List_fromArray(
+			[
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+				$Orasund$elm_html_style$Html$Style$positionAbsolute,
+				$Orasund$elm_html_style$Html$Style$gapPx(32),
+				$Orasund$elm_html_style$Html$Style$width('100%'),
+				$Orasund$elm_html_style$Html$Style$height('100%')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$gapPx(32),
+						$Orasund$elm_html_style$Html$Style$widthPx(360),
+						$Orasund$elm_html_style$Html$Style$heightPx(360),
+						$Orasund$elm_html_style$Html$Style$alignItemsCenter
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						$elm$core$List$singleton(
+							A2(
+								$author$project$View$Background$fortuneTeller,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$positionRelative,
+										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+										$Orasund$elm_html_style$Html$Style$paddingPx(16),
+										$Orasund$elm_html_style$Html$Style$paddingTopPx(32),
+										$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
+										$Orasund$elm_html_style$Html$Style$boxSizingBorderBox
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$positionAbsolute,
+												$Orasund$elm_html_style$Html$Style$topPx(0),
+												$Orasund$elm_html_style$Html$Style$textAlignCenter,
+												$Orasund$elm_html_style$Html$Style$padding('8px 32px'),
+												$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
+												$Orasund$elm_html_style$Html$Style$backgroundColor('#7e3395'),
+												$Orasund$elm_html_style$Html$Style$color('white'),
+												$Orasund$elm_html_style$Html$Style$fontWeightBold,
+												$Orasund$elm_html_style$Html$Style$transform('translate(0,-50%)')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Forcast')
+											])),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$positionAbsolute,
+												$Orasund$elm_html_style$Html$Style$topPx(-40),
+												$Orasund$elm_html_style$Html$Style$leftPx(-40),
+												$Orasund$elm_html_style$Html$Style$heightPx(80),
+												$Orasund$elm_html_style$Html$Style$widthPx(80),
+												$Orasund$elm_html_style$Html$Style$fontSizePx(64),
+												$Orasund$elm_html_style$Html$Style$textAlignCenter
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('🔮')
+											]))
+									])))),
+						$author$project$View$Button$toHtml(
+						{label: 'Close', onPress: args.onClose}),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$padding('8px 16px'),
+								$Orasund$elm_html_style$Html$Style$background('white'),
+								$Orasund$elm_html_style$Html$Style$borderRadiusPx(32)
+							]),
+						$elm$core$List$singleton(
+							$elm$html$Html$text('Replace a day in the forcast to start the next week')))
+					]))
+			]));
+};
+var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderBottom = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-bottom', value);
+};
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $Orasund$elm_html_style$Html$Style$displayGrid = $Orasund$elm_html_style$Html$Style$display('grid');
+var $Orasund$elm_html_style$Html$Style$gridTemplateColumns = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'grid-template-columns', value);
+};
+var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
+var $Orasund$elm_html_style$Html$Style$paddingBottom = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'padding-bottom', value);
+};
+var $Orasund$elm_html_style$Html$Style$paddingBottomPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$paddingBottom(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $author$project$View$DayOfTheWeek$shortNames = $elm$core$Array$fromList(
+	_List_fromArray(
+		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']));
+var $author$project$View$DayOfTheWeek$toShortString = function (n) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		'',
+		A2(
+			$elm$core$Array$get,
+			A2($elm$core$Basics$modBy, 7, n),
+			$author$project$View$DayOfTheWeek$shortNames));
 };
 var $author$project$View$Calender$toHtml = function (args) {
 	return A2(
@@ -8229,7 +8752,7 @@ var $author$project$View$Calender$toHtml = function (args) {
 																	if (event.$ === 'WeatherEvent') {
 																		var weather = event.a;
 																		return $elm$core$String$concat(
-																			A2($elm$core$List$repeat, weather.difficulty, '⭐'));
+																			A2($elm$core$List$repeat, weather.setting.difficulty, '⭐'));
 																	} else {
 																		return '';
 																	}
@@ -8242,435 +8765,6 @@ var $author$project$View$Calender$toHtml = function (args) {
 						]))),
 				$author$project$View$Button$toHtml(
 				{label: 'Close', onPress: args.onClose})
-			]));
-};
-var $Orasund$elm_html_style$Html$Style$bottomPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$bottom(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-bottom-left-radius', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$borderBottomRightRadius = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-bottom-right-radius', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderBottomRightRadius(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$CalenderDay$difficutlyOfEvent = function (event) {
-	if (event.$ === 'WeatherEvent') {
-		var weather = event.a;
-		return weather.difficulty;
-	} else {
-		return 0;
-	}
-};
-var $Orasund$elm_html_style$Html$Style$filter = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'filter', value);
-};
-var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$height(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'overflow', value);
-};
-var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-color', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-style', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyleDouble = $Orasund$elm_html_style$Html$Style$borderStyle('double');
-var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
-var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-width', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderWidth(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$CalenderDay$stylingForEvent = F2(
-	function (calenderSize, event) {
-		if (event.$ === 'WeatherEvent') {
-			var weather = event.a;
-			var _v1 = weather.difficulty;
-			switch (_v1) {
-				case 0:
-					return _List_Nil;
-				case 1:
-					return _List_Nil;
-				case 2:
-					return _List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
-							$Orasund$elm_html_style$Html$Style$borderStyleDouble,
-							$Orasund$elm_html_style$Html$Style$borderColor('#ddd')
-						]);
-				case 3:
-					return _List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
-							$Orasund$elm_html_style$Html$Style$borderStyleDouble,
-							$Orasund$elm_html_style$Html$Style$borderColor('rgb(242 245 122)')
-						]);
-				default:
-					return _List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$borderWidthPx(calenderSize * 0.1),
-							$Orasund$elm_html_style$Html$Style$borderStyleSolid,
-							$Orasund$elm_html_style$Html$Style$borderColor('rgb(242 245 122)')
-						]);
-			}
-		} else {
-			return _List_Nil;
-		}
-	});
-var $author$project$View$CalenderDay$calenderDay = F3(
-	function (args, attrs, event) {
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.5),
-						$Orasund$elm_html_style$Html$Style$backgroundColor('#fff'),
-						$Orasund$elm_html_style$Html$Style$borderRadiusPx(args.size * 0.1),
-						$Orasund$elm_html_style$Html$Style$overflowHidden,
-						$Orasund$elm_html_style$Html$Style$heightPx(args.size),
-						$Orasund$elm_html_style$Html$Style$widthPx(args.size)
-					]),
-				attrs),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-							$Orasund$elm_html_style$Html$Style$backgroundColor('red'),
-							$Orasund$elm_html_style$Html$Style$heightPx(args.size / 4),
-							$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.1)
-						]),
-					$elm$core$List$singleton(
-						A2(
-							$elm$html$Html$span,
-							_List_fromArray(
-								[
-									$Orasund$elm_html_style$Html$Style$filter('grayscale(1) brightness(2)')
-								]),
-							$elm$core$List$singleton(
-								$elm$html$Html$text(
-									A2(
-										$elm$core$String$join,
-										' ',
-										A2(
-											$elm$core$List$repeat,
-											$author$project$View$CalenderDay$difficutlyOfEvent(event),
-											'⭐'))))))),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						A2($author$project$View$CalenderDay$stylingForEvent, args.size, event),
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-								$Orasund$elm_html_style$Html$Style$height('100%'),
-								$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-								$Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx(args.size * 0.1),
-								$Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx(args.size * 0.1)
-							])),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(
-							A2(
-								$elm$core$Maybe$withDefault,
-								$elm$core$String$fromInt(args.day),
-								$author$project$View$CalenderDay$eventToString(event)))))
-				]));
-	});
-var $author$project$View$EndOfDay$calenderSize = 300;
-var $author$project$View$Background$endOfDay = function (attrs) {
-	return $author$project$View$Background$toHtml(
-		A2(
-			$elm$core$List$cons,
-			$Orasund$elm_html_style$Html$Style$backgroundImage('url(endOfDay.svg)'),
-			attrs));
-};
-var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
-	return _VirtualDom_keyedNode(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNode;
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$View$DayOfTheWeek$longNames = $elm$core$Array$fromList(
-	_List_fromArray(
-		['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']));
-var $author$project$View$DayOfTheWeek$toLongString = function (n) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		'',
-		A2(
-			$elm$core$Array$get,
-			A2($elm$core$Basics$modBy, 7, n),
-			$author$project$View$DayOfTheWeek$longNames));
-};
-var $author$project$View$EndOfDay$toHtml = function (args) {
-	return A2(
-		$author$project$View$Background$endOfDay,
-		_List_fromArray(
-			[
-				$Orasund$elm_html_style$Html$Style$positionAbsolute,
-				$Orasund$elm_html_style$Html$Style$height('100vh'),
-				$Orasund$elm_html_style$Html$Style$width('100%'),
-				$Orasund$elm_html_style$Html$Style$transition('bottom 1s'),
-				$Orasund$elm_html_style$Html$Style$bottom(
-				args.endOfDay ? '0vh' : '100vh'),
-				$Orasund$elm_html_style$Html$Style$displayFlex,
-				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-				$Orasund$elm_html_style$Html$Style$overflowHidden
-			]),
-		$elm$core$List$singleton(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$gapPx(32)
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$fontSizePx(75)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$author$project$View$DayOfTheWeek$toLongString(args.day))
-							])),
-						A3(
-						$elm$html$Html$Keyed$node,
-						'div',
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$EndOfDay$calenderSize),
-								$Orasund$elm_html_style$Html$Style$heightPx($author$project$View$EndOfDay$calenderSize),
-								$Orasund$elm_html_style$Html$Style$overflowHidden,
-								$Orasund$elm_html_style$Html$Style$positionRelative
-							]),
-						A2(
-							$elm$core$List$sortBy,
-							$elm$core$Tuple$first,
-							A2(
-								$elm$core$List$map,
-								function (_v0) {
-									var i = _v0.a;
-									var event = _v0.b;
-									return _Utils_Tuple2(
-										$elm$core$String$fromInt(i),
-										A3(
-											$author$project$View$CalenderDay$calenderDay,
-											{day: i, size: $author$project$View$EndOfDay$calenderSize},
-											_List_fromArray(
-												[
-													$Orasund$elm_html_style$Html$Style$positionAbsolute,
-													$Orasund$elm_html_style$Html$Style$bottomPx(0 - ((i - args.day) * ($author$project$View$EndOfDay$calenderSize + 64))),
-													$Orasund$elm_html_style$Html$Style$transition('bottom 1s')
-												]),
-											event));
-								},
-								$elm$core$List$concat(
-									A2(
-										$elm$core$List$map,
-										function (i) {
-											return A2(
-												$elm$core$Maybe$withDefault,
-												_List_Nil,
-												A2(
-													$elm$core$Maybe$map,
-													$elm$core$List$singleton,
-													A2(
-														$elm$core$Maybe$map,
-														function (event) {
-															return _Utils_Tuple2(i, event);
-														},
-														A2($elm$core$Dict$get, i, args.nextEvents))));
-										},
-										_List_fromArray(
-											[args.day, args.day + 1]))))))
-					]))));
-};
-var $Orasund$elm_html_style$Html$Style$fontWeight = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'font-weight', value);
-};
-var $Orasund$elm_html_style$Html$Style$fontWeightBold = $Orasund$elm_html_style$Html$Style$fontWeight('bold');
-var $author$project$View$Background$fortuneTeller = function (attrs) {
-	return $author$project$View$Background$toHtml(
-		A2(
-			$elm$core$List$cons,
-			$Orasund$elm_html_style$Html$Style$backgroundImage('url(fortuneTeller.svg)'),
-			attrs));
-};
-var $Orasund$elm_html_style$Html$Style$left = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'left', value);
-};
-var $Orasund$elm_html_style$Html$Style$leftPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$left(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$paddingTop = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'padding-top', value);
-};
-var $Orasund$elm_html_style$Html$Style$paddingTopPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$paddingTop(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$top = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'top', value);
-};
-var $Orasund$elm_html_style$Html$Style$topPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$top(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$transform = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'transform', value);
-};
-var $author$project$View$Shop$toHtml = function (args) {
-	return A2(
-		$author$project$View$Background$wood,
-		_List_fromArray(
-			[
-				$Orasund$elm_html_style$Html$Style$displayFlex,
-				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-				$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-				$Orasund$elm_html_style$Html$Style$positionAbsolute,
-				$Orasund$elm_html_style$Html$Style$gapPx(32),
-				$Orasund$elm_html_style$Html$Style$width('100%'),
-				$Orasund$elm_html_style$Html$Style$height('100%')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$gapPx(32),
-						$Orasund$elm_html_style$Html$Style$widthPx(360),
-						$Orasund$elm_html_style$Html$Style$heightPx(360),
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						$elm$core$List$singleton(
-							A2(
-								$author$project$View$Background$fortuneTeller,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$positionRelative,
-										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-										$Orasund$elm_html_style$Html$Style$paddingPx(16),
-										$Orasund$elm_html_style$Html$Style$paddingTopPx(32),
-										$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
-										$Orasund$elm_html_style$Html$Style$boxSizingBorderBox
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$positionAbsolute,
-												$Orasund$elm_html_style$Html$Style$topPx(0),
-												$Orasund$elm_html_style$Html$Style$textAlignCenter,
-												$Orasund$elm_html_style$Html$Style$padding('8px 32px'),
-												$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
-												$Orasund$elm_html_style$Html$Style$backgroundColor('#7e3395'),
-												$Orasund$elm_html_style$Html$Style$color('white'),
-												$Orasund$elm_html_style$Html$Style$fontWeightBold,
-												$Orasund$elm_html_style$Html$Style$transform('translate(0,-50%)')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Forcast')
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$positionAbsolute,
-												$Orasund$elm_html_style$Html$Style$topPx(-40),
-												$Orasund$elm_html_style$Html$Style$leftPx(-40),
-												$Orasund$elm_html_style$Html$Style$heightPx(80),
-												$Orasund$elm_html_style$Html$Style$widthPx(80),
-												$Orasund$elm_html_style$Html$Style$fontSizePx(64),
-												$Orasund$elm_html_style$Html$Style$textAlignCenter
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('🔮')
-											]))
-									])))),
-						$author$project$View$Button$toHtml(
-						{label: 'Close', onPress: args.onClose}),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$padding('8px 16px'),
-								$Orasund$elm_html_style$Html$Style$background('white'),
-								$Orasund$elm_html_style$Html$Style$borderRadiusPx(32)
-							]),
-						$elm$core$List$singleton(
-							$elm$html$Html$text('Replace a day in the forcast to start the next week')))
-					]))
 			]));
 };
 var $Orasund$elm_html_style$Html$Style$scale = function (value) {
@@ -9031,13 +9125,13 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$text('Click on two different fruits in a row or column to collect them.')))
 							]));
 				} else {
-					return $author$project$View$Shop$toHtml(
+					return $author$project$Screen$Shop$toHtml(
 						{onClose: $author$project$Main$CloseShop});
 				}
 			}(),
 				$author$project$View$Calender$toHtml(
 				{events: model.nextEvents, onClose: $author$project$Main$CloseCalender, show: model.showCalender, summer: model.summer, today: model.day}),
-				$author$project$View$EndOfDay$toHtml(
+				$author$project$Screen$EndOfDay$toHtml(
 				{day: model.day, endOfDay: model.endOfDay, nextEvents: model.nextEvents}),
 				$author$project$Stylesheet$stylesheet,
 				A3(

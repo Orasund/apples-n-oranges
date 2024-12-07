@@ -67,7 +67,7 @@ toHtml args =
                                         )
                                 , (case event of
                                     WeatherEvent weather ->
-                                        List.repeat weather.difficulty "⭐"
+                                        List.repeat weather.setting.difficulty "⭐"
                                             |> String.concat
 
                                     ShopEvent ->

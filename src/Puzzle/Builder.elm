@@ -129,8 +129,8 @@ addBlock pos block builder =
     }
 
 
-randomPair : List Block -> Builder -> Random (List ( Int, Int ))
-randomPair validBlocks builder =
+randomPair : Builder -> Random (List ( Int, Int ))
+randomPair builder =
     Set.toList builder.remainingPositions
         |> randomFromList
         |> Maybe.map
@@ -139,7 +139,7 @@ randomPair validBlocks builder =
                     builder.remainingPositions
                         |> Set.remove p1
                         |> findValidPair
-                            (isValidPair builder validBlocks p1)
+                            (isValidPair builder p1)
                         |> Maybe.map (Random.map (\p2 -> [ p1, p2 ]))
                         |> Maybe.withDefault (Random.constant [ p1 ])
                 )
@@ -149,7 +149,7 @@ randomPair validBlocks builder =
 
 addRandomPair : Block -> Block -> Builder -> Random Builder
 addRandomPair b1 b2 builder =
-    randomPair [ b1, b2 ] builder
+    randomPair builder
         |> Random.map
             (\list ->
                 case list of
@@ -175,32 +175,17 @@ findValidPair fun candidates =
         |> randomFromList
 
 
-isValidPair : Builder -> List Block -> ( Int, Int ) -> ( Int, Int ) -> Bool
-isValidPair builder validBlocks ( x1, y1 ) ( x2, y2 ) =
-    let
-        validBlock block =
-            List.member block validBlocks
-    in
+isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
+isValidPair builder ( x1, y1 ) ( x2, y2 ) =
     ((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
-                |> List.all
-                    (\y ->
-                        builder.blocks
-                            |> Dict.get ( x1, y )
-                            |> Maybe.map validBlock
-                            |> Maybe.withDefault True
-                    )
+                |> List.all (\y -> Dict.get ( x1, y ) builder.blocks == Nothing)
            )
     )
         || ((y1 == y2)
                 && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
-                            (\x ->
-                                builder.blocks
-                                    |> Dict.get ( x, y1 )
-                                    |> Maybe.map validBlock
-                                    |> Maybe.withDefault True
-                            )
+                            (\x -> Dict.get ( x, y1 ) builder.blocks == Nothing)
                    )
            )
 

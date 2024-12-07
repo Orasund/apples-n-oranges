@@ -10,7 +10,7 @@ eventToString : Event -> Maybe String
 eventToString event =
     case event of
         WeatherEvent weather ->
-            weather.symbol
+            weather.setting.symbol
                 |> Maybe.map Data.Block.toString
 
         ShopEvent ->
@@ -21,7 +21,7 @@ stylingForEvent : Float -> Event -> List (Attribute msg)
 stylingForEvent calenderSize event =
     case event of
         WeatherEvent weather ->
-            case weather.difficulty of
+            case weather.setting.difficulty of
                 0 ->
                     []
 
@@ -54,7 +54,7 @@ difficutlyOfEvent : Event -> Int
 difficutlyOfEvent event =
     case event of
         WeatherEvent weather ->
-            weather.difficulty
+            weather.setting.difficulty
 
         ShopEvent ->
             0

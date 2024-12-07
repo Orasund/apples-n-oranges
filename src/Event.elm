@@ -4,5 +4,5 @@ import Puzzle.Setting exposing (Setting)
 
 
 type Event
-    = WeatherEvent Setting
+    = WeatherEvent { setting : Setting, present : Bool }
     | ShopEvent
