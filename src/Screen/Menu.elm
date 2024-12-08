@@ -1,12 +1,15 @@
-module View.Calender exposing (..)
+module Screen.Menu exposing (..)
 
+import Data.Block exposing (Block(..))
 import Dict exposing (Dict)
 import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
 import View.Background
+import View.Block
 import View.Button
 import View.CalenderDay
+import View.Color
 import View.DayOfTheWeek
 
 
@@ -19,16 +22,35 @@ toHtml :
     }
     -> Html msg
 toHtml args =
-    [ (if args.summer then
-        "Summer"
+    [ View.Button.toHtml
+        { label = "Calender"
+        , onPress = args.onClose
+        }
+    , [ (if args.summer then
+            "Summer"
 
-       else
-        "Winter"
-      )
-        |> Html.text
-        |> List.singleton
-        |> Html.div [ Html.Style.fontSizePx 32 ]
-    , [ List.range 1 7
+         else
+            "Winter"
+        )
+            |> Html.text
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.fontSizePx 32
+                , Html.Style.height "100%"
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
+                , Html.Style.alignItemsCenter
+                , Html.Style.borderTopLeftRadiusPx 8
+                , Html.Style.borderTopRightRadiusPx 8
+                , Html.Style.backgroundColor
+                    (if args.summer then
+                        "#fbfb74"
+
+                     else
+                        View.Color.blue200
+                    )
+                ]
+      , [ List.range 1 7
             |> List.map
                 (\n ->
                     View.DayOfTheWeek.toShortString n
@@ -40,7 +62,7 @@ toHtml args =
                             , Html.Style.borderBottom "1px solid black"
                             ]
                 )
-      , List.range 1 28
+        , List.range 1 28
             |> List.map
                 (\n ->
                     Dict.get n args.events
@@ -51,14 +73,25 @@ toHtml args =
                                     |> Html.text
                                     |> List.singleton
                                     |> Html.div
+                                        (if n == args.today then
+                                            [ Html.Style.color "white"
+                                            , View.Block.white
+                                            ]
+
+                                         else
+                                            []
+                                        )
+                                    |> List.singleton
+                                    |> Html.div
                                         ([ Html.Style.textAlignCenter
                                          , Html.Style.borderRadius "100%"
                                          , Html.Style.paddingPx 4
                                          , Html.Style.aspectRatio "1"
+                                         , Html.Style.fontSizePx 20
                                          ]
                                             ++ (if n == args.today then
                                                     [ Html.Style.backgroundColor "red"
-                                                    , Html.Style.color "white"
+                                                    , Html.Style.fontWeightBold
                                                     ]
 
                                                 else
@@ -67,11 +100,9 @@ toHtml args =
                                         )
                                 , (case event of
                                     WeatherEvent weather ->
-                                        List.repeat weather.setting.difficulty "⭐"
-                                            |> String.concat
-
-                                    _ ->
-                                        ""
+                                        weather.reward
+                                            |> Maybe.map (\optional -> Data.Block.toString (OptionalBlock optional))
+                                            |> Maybe.withDefault ""
                                   )
                                     |> Html.text
                                     |> List.singleton
@@ -84,21 +115,28 @@ toHtml args =
                             , Html.Style.displayFlex
                             , Html.Style.flexDirectionColumn
                             , Html.Style.alignItemsCenter
-                            , Html.Style.justifyContentStart
+                            , Html.Style.justifyContentSpaceBetween
                             , Html.Style.paddingPx 4
                             , Html.Style.aspectRatio "1"
                             ]
                 )
+        ]
+            |> List.concat
+            |> Html.div
+                [ Html.Style.displayGrid
+                , Html.Style.gridTemplateColumns "repeat(7,1fr)"
+                ]
       ]
-        |> List.concat
         |> Html.div
-            [ Html.Style.displayGrid
-            , Html.Style.gridTemplateColumns "repeat(7,1fr)"
-            , Html.Style.backgroundColor "white"
+            [ Html.Style.backgroundColor "white"
             , Html.Style.widthPx 360
+            , Html.Style.heightPx 360
             , Html.Style.boxSizingBorderBox
             , Html.Style.paddingPx 8
-            , Html.Style.borderRadiusPx 8
+            , Html.Style.borderRadiusPx 16
+            , Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 8
             ]
     , View.Button.toHtml
         { label = "Close"
@@ -118,7 +156,6 @@ toHtml args =
                  else
                     "100vh"
                 )
-            , Html.Style.gapPx 50
             , Html.Style.width "100%"
             , Html.Style.height "100%"
             ]

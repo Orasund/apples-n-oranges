@@ -1,6 +1,7 @@
 module View.Block exposing (..)
 
 import Html exposing (Attribute, Html)
+import Html.Attributes
 import Html.Style
 import View.Field
 
@@ -18,6 +19,16 @@ small =
 shrink : Attribute msg
 shrink =
     Html.Style.scale "0"
+
+
+monocolor : Attribute msg
+monocolor =
+    Html.Attributes.class "blackWhiteEmoji"
+
+
+white : Attribute msg
+white =
+    Html.Style.filter "grayscale(1) brightness(3)"
 
 
 withContent : List (Attribute msg) -> List (Html msg) -> Html msg

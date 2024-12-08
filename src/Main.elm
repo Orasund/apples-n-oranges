@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import Bag exposing (Bag)
 import Browser
 import Data.Artefact exposing (Artifact)
 import Data.Block exposing (Block(..), Optional(..))
@@ -15,13 +14,12 @@ import Process
 import Puzzle.Builder exposing (Group(..))
 import Puzzle.Setting
 import Random exposing (Generator, Seed)
-import Screen.Coin
-import Screen.EndOfDay
-import Screen.Shop
+import Screen.BetweenDays exposing (BetweenDaysAction(..))
+import Screen.Menu
 import Stylesheet
 import Task
 import View.Background
-import View.Calender
+import View.Button
 import View.Field
 import View.Game
 import View.Header
@@ -34,68 +32,55 @@ type alias Random a =
 type alias Model =
     { level : Level
     , difficutly : Float
-    , bag : Bag
     , day : Int
     , nextEvents : Dict Int Event
     , seed : Seed
     , history : List Level
-    , endOfDay : Bool
+    , betweenDays : BetweenDaysAction
+    , showBetweenDays : Bool
     , summer : Bool
     , shop : Bool
     , showCalender : Bool
     , showPresent : Maybe Artifact
     , year : Int
     , money : Int
-    , groups : List Group
+    , items : List Optional
     }
 
 
 type Msg
     = Click ( Int, Int )
     | ShowCoins (List CoinId)
-    | CollectCoin
     | Undo
     | EndDay
     | SetSeed Seed
     | NextDay
     | LoadNextLevel
+    | SetBetweenDays BetweenDaysAction
     | StartDay
     | OpenShop
-    | Buy Group
+    | Buy Optional
     | CloseShop
-    | Wait Float Msg
-    | Sequence (List Msg)
+    | ApplyThenWait { now : Msg, wait : Float, andThen : Msg }
     | OpenCalender
     | CloseCalender
     | AcceptCoin
+    | DoNothing
 
 
-collectCoins : Model -> Model
-collectCoins model =
-    let
-        ( level, amount ) =
-            model.level
-                |> Level.collectCoins
-    in
-    { model
-        | bag =
-            amount
-                |> List.foldl Bag.insert
-                    model.bag
-        , level = level
-    }
+setBetweenDays : BetweenDaysAction -> Model -> Model
+setBetweenDays action model =
+    { model | betweenDays = action }
 
 
-endDay : Model -> Model
-endDay model =
-    { model | endOfDay = True }
+showBetweenDays : Model -> Model
+showBetweenDays model =
+    { model | showBetweenDays = True }
 
 
-gotoLevel : Model -> Model
-gotoLevel model =
-    { model
-        | endOfDay = False
-    }
+hideBetweenDays : Model -> Model
+hideBetweenDays model =
+    { model | showBetweenDays = False }
 
 
 openShop : Model -> Model
@@ -139,24 +124,21 @@ loadNextLevel model =
         Just head ->
             case head of
                 WeatherEvent weather ->
-                    List.repeat model.money (SingleBlock (OptionalBlock Coin))
-                        ++ model.groups
-                        ++ Puzzle.Setting.toGroups weather.setting
-                        |> Puzzle.Builder.generateFromGroup (Level.getBlocks model.level)
+                    Puzzle.Setting.toGroups weather.setting
+                        |> Random.map
+                            (\l ->
+                                List.repeat model.money (SingleBlock (OptionalBlock Coin))
+                                    ++ (model.items |> List.map (\item -> SingleBlock (OptionalBlock item)))
+                                    ++ l
+                            )
+                        |> Random.andThen
+                            (Puzzle.Builder.generateFromGroup (Level.getBlocks model.level))
                         |> Random.andThen
                             (\puzzle ->
                                 model
                                     |> clearHistory
                                     |> loadPuzzle puzzle
                             )
-
-                ShopEvent ->
-                    model
-                        |> openShop
-                        |> Random.constant
-
-                CoinEvent ->
-                    model |> Random.constant
 
         Nothing ->
             model
@@ -173,20 +155,14 @@ applyGenerator seed generator =
     { model | seed = newSeed }
 
 
-shortWaitThenPerform : Msg -> Msg
-shortWaitThenPerform =
-    Wait 100
+performThenShortPauseAndThen : Msg -> Msg -> Msg
+performThenShortPauseAndThen msg1 msg2 =
+    ApplyThenWait { now = msg1, wait = 100, andThen = msg2 }
 
 
-longWaitThenPerform : Msg -> Msg
-longWaitThenPerform =
-    Wait 1000
-
-
-sequence : List Msg -> Cmd Msg
-sequence list =
-    Task.succeed ()
-        |> Task.perform (\() -> Sequence list)
+performThenPauseAndThen : Msg -> Msg -> Msg
+performThenPauseAndThen msg1 msg2 =
+    ApplyThenWait { now = msg1, wait = 1000, andThen = msg2 }
 
 
 generateNextMonth : Model -> Random Model
@@ -205,24 +181,28 @@ generateNextMonth model =
                         in
                         Random.andThen
                             (\l ->
-                                (if modBy 7 i == 3 then
-                                    Random.constant CoinEvent
+                                (Puzzle.Setting.pick
+                                    { difficulty = difficulty
+                                    , summer = summer
+                                    }
+                                    (if modBy 7 i == 0 || modBy 7 i == 6 then
+                                        Puzzle.Setting.specialSettings
 
-                                 else if modBy 7 i == 0 then
-                                    Random.constant ShopEvent
+                                     else
+                                        Puzzle.Setting.settings
+                                    )
+                                    |> Random.map
+                                        (\setting ->
+                                            WeatherEvent
+                                                { setting = setting
+                                                , reward =
+                                                    if i == 28 then
+                                                        Coin |> Just
 
-                                 else
-                                    Puzzle.Setting.pick
-                                        { difficulty = difficulty
-                                        , summer = summer
-                                        }
-                                        (if modBy 7 i == 0 || modBy 7 i == 6 then
-                                            Puzzle.Setting.specialSettings
-
-                                         else
-                                            Puzzle.Setting.settings
+                                                    else
+                                                        Nothing
+                                                }
                                         )
-                                        |> Random.map (\setting -> WeatherEvent { setting = setting })
                                 )
                                     |> Random.map (\s -> s :: l)
                             )
@@ -278,9 +258,9 @@ removeMoney model =
     { model | money = model.money - 1 }
 
 
-addGroup : Group -> Model -> Model
-addGroup group model =
-    { model | groups = [ group ] }
+addGroup : Optional -> Model -> Model
+addGroup item model =
+    { model | items = item :: model.items }
 
 
 
@@ -304,21 +284,21 @@ init () =
         model =
             { level = Level.empty { columns = 6, rows = 6 }
             , difficutly = 0
-            , bag = Bag.empty
             , day = 0
             , nextEvents =
-                [ ( 0, WeatherEvent { setting = Puzzle.Setting.startingLevel } ) ]
+                [ ( 0, WeatherEvent { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
                     |> Dict.fromList
             , history = []
             , seed = seed
             , summer = False
-            , endOfDay = False
+            , betweenDays = ShowCalenderDay
+            , showBetweenDays = False
             , shop = False
             , showCalender = False
             , showPresent = Nothing
             , year = 0
             , money = 0
-            , groups = []
+            , items = []
             }
     in
     ( model
@@ -382,23 +362,61 @@ endTurn model =
                     )
     in
     ( model
-    , shortWaitThenPerform
-        (ShowCoins
-            [ model.level.nextCoinId - 2
-            , model.level.nextCoinId - 1
-            ]
-        )
-        :: (if hasWon then
-                [ longWaitThenPerform CollectCoin
-                , shortWaitThenPerform EndDay
-                , longWaitThenPerform LoadNextLevel
+    , performThenShortPauseAndThen DoNothing
+        (performThenShortPauseAndThen
+            (ShowCoins
+                [ model.level.nextCoinId - 2
+                , model.level.nextCoinId - 1
                 ]
+            )
+            (if hasWon then
+                EndDay
 
-            else
-                []
-           )
-        |> sequence
+             else
+                DoNothing
+            )
+        )
+        |> Task.succeed
+        |> Task.perform identity
     )
+
+
+endDay : Model -> ( Model, Cmd Msg )
+endDay model =
+    let
+        showCalenderAndStartNextDay =
+            performThenPauseAndThen (SetBetweenDays ShowCalenderDay)
+                (performThenPauseAndThen LoadNextLevel
+                    StartDay
+                )
+    in
+    case Dict.get model.day model.nextEvents of
+        Just (WeatherEvent event) ->
+            ( model
+                |> setBetweenDays ShowNothing
+                |> (event.reward
+                        |> Maybe.map (\block -> addGroup block)
+                        |> Maybe.withDefault identity
+                   )
+                |> showBetweenDays
+            , (case event.reward of
+                Just item ->
+                    performThenPauseAndThen DoNothing
+                        (performThenPauseAndThen (SetBetweenDays (ShowFoundItem item))
+                            (performThenPauseAndThen DoNothing
+                                showCalenderAndStartNextDay
+                            )
+                        )
+
+                Nothing ->
+                    showCalenderAndStartNextDay
+              )
+                |> Task.succeed
+                |> Task.perform identity
+            )
+
+        Nothing ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -436,9 +454,6 @@ update msg model =
                 [] ->
                     ( model, Cmd.none )
 
-        CollectCoin ->
-            ( model |> collectCoins, Cmd.none )
-
         ShowCoins list ->
             ( { model
                 | level =
@@ -449,10 +464,7 @@ update msg model =
             )
 
         EndDay ->
-            ( model
-                |> endDay
-            , Cmd.none
-            )
+            endDay model
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
@@ -464,7 +476,7 @@ update msg model =
                 |> (\m ->
                         ( m
                             |> applyGenerator model.seed
-                        , sequence [ longWaitThenPerform StartDay ]
+                        , Cmd.none
                         )
                    )
 
@@ -473,7 +485,7 @@ update msg model =
 
         StartDay ->
             ( model
-                |> gotoLevel
+                |> hideBetweenDays
                 |> increaseDifficulty
             , Cmd.none
             )
@@ -484,59 +496,48 @@ update msg model =
             , Cmd.none
             )
 
-        Buy group ->
+        Buy item ->
             ( model
                 |> removeMoney
-                |> addGroup group
+                |> addGroup item
                 |> closeShop
-            , sequence
-                [ shortWaitThenPerform EndDay
-                , longWaitThenPerform LoadNextLevel
-                ]
+            , Cmd.none
             )
 
         CloseShop ->
             ( model |> closeShop
-            , sequence
-                [ shortWaitThenPerform EndDay
-                , longWaitThenPerform LoadNextLevel
-                ]
+            , Cmd.none
             )
 
         AcceptCoin ->
             ( model
                 |> addMoney
-                |> endDay
-            , sequence [ longWaitThenPerform LoadNextLevel ]
+            , Task.succeed ()
+                |> Task.perform (\() -> EndDay)
             )
 
-        Wait ms m ->
-            ( model
-            , Process.sleep ms
-                |> Task.perform (\() -> m)
-            )
-
-        Sequence list ->
-            case list of
-                [] ->
-                    ( model, Cmd.none )
-
-                head :: tail ->
-                    update head model
-                        |> Tuple.mapSecond
-                            (\cmd ->
-                                Cmd.batch
-                                    [ cmd
-                                    , Task.succeed ()
-                                        |> Task.perform (\() -> Sequence tail)
-                                    ]
-                            )
+        ApplyThenWait args ->
+            update args.now model
+                |> Tuple.mapSecond
+                    (\cmd ->
+                        Cmd.batch
+                            [ cmd
+                            , Process.sleep args.wait
+                                |> Task.perform (\() -> args.andThen)
+                            ]
+                    )
 
         OpenCalender ->
             ( model |> showCalender, Cmd.none )
 
         CloseCalender ->
             ( model |> closeCalender, Cmd.none )
+
+        SetBetweenDays action ->
+            ( model |> setBetweenDays action, Cmd.none )
+
+        DoNothing ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -553,13 +554,24 @@ view model =
                 { game = model.level
                 , onClick = Click
                 }
-            , Html.text "Click on two different fruits in a row or column to collect them."
+            , [ View.Button.toHtml
+                    { label = "Calender"
+                    , onPress = OpenCalender
+                    }
+              ]
+                |> Html.div
+                    [ Html.Style.flex "1"
+                    , Html.Style.displayFlex
+                    , Html.Style.justifyContentCenter
+                    ]
+
+            {--, Html.text "Click on two different fruits in a row or column to collect them."
                 |> List.singleton
                 |> Html.div
                     [ Html.Style.padding "8px 16px"
                     , Html.Style.background "white"
                     , Html.Style.borderRadiusPx 32
-                    ]
+                    ]--}
             ]
                 |> Html.div
                     [ Html.Style.displayFlex
@@ -569,30 +581,31 @@ view model =
                     , Html.Style.positionRelative
                     ]
 
-        Just ShopEvent ->
-            Screen.Shop.toHtml
-                { onBuy = Buy
-                , onClose = CloseShop
-                }
-
-        Just CoinEvent ->
-            Screen.Coin.toHtml
-                { onClose = AcceptCoin }
-
         Nothing ->
             Html.text ""
-    , View.Calender.toHtml
+    , Screen.Menu.toHtml
         { show = model.showCalender
         , onClose = CloseCalender
         , today = model.day
         , events = model.nextEvents
         , summer = model.summer
         }
-    , Screen.EndOfDay.toHtml
-        { nextEvents = model.nextEvents
-        , endOfDay = model.endOfDay
-        , day = model.day
-        }
+    , case model.betweenDays of
+        ShowCalenderDay ->
+            Screen.BetweenDays.showCalenderDay
+                { nextEvents = model.nextEvents
+                , day = model.day
+                , show = model.showBetweenDays
+                }
+
+        ShowFoundItem item ->
+            Screen.BetweenDays.showFoundItem
+                { item = item
+                , show = model.showBetweenDays
+                }
+
+        ShowNothing ->
+            Screen.BetweenDays.showNothing { show = model.showBetweenDays }
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"
@@ -604,14 +617,14 @@ view model =
                 View.Background.summerGrass
 
             else
-                View.Background.winterGrass
+                View.Background.summerGrass
+            --View.Background.winterGrass
            )
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter
             , Html.Style.justifyContentCenter
             , Html.Style.positionRelative
-            , Html.Style.gapPx 16
             , Html.Style.width "100%"
             , Html.Style.height "100%"
             ]

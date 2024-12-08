@@ -4,8 +4,6 @@ import Event exposing (Event)
 import Html exposing (Html)
 import Html.Style
 import View.Button
-import View.CalenderDay
-import View.DayOfTheWeek
 
 
 viewHeader :
@@ -26,33 +24,21 @@ viewHeader args =
         [ View.Button.toHtml
             { label = "Undo"
             , onPress = args.onUndo
-
-            --, price = undoPrice
             }
             |> List.singleton
-            |> Html.div [ Html.Style.flex "1", Html.Style.displayFlex ]
-        , [ Html.text (View.DayOfTheWeek.toLongString args.currentDay)
-          , args.currentEvent
-                |> View.CalenderDay.calenderDay
-                    { size = 40
-                    , day = args.currentDay
-                    }
-                    []
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                ]
+
+        {--, [ View.Button.toHtml
+                { label = "Calender"
+                , onPress = args.onOpenCalender
+                }
           ]
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
-                , Html.Style.flexDirectionColumn
-                , Html.Style.alignItemsCenter
-                ]
-        , View.Button.toHtml
-            { label = "Calender"
-            , onPress = args.onOpenCalender
-            }
-            |> List.singleton
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
                 , Html.Style.justifyContentEnd
-                ]
+                ]--}
         ]

@@ -1,6 +1,5 @@
-module Puzzle.Setting exposing (Setting, pick, settings, shuffle, specialSettings, startingLevel, toBag, toGroups)
+module Puzzle.Setting exposing (Setting, pick, settings, shuffle, specialSettings, startingLevel, toGroups)
 
-import Bag exposing (Bag)
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
 import Random
@@ -27,13 +26,13 @@ empty =
     }
 
 
-seasonalFruit : { summer : Bool } -> ( Organic, Organic )
+seasonalFruit : { summer : Bool } -> ( Block, Block )
 seasonalFruit args =
     if args.summer then
-        ( Apple, Orange )
+        ( OrganicBlock Apple, OrganicBlock Orange )
 
     else
-        ( Potato, Carrot )
+        ( OrganicBlock Potato, OrganicBlock Carrot )
 
 
 startingLevel : Setting
@@ -47,139 +46,109 @@ startingLevel =
     }
 
 
+{-| level 0 (3): 2+0+1
+level 1 (4): 2+0+2
+level 2 (6): 2+1+3
+level 3 (8): 2+2+4
+-}
+template :
+    { difficulty : Int
+    , symbol : Maybe Block
+    , primary : ( Block, Block )
+    , secondary : ( Block, Block )
+    , singles : List Optional
+    }
+    -> Setting
+template args =
+    { empty
+        | difficulty = args.difficulty
+        , symbol = args.symbol
+        , pairs =
+            List.repeat (2 + max 0 (args.difficulty - 1)) args.primary
+                ++ List.repeat (args.difficulty + 1) args.secondary
+        , singles = args.singles
+    }
+
+
 default : { difficulty : Int, summer : Bool } -> Setting
 default args =
-    let
-        ( f1, f2 ) =
-            seasonalFruit { summer = args.summer }
-    in
-    { empty
-        | symbol = Nothing
+    template
+        { symbol = Nothing
         , difficulty = args.difficulty
-        , pairs =
-            ( OrganicBlock f1, OrganicBlock f2 )
-                |> List.repeat (3 + args.difficulty * 3 // 2)
-    }
+        , primary = seasonalFruit { summer = args.summer }
+        , secondary = seasonalFruit { summer = args.summer }
+        , singles = []
+        }
 
 
 rocks : { difficulty : Int, summer : Bool } -> Setting
 rocks args =
-    let
-        ( f1, f2 ) =
-            seasonalFruit { summer = args.summer }
-    in
-    { empty
-        | symbol = OptionalBlock Rock |> Just
+    template
+        { symbol = OptionalBlock Rock |> Just
         , difficulty = args.difficulty
-        , pairs =
-            [ ( Pickaxe, OptionalBlock Rock )
-            , ( OrganicBlock f1, OrganicBlock f2 )
-            , ( Pickaxe, OptionalBlock Rock )
-            ]
-                |> List.repeat (args.difficulty + 1)
-                |> List.concat
+        , primary = ( Pickaxe, OptionalBlock Rock )
+        , secondary = seasonalFruit { summer = args.summer }
         , singles = Rock |> List.repeat args.difficulty
-    }
+        }
 
 
 lemons : { difficulty : Int, summer : Bool } -> Setting
 lemons args =
     let
-        ( f1, f2 ) =
+        ( f1, _ ) =
             seasonalFruit { summer = args.summer }
     in
-    { empty
-        | symbol = OrganicBlock Lemon |> Just
+    template
+        { symbol = OrganicBlock Lemon |> Just
         , difficulty = args.difficulty
-        , pairs =
-            [ ( OrganicBlock Lemon, OrganicBlock f1 )
-            , ( OrganicBlock f1, OrganicBlock f2 )
-            , ( OrganicBlock Lemon, OrganicBlock f2 )
-            ]
-                |> List.repeat (args.difficulty + 1)
-                |> List.concat
+        , primary = ( OrganicBlock Lemon, f1 )
+        , secondary = seasonalFruit { summer = args.summer }
         , singles = []
-    }
+        }
 
 
-fireAndStone : { difficulty : Int, summer : Bool } -> Setting
-fireAndStone args =
-    { empty
-        | symbol = Wood |> Just
+woodAndStone : { difficulty : Int, summer : Bool } -> Setting
+woodAndStone args =
+    template
+        { symbol = Wood |> Just
         , difficulty = args.difficulty
-        , pairs =
-            [ ( Axe, Wood )
-            ]
-                |> List.repeat ((args.difficulty + 1) * 2)
-                |> List.concat
-        , singles = Rock |> List.repeat (args.difficulty + 1)
-    }
+        , primary = ( Axe, Wood )
+        , secondary = ( Pickaxe, OptionalBlock Rock )
+        , singles = Rock |> List.repeat args.difficulty
+        }
 
 
 summerDefault : { difficulty : Int, summer : Bool } -> Setting
 summerDefault args =
-    let
-        ( f1, f2 ) =
-            seasonalFruit { summer = args.summer }
-
-        ( s1, s2 ) =
-            ( FishingRod, Fish )
-    in
-    { empty
-        | symbol = Just (OptionalBlock s2)
+    template
+        { symbol = Just (OptionalBlock Fish)
         , difficulty = args.difficulty
-        , pairs =
-            [ ( OrganicBlock f1, OrganicBlock f2 )
-            , ( s1, OptionalBlock s2 )
-            , ( OrganicBlock f1, OrganicBlock f2 )
-            ]
-                |> List.repeat (args.difficulty + 1)
-                |> List.concat
-        , singles = s2 |> List.repeat args.difficulty
-    }
+        , primary = seasonalFruit { summer = args.summer }
+        , secondary = ( FishingRod, OptionalBlock Fish )
+        , singles = Fish |> List.repeat args.difficulty
+        }
 
 
 fishAndApples : { difficulty : Int, summer : Bool } -> Setting
 fishAndApples args =
-    let
-        ( f1, f2 ) =
-            seasonalFruit { summer = args.summer }
-    in
-    { empty
-        | symbol = OptionalBlock Fish |> Just
+    template
+        { symbol = Just (OptionalBlock Fish)
         , difficulty = args.difficulty
-        , pairs =
-            [ ( FishingRod, OptionalBlock Fish )
-            , ( OrganicBlock f1, OrganicBlock f2 )
-            , ( FishingRod, OptionalBlock Fish )
-            ]
-                |> List.repeat (args.difficulty + 1)
-                |> List.concat
+        , primary = ( FishingRod, OptionalBlock Fish )
+        , secondary = seasonalFruit { summer = args.summer }
         , singles = Fish |> List.repeat args.difficulty
-    }
+        }
 
 
 winterDefault : { difficulty : Int, summer : Bool } -> Setting
 winterDefault args =
-    let
-        ( f1, f2 ) =
-            seasonalFruit { summer = args.summer }
-
-        ( s1, s2 ) =
-            ( Pickaxe, Rock )
-    in
-    { empty
-        | symbol = Just (OptionalBlock s2)
+    template
+        { symbol = Just (OptionalBlock Rock)
         , difficulty = args.difficulty
-        , pairs =
-            [ ( OrganicBlock f1, OrganicBlock f2 )
-            , ( s1, OptionalBlock s2 )
-            , ( OrganicBlock f1, OrganicBlock f2 )
-            ]
-                |> List.repeat (args.difficulty + 1)
-                |> List.concat
-        , singles = s2 |> List.repeat args.difficulty
-    }
+        , primary = seasonalFruit { summer = args.summer }
+        , secondary = ( Pickaxe, OptionalBlock Rock )
+        , singles = Rock |> List.repeat args.difficulty
+        }
 
 
 settings : { difficulty : Int, summer : Bool } -> List Setting
@@ -197,7 +166,7 @@ settings args =
         , default args
         , winterDefault args |> withNoSymbol
         , winterDefault args |> withNoSymbol
-        , fireAndStone args |> withNoSymbol
+        , woodAndStone args |> withNoSymbol
         ]
 
 
@@ -212,8 +181,8 @@ specialSettings args =
         ]
 
     else
-        [ fireAndStone { args | difficulty = args.difficulty + 1 }
-        , fireAndStone { args | difficulty = args.difficulty + 1 }
+        [ woodAndStone { args | difficulty = args.difficulty + 1 }
+        , woodAndStone { args | difficulty = args.difficulty + 1 }
         , rocks { args | difficulty = args.difficulty + 1 }
         , rocks { args | difficulty = args.difficulty + 1 }
         , summerDefault { args | difficulty = args.difficulty + 1 }
@@ -244,32 +213,17 @@ pick args fun =
             )
 
 
-toGroups : Setting -> List Group
+toGroups : Setting -> Random (List Group)
 toGroups setting =
-    [ setting.singles
-        |> List.map (\optional -> SingleBlock (OptionalBlock optional))
-    , setting.pairs
-        |> List.map (\( a, b ) -> Pair a b)
-    ]
-        |> List.concat
-
-
-toBag : Setting -> Bag
-toBag setting =
-    Bag.empty
-        |> Bag.insertAll
-            (setting
-                |> toGroups
-                |> List.concatMap
-                    (\group ->
-                        case group of
-                            Pair a b ->
-                                [ a, b ]
-
-                            SingleBlock a ->
-                                [ a ]
-                    )
-            )
+    Random.map2 (++)
+        (setting.singles
+            |> List.map (\optional -> SingleBlock (OptionalBlock optional))
+            |> shuffle
+        )
+        (setting.pairs
+            |> List.map (\( a, b ) -> Pair a b)
+            |> shuffle
+        )
 
 
 shuffle : List a -> Random (List a)

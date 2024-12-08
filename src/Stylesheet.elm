@@ -1,6 +1,7 @@
 module Stylesheet exposing (..)
 
 import Html exposing (Html)
+import View.Color
 
 
 stylesheet : Html msg
@@ -14,6 +15,10 @@ stylesheet =
     @font-face {
         font-family: "NotoColorEmoji";
         src: url("fonts/NotoColorEmoji-Regular.ttf");
+    }
+
+    .blackWhiteEmoji {
+        font-family: serif, "NotoEmoji";
     }
 
     html {
@@ -59,19 +64,27 @@ stylesheet =
     }
 
     .button {
-        border-radius: 16px;
-        border: 2px solid black;
-        padding: 8px 4px;
-        background-color: white;
-        border-bottom-width: 6px;
+        border-radius: 20px;
+        border-width: 0px;
+        padding: 8px 16px;
+        height: 40px;
+        background-color: """
+        ++ View.Color.red500
+        ++ """;
+        font-weight: bold;
+        color: white;
     }
 
     .button:hover {
-        border-bottom-width: 4px;
+        background-color: """
+        ++ View.Color.red600
+        ++ """;
     }
 
     .button:active {
-        border-bottom-width: 2px;
+        background-color: """
+        ++ View.Color.red700
+        ++ """;
     }
     """
         |> Html.text

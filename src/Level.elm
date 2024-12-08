@@ -174,26 +174,6 @@ getBlocks game =
         |> Dict.fromList
 
 
-collectCoins : Level -> ( Level, List Block )
-collectCoins level =
-    let
-        updateEntity entity =
-            { entity | x = 2.5, y = -1 }
-    in
-    ( { level
-        | items =
-            Dict.map
-                (\_ coin ->
-                    { coin | entity = updateEntity coin.entity }
-                )
-                level.items
-      }
-    , level.items
-        |> Dict.values
-        |> List.map .sort
-    )
-
-
 addItem : ( Float, Float ) -> Block -> Level -> Level
 addItem p item level =
     let

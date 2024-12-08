@@ -32,6 +32,24 @@ withPrice args =
             )
 
 
+withPopout : { label : String, onPress : msg } -> Html msg -> Html msg
+withPopout args content =
+    [ Html.div [ Html.Style.positionAbsolute ] [ content ]
+    , Html.text args.label
+    ]
+        |> Html.button
+            (Layout.asButton
+                { onPress = Just args.onPress, label = args.label }
+                ++ [ Html.Attributes.class "button"
+                   , Html.Style.padding "6px 12px"
+                   , Html.Style.fontSizePx 16
+                   , Html.Style.displayFlex
+                   , Html.Style.alignItemsCenter
+                   , Html.Style.positionRelative
+                   ]
+            )
+
+
 toHtml : { label : String, onPress : msg } -> Html msg
 toHtml args =
     args.label
@@ -41,7 +59,6 @@ toHtml args =
             (Layout.asButton
                 { onPress = Just args.onPress, label = args.label }
                 ++ [ Html.Attributes.class "button"
-                   , Html.Style.padding "6px 12px"
                    , Html.Style.fontSizePx 16
                    , Html.Style.displayFlex
                    , Html.Style.alignItemsCenter

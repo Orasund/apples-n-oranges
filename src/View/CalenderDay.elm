@@ -4,6 +4,7 @@ import Data.Block
 import Event exposing (Event(..))
 import Html exposing (Attribute, Html)
 import Html.Style
+import View.Block
 
 
 eventToString : Event -> Maybe String
@@ -12,12 +13,6 @@ eventToString event =
         WeatherEvent weather ->
             weather.setting.symbol
                 |> Maybe.map Data.Block.toString
-
-        CoinEvent ->
-            "🪙" |> Just
-
-        ShopEvent ->
-            "🛒" |> Just
 
 
 stylingForEvent : Float -> Event -> List (Attribute msg)
@@ -54,9 +49,6 @@ difficutlyOfEvent event =
         WeatherEvent weather ->
             weather.setting.difficulty
 
-        _ ->
-            0
-
 
 calenderDay : { size : Float, day : Int } -> List (Attribute msg) -> Event -> Html msg
 calenderDay args attrs event =
@@ -77,7 +69,7 @@ calenderDay args attrs event =
             |> String.join " "
             |> Html.text
             |> List.singleton
-            |> Html.span [ Html.Style.filter "grayscale(1) brightness(2)" ]
+            |> Html.span [ View.Block.white ]
             |> List.singleton
             |> Html.div
                 [ Html.Style.displayFlex

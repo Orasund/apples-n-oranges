@@ -2,16 +2,17 @@ module View.Field exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
+import View.Color
 
 
 light : Attribute msg
 light =
-    Html.Style.background "#61bb6b"
+    Html.Style.background View.Color.green500
 
 
 dark : Attribute msg
 dark =
-    Html.Style.background "#399E5A"
+    Html.Style.background View.Color.green700
 
 
 size : Float

@@ -29,8 +29,8 @@ toHtml :
     -> Html msg
 toHtml args =
     [ [ Html.text "Shop" |> List.singleton |> Html.div [ Html.Style.fontSizePx 20 ]
-      , [ Pair (OptionalBlock Rock) Pickaxe
-        , Pair (OptionalBlock Fish) FishingRod
+      , [ Pair (OptionalBlock Diamand) Pickaxe
+        , Pair (OptionalBlock TropicalFish) FishingRod
         ]
             |> List.map
                 (\group ->

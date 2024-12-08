@@ -1,5 +1,6 @@
-module Screen.EndOfDay exposing (..)
+module Screen.BetweenDays exposing (..)
 
+import Data.Block exposing (Block(..), Optional)
 import Dict exposing (Dict)
 import Event exposing (Event(..))
 import Html exposing (Html)
@@ -10,17 +11,42 @@ import View.CalenderDay
 import View.DayOfTheWeek
 
 
-calenderSize =
-    300
+type BetweenDaysAction
+    = ShowCalenderDay
+    | ShowNothing
+    | ShowFoundItem Optional
 
 
-toHtml :
+showNothing : { show : Bool } -> Html msg
+showNothing args =
+    [] |> toHtml { show = args.show }
+
+
+showFoundItem : { show : Bool, item : Optional } -> Html msg
+showFoundItem args =
+    [ "Found"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 75 ]
+    , Data.Block.toString (OptionalBlock args.item)
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 200 ]
+    ]
+        |> toHtml { show = args.show }
+
+
+showCalenderDay :
     { nextEvents : Dict Int Event
-    , endOfDay : Bool
     , day : Int
+    , show : Bool
     }
     -> Html msg
-toHtml args =
+showCalenderDay args =
+    let
+        calenderSize =
+            300
+    in
     [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
     , [ args.day, args.day + 1 ]
         |> List.map
@@ -55,6 +81,12 @@ toHtml args =
             , Html.Style.positionRelative
             ]
     ]
+        |> toHtml { show = args.show }
+
+
+toHtml : { show : Bool } -> List (Html msg) -> Html msg
+toHtml args content =
+    content
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
@@ -68,7 +100,7 @@ toHtml args =
             , Html.Style.width "100%"
             , Html.Style.transition "bottom 1s"
             , Html.Style.bottom
-                (if args.endOfDay then
+                (if args.show then
                     "0vh"
 
                  else
