@@ -87,3 +87,11 @@ gray800 =
 
 gray900 =
     "hsl(0 0% 45% / 1)"
+
+
+white =
+    "white"
+
+
+black =
+    "black"

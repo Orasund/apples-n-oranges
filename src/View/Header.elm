@@ -21,7 +21,7 @@ viewHeader args =
         , Html.Style.gapPx 4
         , Html.Style.width "100%"
         ]
-        [ View.Button.toHtml
+        [ View.Button.toHtml [ View.Button.primary ]
             { label = "Undo"
             , onPress = args.onUndo
             }

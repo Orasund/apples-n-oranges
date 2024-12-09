@@ -1,13 +1,18 @@
 module View.Button exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Style
 import Layout
 
 
-withIcons : { label : String, onPress : msg } -> String -> Html msg
-withIcons args content =
+primary : Attribute msg
+primary =
+    Html.Attributes.class "primary-button"
+
+
+withIcons : List (Attribute msg) -> { label : String, onPress : msg } -> String -> Html msg
+withIcons attrs args content =
     [ content
         |> Html.text
         |> List.singleton
@@ -17,18 +22,20 @@ withIcons args content =
         |> Html.button
             (Layout.asButton
                 { onPress = Just args.onPress, label = args.label }
+                ++ attrs
                 ++ [ Html.Attributes.class "button-base button" ]
             )
 
 
-toHtml : { label : String, onPress : msg } -> Html msg
-toHtml args =
+toHtml : List (Attribute msg) -> { label : String, onPress : msg } -> Html msg
+toHtml attrs args =
     args.label
         |> Html.text
         |> List.singleton
         |> Html.button
             (Layout.asButton
                 { onPress = Just args.onPress, label = args.label }
+                ++ attrs
                 ++ [ Html.Attributes.class "button-base button" ]
             )
 

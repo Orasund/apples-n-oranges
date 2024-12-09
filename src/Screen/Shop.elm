@@ -34,7 +34,7 @@ toHtml args =
             |> List.map
                 (\group ->
                     [ View.Group.toHtml group
-                    , View.Button.toHtml
+                    , View.Button.toHtml []
                         { label = "Buy"
                         , onPress = args.onBuy group
                         }
@@ -50,7 +50,7 @@ toHtml args =
                 [ Html.Style.displayFlex
                 , Html.Style.gapPx 16
                 ]
-      , View.Button.toHtml
+      , View.Button.toHtml []
             { label = "Close"
             , onPress = args.onClose
             }

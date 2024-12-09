@@ -77,17 +77,56 @@ stylesheet =
         box-sizing: border-box;
         font-family: sans-serif;
         background-color: """
+        ++ View.Color.white
+        ++ """;
+    }
+
+    .button.primary-button {
+        color: """
+        ++ View.Color.white
+        ++ """;
+        background-color: """
         ++ View.Color.red600
         ++ """;
     }
 
-    .button:hover {
+    .button.primary-button:hover {
+        color: """
+        ++ View.Color.white
+        ++ """;
         background-color: """
         ++ View.Color.red700
         ++ """;
     }
 
+    .button.primary-button:active {
+        color: """
+        ++ View.Color.white
+        ++ """;
+        background-color: """
+        ++ View.Color.red800
+        ++ """;
+    }
+
+    .button {
+        color: """
+        ++ View.Color.red600
+        ++ """;
+    }
+
+    .button:hover {
+        color: """
+        ++ View.Color.black
+        ++ """;
+        background-color: """
+        ++ View.Color.red600
+        ++ """;
+    }
+
     .button:active {
+        color: """
+        ++ View.Color.black
+        ++ """;
         background-color: """
         ++ View.Color.red800
         ++ """;

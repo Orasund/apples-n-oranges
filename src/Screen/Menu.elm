@@ -16,14 +16,17 @@ import View.DayOfTheWeek
 
 type MenuTab
     = CalenderTab
-    | BulletinTab
+    | MarketTab
 
 
 type alias Trade =
-    { remove : List Optional, add : Optional }
+    { remove : List Optional
+    , add : Optional
+    , trader : String
+    }
 
 
-pinboard :
+market :
     { show : Bool
     , trades : List Trade
     , onClose : msg
@@ -32,7 +35,7 @@ pinboard :
     , items : Bag
     }
     -> Html msg
-pinboard args =
+market args =
     args.trades
         |> List.map
             (\trade ->
@@ -47,7 +50,11 @@ pinboard args =
                                 )
                             |> String.concat
                 in
-                [ trade.add
+                [ trade.trader
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div []
+                , trade.add
                     |> OptionalBlock
                     |> Data.Block.toString
                     |> Html.text
@@ -59,7 +66,7 @@ pinboard args =
                         |> Bag.toList
                         |> List.all (\( item, n ) -> Bag.contains n item args.items)
                   then
-                    View.Button.withIcons
+                    View.Button.withIcons [ View.Button.primary ]
                         { label = "Trade"
                         , onPress = args.onAcceptTrade trade
                         }
@@ -94,7 +101,7 @@ pinboard args =
         |> List.singleton
         |> toHtml
             { show = args.show
-            , selected = BulletinTab
+            , selected = MarketTab
             , onClose = args.onClose
             , onSelectTab = args.onSelectTab
             }
@@ -229,7 +236,7 @@ toHtml :
     -> Html msg
 toHtml args content =
     [ [ ( CalenderTab, "Calender" )
-      , ( BulletinTab, "Market" )
+      , ( MarketTab, "Market" )
       ]
         |> List.map
             (\( tab, label ) ->
@@ -237,7 +244,7 @@ toHtml args content =
                     View.Button.fake
 
                  else
-                    View.Button.toHtml
+                    View.Button.toHtml []
                 )
                     { label = label
                     , onPress = args.onSelectTab tab
@@ -259,7 +266,7 @@ toHtml args content =
             , Html.Style.flexDirectionColumn
             , Html.Style.gapPx 8
             ]
-    , View.Button.toHtml
+    , View.Button.toHtml []
         { label = "Close"
         , onPress = args.onClose
         }

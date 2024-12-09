@@ -299,10 +299,22 @@ init () =
             , shop = False
             , year = 0
             , trades =
-                [ { remove = [ Coin ], add = TropicalFish }
-                , { remove = [ Coin, Coin ], add = Diamand }
-                , { remove = [ TropicalFish, TropicalFish ], add = Coin }
-                , { remove = [ Diamand ], add = Coin }
+                [ { remove = [ Coin ]
+                  , add = TropicalFish
+                  , trader = "👩🏻 Alice"
+                  }
+                , { remove = [ Coin, Coin ]
+                  , add = Diamand
+                  , trader = "👨🏼 Rick"
+                  }
+                , { remove = [ TropicalFish, TropicalFish, TropicalFish, TropicalFish ]
+                  , add = Coin
+                  , trader = "👩🏻 Alice"
+                  }
+                , { remove = [ Diamand, Diamand ]
+                  , add = Coin
+                  , trader = "👨🏼 Rick"
+                  }
                 ]
             , items = Bag.empty
             }
@@ -560,7 +572,7 @@ view model =
                 { game = model.level
                 , onClick = Click
                 }
-            , [ View.Button.toHtml
+            , [ View.Button.toHtml []
                     { label = "Menu"
                     , onPress = OpenCalender
                     }
@@ -592,8 +604,8 @@ view model =
                 , onClose = CloseCalender
                 }
 
-        BulletinTab ->
-            Screen.Menu.pinboard
+        MarketTab ->
+            Screen.Menu.market
                 { show = model.showMenu
                 , trades = model.trades
                 , items = model.items
