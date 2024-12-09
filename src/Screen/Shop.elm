@@ -1,7 +1,6 @@
 module Screen.Shop exposing (..)
 
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
-import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Style
 import Puzzle.Builder exposing (Group(..))

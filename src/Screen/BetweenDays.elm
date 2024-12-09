@@ -2,10 +2,10 @@ module Screen.BetweenDays exposing (..)
 
 import Data.Block exposing (Block(..), Optional)
 import Dict exposing (Dict)
-import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
+import Puzzle.Setting exposing (Event)
 import View.Background
 import View.CalenderDay
 import View.DayOfTheWeek

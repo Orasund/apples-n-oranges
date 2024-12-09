@@ -1,4 +1,4 @@
-module Puzzle.Setting exposing (Setting, pick, settings, shuffle, specialSettings, startingLevel, toGroups)
+module Puzzle.Setting exposing (Event(..), Setting, pick, settings, shuffle, specialSettings, startingLevel, toGroups)
 
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
@@ -7,6 +7,10 @@ import Random
 
 type alias Random a =
     Random.Generator a
+
+
+type Event
+    = WeatherEvent { setting : Setting, reward : Maybe Optional }
 
 
 type alias Setting =

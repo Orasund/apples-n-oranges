@@ -228,3 +228,54 @@ moveEntity blockId entity level =
                 )
                 level.entities
     }
+
+
+replace : { search : List Optional, replaceWith : List Optional } -> Level -> Level
+replace args level =
+    let
+        rec { out, search, replaceWith } remaining =
+            case ( remaining, search ) of
+                ( _, [] ) ->
+                    remaining ++ out
+
+                ( ( id, head ) :: list, nextSearch :: remainingSearch ) ->
+                    if head == OptionalBlock nextSearch then
+                        case replaceWith of
+                            nextReplace :: remainingReplace ->
+                                rec
+                                    { out = ( id, OptionalBlock nextReplace ) :: out
+                                    , search = remainingSearch
+                                    , replaceWith = remainingReplace
+                                    }
+                                    list
+
+                            [] ->
+                                rec
+                                    { out = out
+                                    , search = remainingSearch
+                                    , replaceWith = []
+                                    }
+                                    list
+
+                    else
+                        rec
+                            { out = ( id, head ) :: out
+                            , search = search
+                            , replaceWith = replaceWith
+                            }
+                            list
+
+                ( [], _ ) ->
+                    out
+    in
+    { level
+        | blocks =
+            level.blocks
+                |> Dict.toList
+                |> rec
+                    { out = []
+                    , search = args.search
+                    , replaceWith = args.replaceWith
+                    }
+                |> Dict.fromList
+    }

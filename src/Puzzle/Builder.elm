@@ -1,6 +1,5 @@
 module Puzzle.Builder exposing (Group(..), generateFromGroup)
 
-import Bag exposing (Bag)
 import Data.Block exposing (Block(..), Optional(..), Organic(..))
 import Dict exposing (Dict)
 import Level exposing (Puzzle, isValidPair)
@@ -20,15 +19,9 @@ type Group
 type alias Builder =
     { blocks : Dict ( Int, Int ) Block
     , remainingPositions : Set ( Int, Int )
-    , bag : Bag
     , columns : Int
     , rows : Int
     }
-
-
-maxAmount : number
-maxAmount =
-    8
 
 
 new :
@@ -46,7 +39,6 @@ new args =
                         |> List.map (Tuple.pair x)
                 )
             |> Set.fromList
-    , bag = Bag.empty
     , columns = args.columns
     , rows = args.rows
     }
@@ -104,20 +96,16 @@ addBlocks solids builder =
 
 addRandomBlock : Block -> Builder -> Random Builder
 addRandomBlock block builder =
-    if Bag.get block builder.bag < maxAmount then
-        builder.remainingPositions
-            |> Set.toList
-            |> randomFromList
-            |> Maybe.map
-                (Random.map
-                    (\pos ->
-                        addBlock pos block builder
-                    )
+    builder.remainingPositions
+        |> Set.toList
+        |> randomFromList
+        |> Maybe.map
+            (Random.map
+                (\pos ->
+                    addBlock pos block builder
                 )
-            |> Maybe.withDefault (Random.constant builder)
-
-    else
-        Random.constant builder
+            )
+        |> Maybe.withDefault (Random.constant builder)
 
 
 addBlock : ( Int, Int ) -> Block -> Builder -> Builder
@@ -125,7 +113,6 @@ addBlock pos block builder =
     { builder
         | remainingPositions = builder.remainingPositions |> Set.remove pos
         , blocks = builder.blocks |> Dict.insert pos block
-        , bag = builder.bag |> Bag.insert block
     }
 
 
@@ -154,13 +141,9 @@ addRandomPair b1 b2 builder =
             (\list ->
                 case list of
                     p1 :: p2 :: _ ->
-                        if Bag.get b1 builder.bag < maxAmount && Bag.get b2 builder.bag < maxAmount then
-                            builder
-                                |> addBlock p1 b1
-                                |> addBlock p2 b2
-
-                        else
-                            builder
+                        builder
+                            |> addBlock p1 b1
+                            |> addBlock p2 b2
 
                     _ ->
                         builder

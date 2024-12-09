@@ -1,8 +1,8 @@
 module View.Header exposing (..)
 
-import Event exposing (Event)
 import Html exposing (Html)
 import Html.Style
+import Puzzle.Setting exposing (Event)
 import View.Button
 
 
@@ -30,15 +30,4 @@ viewHeader args =
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
                 ]
-
-        {--, [ View.Button.toHtml
-                { label = "Calender"
-                , onPress = args.onOpenCalender
-                }
-          ]
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentEnd
-                ]--}
         ]

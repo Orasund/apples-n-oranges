@@ -1,10 +1,9 @@
 module Main exposing (main)
 
+import Bag exposing (Bag)
 import Browser
-import Data.Artefact exposing (Artifact)
 import Data.Block exposing (Block(..), Optional(..))
 import Dict exposing (Dict)
-import Event exposing (Event(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
@@ -12,10 +11,10 @@ import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
 import Puzzle.Builder exposing (Group(..))
-import Puzzle.Setting
+import Puzzle.Setting exposing (Event(..))
 import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
-import Screen.Menu
+import Screen.Menu exposing (MenuTab(..), Trade)
 import Stylesheet
 import Task
 import View.Background
@@ -38,13 +37,13 @@ type alias Model =
     , history : List Level
     , betweenDays : BetweenDaysAction
     , showBetweenDays : Bool
+    , menu : MenuTab
+    , trades : List Trade
+    , showMenu : Bool
     , summer : Bool
     , shop : Bool
-    , showCalender : Bool
-    , showPresent : Maybe Artifact
     , year : Int
-    , money : Int
-    , items : List Optional
+    , items : Bag
     }
 
 
@@ -59,13 +58,13 @@ type Msg
     | SetBetweenDays BetweenDaysAction
     | StartDay
     | OpenShop
-    | Buy Optional
+    | AcceptTrade Trade
     | CloseShop
     | ApplyThenWait { now : Msg, wait : Float, andThen : Msg }
     | OpenCalender
     | CloseCalender
-    | AcceptCoin
     | DoNothing
+    | SetMenuTab MenuTab
 
 
 setBetweenDays : BetweenDaysAction -> Model -> Model
@@ -127,8 +126,10 @@ loadNextLevel model =
                     Puzzle.Setting.toGroups weather.setting
                         |> Random.map
                             (\l ->
-                                List.repeat model.money (SingleBlock (OptionalBlock Coin))
-                                    ++ (model.items |> List.map (\item -> SingleBlock (OptionalBlock item)))
+                                (model.items
+                                    |> Bag.toList
+                                    |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (OptionalBlock item)))
+                                )
                                     ++ l
                             )
                         |> Random.andThen
@@ -196,7 +197,7 @@ generateNextMonth model =
                                             WeatherEvent
                                                 { setting = setting
                                                 , reward =
-                                                    if i == 28 then
+                                                    if modBy 7 i == 0 then
                                                         Coin |> Just
 
                                                     else
@@ -232,12 +233,12 @@ generateNextMonth model =
 
 showCalender : Model -> Model
 showCalender model =
-    { model | showCalender = True }
+    { model | showMenu = True }
 
 
 closeCalender : Model -> Model
 closeCalender model =
-    { model | showCalender = False }
+    { model | showMenu = False }
 
 
 increaseDifficulty : Model -> Model
@@ -248,19 +249,19 @@ increaseDifficulty model =
     }
 
 
-addMoney : Model -> Model
-addMoney model =
-    { model | money = model.money + 1 }
+addItem : Optional -> Model -> Model
+addItem item model =
+    { model | items = model.items |> Bag.insert item }
 
 
-removeMoney : Model -> Model
-removeMoney model =
-    { model | money = model.money - 1 }
+removeItem : Optional -> Model -> Model
+removeItem item model =
+    { model | items = model.items |> Bag.remove item }
 
 
-addGroup : Optional -> Model -> Model
-addGroup item model =
-    { model | items = item :: model.items }
+setMenuTab : MenuTab -> Model -> Model
+setMenuTab menuTab model =
+    { model | menu = menuTab }
 
 
 
@@ -293,12 +294,17 @@ init () =
             , summer = False
             , betweenDays = ShowCalenderDay
             , showBetweenDays = False
+            , menu = CalenderTab
+            , showMenu = False
             , shop = False
-            , showCalender = False
-            , showPresent = Nothing
             , year = 0
-            , money = 0
-            , items = []
+            , trades =
+                [ { remove = [ Coin ], add = TropicalFish }
+                , { remove = [ Coin, Coin ], add = Diamand }
+                , { remove = [ TropicalFish, TropicalFish ], add = Coin }
+                , { remove = [ Diamand ], add = Coin }
+                ]
+            , items = Bag.empty
             }
     in
     ( model
@@ -395,7 +401,7 @@ endDay model =
             ( model
                 |> setBetweenDays ShowNothing
                 |> (event.reward
-                        |> Maybe.map (\block -> addGroup block)
+                        |> Maybe.map (\block -> addItem block)
                         |> Maybe.withDefault identity
                    )
                 |> showBetweenDays
@@ -496,24 +502,21 @@ update msg model =
             , Cmd.none
             )
 
-        Buy item ->
-            ( model
-                |> removeMoney
-                |> addGroup item
-                |> closeShop
+        AcceptTrade args ->
+            ( { model
+                | level =
+                    model.level
+                        |> Level.replace
+                            { search = args.remove, replaceWith = [ args.add ] }
+              }
+                |> addItem args.add
+                |> (\m -> List.foldl removeItem m args.remove)
             , Cmd.none
             )
 
         CloseShop ->
             ( model |> closeShop
             , Cmd.none
-            )
-
-        AcceptCoin ->
-            ( model
-                |> addMoney
-            , Task.succeed ()
-                |> Task.perform (\() -> EndDay)
             )
 
         ApplyThenWait args ->
@@ -536,6 +539,9 @@ update msg model =
         SetBetweenDays action ->
             ( model |> setBetweenDays action, Cmd.none )
 
+        SetMenuTab menu ->
+            ( model |> setMenuTab menu, Cmd.none )
+
         DoNothing ->
             ( model, Cmd.none )
 
@@ -555,7 +561,7 @@ view model =
                 , onClick = Click
                 }
             , [ View.Button.toHtml
-                    { label = "Calender"
+                    { label = "Menu"
                     , onPress = OpenCalender
                     }
               ]
@@ -564,14 +570,6 @@ view model =
                     , Html.Style.displayFlex
                     , Html.Style.justifyContentCenter
                     ]
-
-            {--, Html.text "Click on two different fruits in a row or column to collect them."
-                |> List.singleton
-                |> Html.div
-                    [ Html.Style.padding "8px 16px"
-                    , Html.Style.background "white"
-                    , Html.Style.borderRadiusPx 32
-                    ]--}
             ]
                 |> Html.div
                     [ Html.Style.displayFlex
@@ -583,13 +581,26 @@ view model =
 
         Nothing ->
             Html.text ""
-    , Screen.Menu.toHtml
-        { show = model.showCalender
-        , onClose = CloseCalender
-        , today = model.day
-        , events = model.nextEvents
-        , summer = model.summer
-        }
+    , case model.menu of
+        CalenderTab ->
+            Screen.Menu.calender
+                { show = model.showMenu
+                , today = model.day
+                , events = model.nextEvents
+                , summer = model.summer
+                , onSelectTab = SetMenuTab
+                , onClose = CloseCalender
+                }
+
+        BulletinTab ->
+            Screen.Menu.pinboard
+                { show = model.showMenu
+                , trades = model.trades
+                , items = model.items
+                , onAcceptTrade = AcceptTrade
+                , onSelectTab = SetMenuTab
+                , onClose = CloseCalender
+                }
     , case model.betweenDays of
         ShowCalenderDay ->
             Screen.BetweenDays.showCalenderDay
@@ -613,13 +624,7 @@ view model =
         ]
         []
     ]
-        |> (if model.summer then
-                View.Background.summerGrass
-
-            else
-                View.Background.summerGrass
-            --View.Background.winterGrass
-           )
+        |> View.Background.summerGrass
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter

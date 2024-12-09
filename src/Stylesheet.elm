@@ -63,27 +63,33 @@ stylesheet =
         }
     }
 
-    .button {
+    .button-base {
         border-radius: 20px;
         border-width: 0px;
         padding: 8px 16px;
         height: 40px;
-        background-color: """
-        ++ View.Color.red500
-        ++ """;
+        font-size: 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
         font-weight: bold;
         color: white;
-    }
-
-    .button:hover {
+        box-sizing: border-box;
+        font-family: sans-serif;
         background-color: """
         ++ View.Color.red600
         ++ """;
     }
 
-    .button:active {
+    .button:hover {
         background-color: """
         ++ View.Color.red700
+        ++ """;
+    }
+
+    .button:active {
+        background-color: """
+        ++ View.Color.red800
         ++ """;
     }
     """

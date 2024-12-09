@@ -1,10 +1,11 @@
 module View.CalenderDay exposing (..)
 
 import Data.Block
-import Event exposing (Event(..))
 import Html exposing (Attribute, Html)
 import Html.Style
+import Puzzle.Setting exposing (Event(..))
 import View.Block
+import View.Color
 
 
 eventToString : Event -> Maybe String
@@ -75,7 +76,7 @@ calenderDay args attrs event =
                 [ Html.Style.displayFlex
                 , Html.Style.justifyContentCenter
                 , Html.Style.alignItemsCenter
-                , Html.Style.backgroundColor "red"
+                , Html.Style.backgroundColor View.Color.red900
                 , Html.Style.heightPx (args.size / 4)
                 , Html.Style.fontSizePx (args.size * 0.1)
                 ]
