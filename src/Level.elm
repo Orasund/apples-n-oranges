@@ -4,6 +4,7 @@ import Data.Block exposing (Block(..), Item(..), Organic(..))
 import Dict exposing (Dict)
 import Maths
 import Random exposing (Generator)
+import Set exposing (Set)
 
 
 type alias Random a =
@@ -18,6 +19,7 @@ type alias Puzzle =
     { columns : Int
     , rows : Int
     , blocks : List ( ( Int, Int ), Block )
+    , solids : Set ( Int, Int )
     }
 
 
@@ -45,7 +47,8 @@ type alias Level =
             , pos : ( Int, Int )
             , item : Maybe Block
             }
-    , items : Dict CoinId { entity : Entity, sort : Block }
+    , pairs : Dict CoinId { entity : Entity, sort : Block }
+    , solids : Set ( Int, Int )
     , nextCoinId : CoinId
     }
 
@@ -58,7 +61,8 @@ empty args =
     , fields = Dict.empty
     , selected = Nothing
     , entities = Dict.empty
-    , items = Dict.empty
+    , pairs = Dict.empty
+    , solids = Set.empty
     , nextCoinId = 0
     }
 
@@ -134,11 +138,16 @@ removeField pos game =
 
 isValidPair : ( Int, Int ) -> ( Int, Int ) -> Level -> Bool
 isValidPair ( x1, y1 ) ( x2, y2 ) game =
+    let
+        isNotSolid pos =
+            Dict.member pos game.fields
+                || Set.member pos game.solids
+    in
     (((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
                 |> List.all
                     (\y ->
-                        game.fields |> Dict.member ( x1, y ) |> not
+                        isNotSolid ( x1, y ) |> not
                     )
            )
      )
@@ -146,7 +155,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                 && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
                             (\x ->
-                                game.fields |> Dict.member ( x, y1 ) |> not
+                                isNotSolid ( x, y1 ) |> not
                             )
                    )
            )
@@ -174,16 +183,16 @@ getBlocks game =
         |> Dict.fromList
 
 
-addItem : ( Float, Float ) -> Block -> Level -> Level
-addItem p item level =
+addPartOfPair : ( Float, Float ) -> Block -> Level -> Level
+addPartOfPair p item level =
     let
         ( x, y ) =
             fromPolar ( 0.1, toFloat level.nextCoinId * 2.5 )
                 |> Maths.plus p
     in
     { level
-        | items =
-            level.items
+        | pairs =
+            level.pairs
                 |> Dict.insert level.nextCoinId
                     { entity =
                         { x = x
@@ -205,14 +214,14 @@ showCoin coinId level =
             }
     in
     { level
-        | items =
+        | pairs =
             Dict.update coinId
                 (Maybe.map
                     (\coin ->
                         { coin | entity = updateEntity coin.entity }
                     )
                 )
-                level.items
+                level.pairs
     }
 
 

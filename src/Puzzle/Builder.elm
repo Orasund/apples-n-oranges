@@ -1,4 +1,4 @@
-module Puzzle.Builder exposing (Group(..), generateFromGroup)
+module Puzzle.Builder exposing (Group(..), generate)
 
 import Data.Block exposing (Block(..), Item(..), Organic(..))
 import Dict exposing (Dict)
@@ -19,6 +19,7 @@ type Group
 type alias Builder =
     { blocks : Dict ( Int, Int ) Block
     , remainingPositions : Set ( Int, Int )
+    , solids : Set ( Int, Int )
     , columns : Int
     , rows : Int
     }
@@ -39,30 +40,27 @@ new args =
                         |> List.map (Tuple.pair x)
                 )
             |> Set.fromList
+    , solids = Set.empty
     , columns = args.columns
     , rows = args.rows
     }
 
 
-generateFromGroup :
-    Dict ( Int, Int ) Block
-    -> List Group
+generate :
+    { pairs : List Group
+    , solids : Int
+    }
     -> Random Puzzle
-generateFromGroup oldBlocks groups =
+generate args =
     let
         initial =
             new
                 { columns = 6
                 , rows = 6
                 }
-                |> addBlocks
-                    (oldBlocks
-                        |> Dict.filter (\_ -> Data.Block.isPersistant)
-                        |> Dict.toList
-                    )
-                |> Random.constant
+                |> addSolids args.solids
     in
-    groups
+    args.pairs
         |> List.foldl
             (\group ->
                 case group of
@@ -76,22 +74,27 @@ generateFromGroup oldBlocks groups =
         |> Random.map build
 
 
+addSolids : Int -> Builder -> Random Builder
+addSolids n builder =
+    builder.remainingPositions
+        |> Set.toList
+        |> shuffle
+        |> Random.map
+            (\list ->
+                { builder
+                    | remainingPositions = List.drop n list |> Set.fromList
+                    , solids = List.take n list |> Set.fromList
+                }
+            )
+
+
 build : Builder -> Puzzle
 build builder =
     { columns = builder.columns
     , rows = builder.rows
     , blocks = builder.blocks |> Dict.toList
+    , solids = builder.solids
     }
-
-
-addBlocks : List ( ( Int, Int ), Block ) -> Builder -> Builder
-addBlocks solids builder =
-    solids
-        |> List.foldl
-            (\( pos, solid ) ->
-                addBlock pos solid
-            )
-            builder
 
 
 addRandomBlock : Block -> Builder -> Random Builder
@@ -160,15 +163,20 @@ findValidPair fun candidates =
 
 isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
 isValidPair builder ( x1, y1 ) ( x2, y2 ) =
+    let
+        isNotSolid pos =
+            Dict.member pos builder.blocks
+                || Set.member pos builder.solids
+    in
     ((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
-                |> List.all (\y -> Dict.get ( x1, y ) builder.blocks == Nothing)
+                |> List.all (\y -> isNotSolid ( x1, y ) |> not)
            )
     )
         || ((y1 == y2)
                 && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
-                            (\x -> Dict.get ( x, y1 ) builder.blocks == Nothing)
+                            (\x -> isNotSolid ( x, y1 ) |> not)
                    )
            )
 
@@ -181,3 +189,16 @@ randomFromList list =
 
         [] ->
             Nothing
+
+
+shuffle : List a -> Random (List a)
+shuffle list =
+    Random.list (List.length list) (Random.float 0 1)
+        |> Random.map
+            (\randomList ->
+                List.map2 Tuple.pair
+                    list
+                    randomList
+                    |> List.sortBy Tuple.second
+                    |> List.map Tuple.first
+            )

@@ -1,4 +1,4 @@
-module Puzzle.Setting exposing (Event, Setting, pick, settings, shuffle, specialSettings, startingLevel, toList)
+module Puzzle.Setting exposing (Event, Setting, pick, settings, specialSettings, startingLevel, toList)
 
 import Data.Block exposing (Block(..), Item, Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
@@ -209,16 +209,3 @@ pick args fun =
 toList : Setting -> List ( Block, Block )
 toList setting =
     setting.pairs
-
-
-shuffle : List a -> Random (List a)
-shuffle list =
-    Random.list (List.length list) (Random.float 0 1)
-        |> Random.map
-            (\randomList ->
-                List.map2 Tuple.pair
-                    list
-                    randomList
-                    |> List.sortBy Tuple.second
-                    |> List.map Tuple.first
-            )

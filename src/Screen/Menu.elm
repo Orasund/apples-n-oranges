@@ -20,7 +20,7 @@ type MenuTab
 
 
 type alias Trade =
-    { remove : List Item
+    { remove : List ( Item, Int )
     , add : Item
     , trader : String
     }
@@ -42,11 +42,12 @@ market args =
                 let
                     cost =
                         trade.remove
-                            |> List.map
-                                (\items ->
+                            |> List.concatMap
+                                (\( items, n ) ->
                                     items
                                         |> ItemBlock
                                         |> Data.Block.toString
+                                        |> List.repeat n
                                 )
                             |> String.concat
                 in
@@ -62,8 +63,6 @@ market args =
                     |> Html.div [ Html.Style.fontSizePx 50 ]
                 , if
                     trade.remove
-                        |> List.foldl ItemBag.insert ItemBag.empty
-                        |> ItemBag.toList
                         |> List.all (\( item, n ) -> ItemBag.contains n item args.items)
                   then
                     View.Button.withIcons [ View.Button.primary ]

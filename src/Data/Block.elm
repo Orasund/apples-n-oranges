@@ -107,8 +107,3 @@ isOptional block =
 
         _ ->
             False
-
-
-isPersistant : Block -> Bool
-isPersistant _ =
-    False

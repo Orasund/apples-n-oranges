@@ -15,6 +15,7 @@ import Puzzle.Setting exposing (Event)
 import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
 import Screen.Menu exposing (MenuTab(..), Trade)
+import Set
 import Stylesheet
 import Task
 import View.Background
@@ -104,7 +105,27 @@ loadPuzzle puzzle model =
         (\( pos, fruit ) ->
             Random.map (addBlock pos fruit)
         )
-        (Random.constant model)
+        ({ model
+            | items =
+                ItemBag.toList model.items
+                    |> List.foldl
+                        (\( item, positions ) args ->
+                            let
+                                n =
+                                    Set.size positions
+                            in
+                            { positions = List.drop n args.positions
+                            , out = ( item, List.take n args.positions ) :: args.out
+                            }
+                        )
+                        { positions = Set.toList puzzle.solids
+                        , out = []
+                        }
+                    |> .out
+                    |> ItemBag.fromList
+         }
+            |> Random.constant
+        )
         puzzle.blocks
 
 
@@ -120,18 +141,16 @@ loadNextLevel : Model -> Random Model
 loadNextLevel model =
     case Dict.get model.day model.nextEvents of
         Just event ->
-            Puzzle.Setting.toList event.setting
-                |> Puzzle.Setting.shuffle
-                |> Random.map
-                    (\l ->
-                        (model.items
-                            |> ItemBag.toList
-                            |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (ItemBlock item)))
-                        )
-                            ++ List.map (\( a, b ) -> Pair a b) l
-                    )
-                |> Random.andThen
-                    (Puzzle.Builder.generateFromGroup (Level.getBlocks model.level))
+            Puzzle.Builder.generate
+                { pairs =
+                    Puzzle.Setting.toList event.setting
+                        |> List.map (\( a, b ) -> Pair a b)
+                , solids =
+                    model.items
+                        |> ItemBag.toList
+                        |> List.map (\( _, set ) -> Set.size set)
+                        |> List.sum
+                }
                 |> Random.andThen
                     (\puzzle ->
                         model
@@ -248,12 +267,55 @@ increaseDifficulty model =
 
 addItem : Item -> Model -> Model
 addItem item model =
-    { model | items = model.items |> ItemBag.insert item }
+    { model | items = model.items |> ItemBag.insert ( -1, -1 ) item }
 
 
 removeItem : Item -> Model -> Model
 removeItem item model =
-    { model | items = model.items |> ItemBag.remove item }
+    { model
+        | items =
+            model.items
+                |> ItemBag.remove item
+                |> Maybe.map Tuple.first
+                |> Maybe.withDefault model.items
+    }
+
+
+replaceItem : { from : Item, to : Item } -> Model -> Model
+replaceItem args model =
+    { model
+        | items =
+            model.items
+                |> ItemBag.remove args.from
+                |> Maybe.map
+                    (\( items, pos ) ->
+                        items |> ItemBag.insert pos args.to
+                    )
+                |> Maybe.withDefault model.items
+    }
+
+
+tradeItems : { remove : List ( Item, Int ), add : List Item } -> Model -> Model
+tradeItems args model =
+    args.remove
+        |> List.concatMap (\( item, n ) -> List.repeat n item)
+        |> List.foldl
+            (\item { add, out } ->
+                case add of
+                    head :: tail ->
+                        { add = tail
+                        , out = replaceItem { from = item, to = head } out
+                        }
+
+                    [] ->
+                        { add = []
+                        , out = removeItem item out
+                        }
+            )
+            { add = args.add
+            , out = model
+            }
+        |> .out
 
 
 setMenuTab : MenuTab -> Model -> Model
@@ -296,11 +358,11 @@ init () =
             , shop = False
             , year = 0
             , trades =
-                [ { remove = [ Coin, Coin, Coin ]
+                [ { remove = [ ( Coin, 3 ) ]
                   , add = BagOfCoins
                   , trader = "👩🏻 Alice"
                   }
-                , { remove = [ BagOfCoins, BagOfCoins, BagOfCoins ]
+                , { remove = [ ( BagOfCoins, 3 ) ]
                   , add = Diamand
                   , trader = "👨🏼 Rick"
                   }
@@ -341,11 +403,11 @@ join p1 p2 model =
                             { x = x, y = y, shrink = True }
                         |> Level.setSelected Nothing
                         |> (item1
-                                |> Maybe.map (Level.addItem ( x, y ))
+                                |> Maybe.map (Level.addPartOfPair ( x, y ))
                                 |> Maybe.withDefault identity
                            )
                         |> (item2
-                                |> Maybe.map (Level.addItem ( x, y ))
+                                |> Maybe.map (Level.addPartOfPair ( x, y ))
                                 |> Maybe.withDefault identity
                            )
                 , history = model.level :: model.history
@@ -504,14 +566,11 @@ update msg model =
             )
 
         AcceptTrade args ->
-            ( { model
-                | level =
-                    model.level
-                        |> Level.replace
-                            { search = args.remove, replaceWith = [ args.add ] }
-              }
-                |> addItem args.add
-                |> (\m -> List.foldl removeItem m args.remove)
+            ( model
+                |> tradeItems
+                    { remove = args.remove
+                    , add = [ args.add ]
+                    }
             , Cmd.none
             )
 
@@ -568,6 +627,7 @@ view model =
             ]
       , View.Game.viewGame
             { game = model.level
+            , items = model.items
             , onClick = Click
             }
       , View.Button.toHtml []

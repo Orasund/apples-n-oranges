@@ -1,10 +1,23 @@
 module View.Fruit exposing (..)
 
+import Data.Block exposing (Item)
 import Html exposing (Html)
 import Html.Style
 import Level exposing (BlockId, Entity, Level)
 import View.Block
 import View.Field
+
+
+viewItem : { pos : ( Int, Int ), item : Item } -> List (Html msg) -> Html msg
+viewItem args =
+    let
+        ( x, y ) =
+            args.pos
+    in
+    View.Block.withContent
+        [ Html.Style.topPx (toFloat y * View.Field.size)
+        , Html.Style.leftPx (toFloat x * View.Field.size)
+        ]
 
 
 viewFruit : { blockId : BlockId, entity : Entity, pos : ( Int, Int ), game : Level } -> List (Html msg) -> Html msg

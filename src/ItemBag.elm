@@ -2,10 +2,11 @@ module ItemBag exposing (..)
 
 import Data.Block exposing (Block(..), Item)
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 type alias ItemBag =
-    Dict String ( Item, Int )
+    Dict String ( Item, Set ( Int, Int ) )
 
 
 empty : ItemBag
@@ -13,39 +14,47 @@ empty =
     Dict.empty
 
 
-insert : Item -> ItemBag -> ItemBag
-insert =
-    add 1
+insert : ( Int, Int ) -> Item -> ItemBag -> ItemBag
+insert pos =
+    add [ pos ]
 
 
-add : Int -> Item -> ItemBag -> ItemBag
-add n item =
+add : List ( Int, Int ) -> Item -> ItemBag -> ItemBag
+add positions item =
+    let
+        set =
+            Set.fromList positions
+    in
     Dict.update (Data.Block.toString (ItemBlock item))
         (\maybe ->
             maybe
                 |> Maybe.map
                     (\( _, amount ) ->
-                        ( item, amount + n )
+                        ( item, Set.union amount set )
                     )
-                |> Maybe.withDefault ( item, n )
+                |> Maybe.withDefault ( item, set )
                 |> Just
         )
 
 
-remove : Item -> ItemBag -> ItemBag
-remove item =
-    Dict.update (Data.Block.toString (ItemBlock item))
-        (\maybe ->
-            maybe
-                |> Maybe.andThen
-                    (\( _, amount ) ->
-                        if amount > 1 then
-                            Just ( item, amount - 1 )
+remove : Item -> ItemBag -> Maybe ( ItemBag, ( Int, Int ) )
+remove item bag =
+    bag
+        |> Dict.get (Data.Block.toString (ItemBlock item))
+        |> Maybe.andThen
+            (\( _, positions ) ->
+                case Set.toList positions of
+                    head :: tail ->
+                        ( bag
+                            |> Dict.insert (Data.Block.toString (ItemBlock item))
+                                ( item, Set.fromList tail )
+                        , head
+                        )
+                            |> Just
 
-                        else
-                            Nothing
-                    )
-        )
+                    [] ->
+                        Nothing
+            )
 
 
 get : Item -> ItemBag -> Int
@@ -53,17 +62,18 @@ get item bag =
     bag
         |> Dict.get (Data.Block.toString (ItemBlock item))
         |> Maybe.map Tuple.second
+        |> Maybe.map Set.size
         |> Maybe.withDefault 0
 
 
-toList : ItemBag -> List ( Item, Int )
+toList : ItemBag -> List ( Item, Set ( Int, Int ) )
 toList bag =
     bag
         |> Dict.toList
         |> List.map Tuple.second
 
 
-fromList : List ( Item, Int ) -> ItemBag
+fromList : List ( Item, List ( Int, Int ) ) -> ItemBag
 fromList =
     List.foldl (\( a, n ) -> add n a)
         empty

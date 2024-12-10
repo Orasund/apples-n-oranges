@@ -1,12 +1,14 @@
 module View.Game exposing (..)
 
-import Data.Block
+import Data.Block exposing (Block(..))
 import Dict
 import Html exposing (Html)
 import Html.Keyed
 import Html.Style
+import ItemBag exposing (ItemBag)
 import Layout
 import Level exposing (Level)
+import Set
 import View.Coin
 import View.Field
 import View.Fruit
@@ -14,6 +16,7 @@ import View.Fruit
 
 viewGame :
     { game : Level
+    , items : ItemBag
     , onClick : ( Int, Int ) -> msg
     }
     -> Html msg
@@ -53,14 +56,35 @@ viewGame args =
                             }
                     )
                 )
-        , args.game.items
+        , args.items
+            |> ItemBag.toList
+            |> List.concatMap
+                (\( item, set ) ->
+                    set
+                        |> Set.toList
+                        |> List.map
+                            (\( x, y ) ->
+                                ( "item_" ++ String.fromInt x ++ "_" ++ String.fromInt y
+                                , item
+                                    |> ItemBlock
+                                    |> Data.Block.toString
+                                    |> Html.text
+                                    |> List.singleton
+                                    |> View.Fruit.viewItem
+                                        { pos = ( x, y )
+                                        , item = item
+                                        }
+                                )
+                            )
+                )
+        , args.game.pairs
             |> Dict.toList
             |> List.singleton
             |> List.concat
             |> List.sortBy Tuple.first
             |> List.map
                 (\( id, { entity, sort } ) ->
-                    ( "coin_" ++ String.fromInt id
+                    ( "pair_" ++ String.fromInt id
                     , View.Coin.asBlock entity sort
                     )
                 )
@@ -70,6 +94,7 @@ viewGame args =
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx 0
                 , Html.Style.leftPx 0
+                , Html.Style.overflowHidden
                 ]
       ]
     , args.game.fields
