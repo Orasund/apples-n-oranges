@@ -59,7 +59,7 @@ market args =
                     |> Data.Block.toString
                     |> Html.text
                     |> List.singleton
-                    |> Html.div [ Html.Style.fontSizePx 70 ]
+                    |> Html.div [ Html.Style.fontSizePx 50 ]
                 , if
                     trade.remove
                         |> List.foldl Bag.insert Bag.empty

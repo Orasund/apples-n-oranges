@@ -92,7 +92,7 @@ rocks args =
         , difficulty = args.difficulty
         , primary = ( Pickaxe, OptionalBlock Rock )
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = Rock |> List.repeat args.difficulty
+        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 
@@ -118,7 +118,7 @@ woodAndStone args =
         , difficulty = args.difficulty
         , primary = ( Axe, Wood )
         , secondary = ( Pickaxe, OptionalBlock Rock )
-        , singles = Rock |> List.repeat args.difficulty
+        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 
@@ -129,7 +129,7 @@ summerDefault args =
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
         , secondary = ( FishingRod, OptionalBlock Fish )
-        , singles = Fish |> List.repeat args.difficulty
+        , singles = [] --Fish |> List.repeat args.difficulty
         }
 
 
@@ -140,7 +140,7 @@ fishAndApples args =
         , difficulty = args.difficulty
         , primary = ( FishingRod, OptionalBlock Fish )
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = Fish |> List.repeat args.difficulty
+        , singles = [] --Fish |> List.repeat args.difficulty
         }
 
 
@@ -151,7 +151,7 @@ winterDefault args =
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
         , secondary = ( Pickaxe, OptionalBlock Rock )
-        , singles = Rock |> List.repeat args.difficulty
+        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 

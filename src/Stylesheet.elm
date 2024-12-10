@@ -118,17 +118,14 @@ stylesheet =
         color: """
         ++ View.Color.black
         ++ """;
-        background-color: """
-        ++ View.Color.red600
-        ++ """;
     }
 
     .button:active {
         color: """
-        ++ View.Color.black
+        ++ View.Color.white
         ++ """;
         background-color: """
-        ++ View.Color.red800
+        ++ View.Color.red600
         ++ """;
     }
     """
