@@ -1,4 +1,4 @@
-module Puzzle.Setting exposing (Event(..), Setting, pick, settings, shuffle, specialSettings, startingLevel, toGroups)
+module Puzzle.Setting exposing (Event, Setting, pick, settings, shuffle, specialSettings, startingLevel, toList)
 
 import Data.Block exposing (Block(..), Item, Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
@@ -9,14 +9,13 @@ type alias Random a =
     Random.Generator a
 
 
-type Event
-    = WeatherEvent { setting : Setting, reward : Maybe Item }
+type alias Event =
+    { setting : Setting, reward : Maybe Item }
 
 
 type alias Setting =
     { symbol : Maybe Block
     , difficulty : Int
-    , singles : List Optional
     , pairs : List ( Block, Block )
     }
 
@@ -25,7 +24,6 @@ empty : Setting
 empty =
     { symbol = Nothing
     , difficulty = 0
-    , singles = []
     , pairs = []
     }
 
@@ -60,7 +58,6 @@ template :
     , symbol : Maybe Block
     , primary : ( Block, Block )
     , secondary : ( Block, Block )
-    , singles : List Optional
     }
     -> Setting
 template args =
@@ -70,7 +67,6 @@ template args =
         , pairs =
             List.repeat (2 + max 0 (args.difficulty - 1)) args.primary
                 ++ List.repeat (args.difficulty + 1) args.secondary
-        , singles = args.singles
     }
 
 
@@ -81,7 +77,6 @@ default args =
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = []
         }
 
 
@@ -92,7 +87,6 @@ rocks args =
         , difficulty = args.difficulty
         , primary = ( Pickaxe, OptionalBlock Rock )
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 
@@ -107,7 +101,6 @@ lemons args =
         , difficulty = args.difficulty
         , primary = ( OrganicBlock Lemon, f1 )
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = []
         }
 
 
@@ -118,7 +111,6 @@ woodAndStone args =
         , difficulty = args.difficulty
         , primary = ( Axe, Wood )
         , secondary = ( Pickaxe, OptionalBlock Rock )
-        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 
@@ -129,7 +121,6 @@ summerDefault args =
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
         , secondary = ( FishingRod, OptionalBlock Fish )
-        , singles = [] --Fish |> List.repeat args.difficulty
         }
 
 
@@ -140,7 +131,6 @@ fishAndApples args =
         , difficulty = args.difficulty
         , primary = ( FishingRod, OptionalBlock Fish )
         , secondary = seasonalFruit { summer = args.summer }
-        , singles = [] --Fish |> List.repeat args.difficulty
         }
 
 
@@ -151,7 +141,6 @@ winterDefault args =
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
         , secondary = ( Pickaxe, OptionalBlock Rock )
-        , singles = [] --Rock |> List.repeat args.difficulty
         }
 
 
@@ -217,17 +206,9 @@ pick args fun =
             )
 
 
-toGroups : Setting -> Random (List Group)
-toGroups setting =
-    Random.map2 (++)
-        (setting.singles
-            |> List.map (\optional -> SingleBlock (OptionalBlock optional))
-            |> shuffle
-        )
-        (setting.pairs
-            |> List.map (\( a, b ) -> Pair a b)
-            |> shuffle
-        )
+toList : Setting -> List ( Block, Block )
+toList setting =
+    setting.pairs
 
 
 shuffle : List a -> Random (List a)

@@ -3,17 +3,15 @@ module View.CalenderDay exposing (..)
 import Data.Block
 import Html exposing (Attribute, Html)
 import Html.Style
-import Puzzle.Setting exposing (Event(..))
+import Puzzle.Setting exposing (Event)
 import View.Block
 import View.Color
 
 
 eventToString : Event -> Maybe String
 eventToString event =
-    case event of
-        WeatherEvent weather ->
-            weather.setting.symbol
-                |> Maybe.map Data.Block.toString
+    event.setting.symbol
+        |> Maybe.map Data.Block.toString
 
 
 stylingForEvent : Float -> Event -> List (Attribute msg)
@@ -46,9 +44,7 @@ stylingForEvent calenderSize event =
 
 difficutlyOfEvent : Event -> Int
 difficutlyOfEvent event =
-    case event of
-        WeatherEvent weather ->
-            weather.setting.difficulty
+    event.setting.difficulty
 
 
 calenderDay : { size : Float, day : Int } -> List (Attribute msg) -> Event -> Html msg

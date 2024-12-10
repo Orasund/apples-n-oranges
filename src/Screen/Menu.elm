@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
 import ItemBag exposing (ItemBag)
-import Puzzle.Setting exposing (Event(..))
+import Puzzle.Setting exposing (Event)
 import View.Background
 import View.Block
 import View.Button
@@ -193,11 +193,9 @@ calender args =
                                                     []
                                                )
                                         )
-                                , (case event of
-                                    WeatherEvent weather ->
-                                        weather.reward
-                                            |> Maybe.map (\item -> Data.Block.toString (ItemBlock item))
-                                            |> Maybe.withDefault ""
+                                , (event.reward
+                                    |> Maybe.map (\item -> Data.Block.toString (ItemBlock item))
+                                    |> Maybe.withDefault ""
                                   )
                                     |> Html.text
                                     |> List.singleton

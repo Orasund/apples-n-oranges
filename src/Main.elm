@@ -11,7 +11,7 @@ import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
 import Puzzle.Builder exposing (Group(..))
-import Puzzle.Setting exposing (Event(..))
+import Puzzle.Setting exposing (Event)
 import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
 import Screen.Menu exposing (MenuTab(..), Trade)
@@ -119,26 +119,25 @@ clearHistory model =
 loadNextLevel : Model -> Random Model
 loadNextLevel model =
     case Dict.get model.day model.nextEvents of
-        Just head ->
-            case head of
-                WeatherEvent weather ->
-                    Puzzle.Setting.toGroups weather.setting
-                        |> Random.map
-                            (\l ->
-                                (model.items
-                                    |> ItemBag.toList
-                                    |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (ItemBlock item)))
-                                )
-                                    ++ l
-                            )
-                        |> Random.andThen
-                            (Puzzle.Builder.generateFromGroup (Level.getBlocks model.level))
-                        |> Random.andThen
-                            (\puzzle ->
-                                model
-                                    |> clearHistory
-                                    |> loadPuzzle puzzle
-                            )
+        Just event ->
+            Puzzle.Setting.toList event.setting
+                |> Puzzle.Setting.shuffle
+                |> Random.map
+                    (\l ->
+                        (model.items
+                            |> ItemBag.toList
+                            |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (ItemBlock item)))
+                        )
+                            ++ List.map (\( a, b ) -> Pair a b) l
+                    )
+                |> Random.andThen
+                    (Puzzle.Builder.generateFromGroup (Level.getBlocks model.level))
+                |> Random.andThen
+                    (\puzzle ->
+                        model
+                            |> clearHistory
+                            |> loadPuzzle puzzle
+                    )
 
         Nothing ->
             model
@@ -193,15 +192,14 @@ generateNextMonth model =
                                     )
                                     |> Random.map
                                         (\setting ->
-                                            WeatherEvent
-                                                { setting = setting
-                                                , reward =
-                                                    if modBy 7 i == 0 then
-                                                        Coin |> Just
+                                            { setting = setting
+                                            , reward =
+                                                if modBy 7 i == 0 then
+                                                    Coin |> Just
 
-                                                    else
-                                                        Nothing
-                                                }
+                                                else
+                                                    Nothing
+                                            }
                                         )
                                 )
                                     |> Random.map (\s -> s :: l)
@@ -286,7 +284,7 @@ init () =
             , difficutly = 0
             , day = 0
             , nextEvents =
-                [ ( 0, WeatherEvent { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
+                [ ( 0, { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
                     |> Dict.fromList
             , history = []
             , seed = seed
@@ -400,7 +398,7 @@ endDay model =
                 )
     in
     case Dict.get model.day model.nextEvents of
-        Just (WeatherEvent event) ->
+        Just event ->
             ( model
                 |> setBetweenDays ShowNothing
                 |> (event.reward
