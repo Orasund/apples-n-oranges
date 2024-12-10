@@ -3,6 +3,7 @@ module View.Game exposing (..)
 import Data.Block exposing (Block(..))
 import Dict
 import Html exposing (Html)
+import Html.Events.Extra.Pointer as Pointer
 import Html.Keyed
 import Html.Style
 import ItemBag exposing (ItemBag)
@@ -94,7 +95,6 @@ viewGame args =
                 [ Html.Style.positionAbsolute
                 , Html.Style.topPx 0
                 , Html.Style.leftPx 0
-                , Html.Style.overflowHidden
                 ]
       ]
     , args.game.fields
@@ -129,4 +129,16 @@ viewGame args =
             )
     ]
         |> List.concat
-        |> Html.div [ Html.Style.positionRelative ]
+        |> Html.div
+            [ Html.Style.positionRelative
+            , Html.Style.overflowHidden
+
+            {--, Pointer.onDown
+                (\event ->
+                    let
+                        ( x, y ) =
+                            event.pointer.offsetPos
+                    in
+                    args.onClick ( x / View.Field.size |> round, y / View.Field.size |> round )
+                )--}
+            ]
