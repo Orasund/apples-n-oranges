@@ -85,8 +85,9 @@ market args =
                         , Html.Style.alignItemsCenter
                         , Html.Style.justifyContentCenter
                         , Html.Style.gapPx 8
-                        , Html.Style.flex "1"
                         , Html.Style.aspectRatio "1"
+                        , Html.Style.widthPx 150
+                        , Html.Style.boxSizingBorderBox
                         , Html.Style.borderRadiusPx 8
                         , Html.Style.paddingPx 8
                         ]
@@ -96,7 +97,10 @@ market args =
             , Html.Style.flexDirectionRow
             , Html.Style.flexWrapWrap
             , Html.Style.gapPx 16
-            , Html.Style.paddingPx 8
+            , Html.Style.height "100%"
+            , Html.Style.boxSizingBorderBox
+            , Html.Style.justifyContentCenter
+            , Html.Style.alignContentCenter
             ]
         |> List.singleton
         |> toHtml

@@ -200,7 +200,7 @@ withNoSymbol setting =
 
 pick : { difficulty : Float, summer : Bool } -> ({ difficulty : Int, summer : Bool } -> List Setting) -> Random Setting
 pick args fun =
-    Random.float 0 (min 3 (args.difficulty + 1))
+    Random.float 0 (min 4 (args.difficulty + 1))
         |> Random.andThen
             (\float ->
                 case

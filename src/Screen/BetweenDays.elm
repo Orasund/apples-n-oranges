@@ -47,7 +47,7 @@ showCalenderDay args =
         calenderSize =
             300
     in
-    [ Html.div [ Html.Style.fontSizePx 75 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
+    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
     , [ args.day, args.day + 1 ]
         |> List.map
             (\i ->

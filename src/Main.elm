@@ -21,7 +21,6 @@ import View.Background
 import View.Button
 import View.Field
 import View.Game
-import View.Header
 
 
 type alias Random a =
@@ -299,20 +298,12 @@ init () =
             , shop = False
             , year = 0
             , trades =
-                [ { remove = [ Coin ]
-                  , add = TropicalFish
+                [ { remove = [ Coin, Coin, Coin ]
+                  , add = BagOfCoins
                   , trader = "👩🏻 Alice"
                   }
-                , { remove = [ Coin, Coin ]
+                , { remove = [ BagOfCoins, BagOfCoins, BagOfCoins ]
                   , add = Diamand
-                  , trader = "👨🏼 Rick"
-                  }
-                , { remove = [ TropicalFish, TropicalFish, TropicalFish, TropicalFish ]
-                  , add = Coin
-                  , trader = "👩🏻 Alice"
-                  }
-                , { remove = [ Diamand, Diamand ]
-                  , add = Coin
                   , trader = "👨🏼 Rick"
                   }
                 ]
@@ -560,39 +551,45 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    [ case Dict.get model.day model.nextEvents of
-        Just (WeatherEvent weather) ->
-            [ View.Header.viewHeader
-                { onUndo = Undo
-                , onOpenCalender = OpenCalender
-                , currentEvent = WeatherEvent weather
-                , currentDay = model.day
+    [ [ Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.alignItemsEnd
+            , Html.Style.justifyContentCenter
+            , Html.Style.gapPx 4
+            , Html.Style.width "100%"
+            ]
+            [ View.Button.toHtml []
+                { label = "Menu"
+                , onPress = OpenCalender
                 }
-            , View.Game.viewGame
-                { game = model.level
-                , onClick = Click
-                }
-            , [ View.Button.toHtml []
-                    { label = "Menu"
-                    , onPress = OpenCalender
-                    }
-              ]
+                |> List.singleton
                 |> Html.div
                     [ Html.Style.flex "1"
                     , Html.Style.displayFlex
-                    , Html.Style.justifyContentCenter
                     ]
             ]
-                |> Html.div
-                    [ Html.Style.displayFlex
-                    , Html.Style.flexDirectionColumn
-                    , Html.Style.gapPx 16
-                    , Html.Style.widthPx (View.Field.size * 6)
-                    , Html.Style.positionRelative
-                    ]
-
-        Nothing ->
-            Html.text ""
+      , View.Game.viewGame
+            { game = model.level
+            , onClick = Click
+            }
+      , View.Button.toHtml []
+            { label = "Undo"
+            , onPress = Undo
+            }
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
+                ]
+      ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 16
+            , Html.Style.widthPx (View.Field.size * 6)
+            , Html.Style.positionRelative
+            ]
     , case model.menu of
         CalenderTab ->
             Screen.Menu.calender
