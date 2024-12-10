@@ -1,12 +1,12 @@
 module Main exposing (main)
 
-import Bag exposing (Bag)
 import Browser
-import Data.Block exposing (Block(..), Optional(..))
+import Data.Block exposing (Block(..), Item(..), Optional(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
+import ItemBag exposing (ItemBag)
 import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
@@ -42,7 +42,7 @@ type alias Model =
     , summer : Bool
     , shop : Bool
     , year : Int
-    , items : Bag
+    , items : ItemBag
     }
 
 
@@ -126,8 +126,8 @@ loadNextLevel model =
                         |> Random.map
                             (\l ->
                                 (model.items
-                                    |> Bag.toList
-                                    |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (OptionalBlock item)))
+                                    |> ItemBag.toList
+                                    |> List.concatMap (\( item, amount ) -> List.repeat amount (SingleBlock (ItemBlock item)))
                                 )
                                     ++ l
                             )
@@ -248,14 +248,14 @@ increaseDifficulty model =
     }
 
 
-addItem : Optional -> Model -> Model
+addItem : Item -> Model -> Model
 addItem item model =
-    { model | items = model.items |> Bag.insert item }
+    { model | items = model.items |> ItemBag.insert item }
 
 
-removeItem : Optional -> Model -> Model
+removeItem : Item -> Model -> Model
 removeItem item model =
-    { model | items = model.items |> Bag.remove item }
+    { model | items = model.items |> ItemBag.remove item }
 
 
 setMenuTab : MenuTab -> Model -> Model
@@ -307,7 +307,7 @@ init () =
                   , trader = "👨🏼 Rick"
                   }
                 ]
-            , items = Bag.empty
+            , items = ItemBag.empty
             }
     in
     ( model

@@ -1,10 +1,10 @@
 module Screen.Menu exposing (..)
 
-import Bag exposing (Bag)
-import Data.Block exposing (Block(..), Optional)
+import Data.Block exposing (Block(..), Item)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
+import ItemBag exposing (ItemBag)
 import Puzzle.Setting exposing (Event(..))
 import View.Background
 import View.Block
@@ -20,8 +20,8 @@ type MenuTab
 
 
 type alias Trade =
-    { remove : List Optional
-    , add : Optional
+    { remove : List Item
+    , add : Item
     , trader : String
     }
 
@@ -32,7 +32,7 @@ market :
     , onClose : msg
     , onSelectTab : MenuTab -> msg
     , onAcceptTrade : Trade -> msg
-    , items : Bag
+    , items : ItemBag
     }
     -> Html msg
 market args =
@@ -45,7 +45,7 @@ market args =
                             |> List.map
                                 (\items ->
                                     items
-                                        |> OptionalBlock
+                                        |> ItemBlock
                                         |> Data.Block.toString
                                 )
                             |> String.concat
@@ -55,16 +55,16 @@ market args =
                     |> List.singleton
                     |> Html.div []
                 , trade.add
-                    |> OptionalBlock
+                    |> ItemBlock
                     |> Data.Block.toString
                     |> Html.text
                     |> List.singleton
                     |> Html.div [ Html.Style.fontSizePx 50 ]
                 , if
                     trade.remove
-                        |> List.foldl Bag.insert Bag.empty
-                        |> Bag.toList
-                        |> List.all (\( item, n ) -> Bag.contains n item args.items)
+                        |> List.foldl ItemBag.insert ItemBag.empty
+                        |> ItemBag.toList
+                        |> List.all (\( item, n ) -> ItemBag.contains n item args.items)
                   then
                     View.Button.withIcons [ View.Button.primary ]
                         { label = "Trade"
@@ -196,7 +196,7 @@ calender args =
                                 , (case event of
                                     WeatherEvent weather ->
                                         weather.reward
-                                            |> Maybe.map (\optional -> Data.Block.toString (OptionalBlock optional))
+                                            |> Maybe.map (\item -> Data.Block.toString (ItemBlock item))
                                             |> Maybe.withDefault ""
                                   )
                                     |> Html.text

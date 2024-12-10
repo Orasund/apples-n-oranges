@@ -1,6 +1,6 @@
 module Screen.BetweenDays exposing (..)
 
-import Data.Block exposing (Block(..), Optional)
+import Data.Block exposing (Block(..), Item)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Keyed
@@ -14,7 +14,7 @@ import View.DayOfTheWeek
 type BetweenDaysAction
     = ShowCalenderDay
     | ShowNothing
-    | ShowFoundItem Optional
+    | ShowFoundItem Item
 
 
 showNothing : { show : Bool } -> Html msg
@@ -22,13 +22,13 @@ showNothing args =
     [] |> toHtml { show = args.show }
 
 
-showFoundItem : { show : Bool, item : Optional } -> Html msg
+showFoundItem : { show : Bool, item : Item } -> Html msg
 showFoundItem args =
     [ "Found"
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 75 ]
-    , Data.Block.toString (OptionalBlock args.item)
+    , Data.Block.toString (ItemBlock args.item)
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 200 ]

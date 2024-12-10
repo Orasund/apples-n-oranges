@@ -1,6 +1,6 @@
 module Level exposing (..)
 
-import Data.Block exposing (Block(..), Optional(..), Organic(..))
+import Data.Block exposing (Block(..), Item(..), Organic(..))
 import Dict exposing (Dict)
 import Maths
 import Random exposing (Generator)
@@ -230,7 +230,7 @@ moveEntity blockId entity level =
     }
 
 
-replace : { search : List Optional, replaceWith : List Optional } -> Level -> Level
+replace : { search : List Item, replaceWith : List Item } -> Level -> Level
 replace args level =
     let
         rec { out, search, replaceWith } remaining =
@@ -239,11 +239,11 @@ replace args level =
                     remaining ++ out
 
                 ( ( id, head ) :: list, nextSearch :: remainingSearch ) ->
-                    if head == OptionalBlock nextSearch then
+                    if head == ItemBlock nextSearch then
                         case replaceWith of
                             nextReplace :: remainingReplace ->
                                 rec
-                                    { out = ( id, OptionalBlock nextReplace ) :: out
+                                    { out = ( id, ItemBlock nextReplace ) :: out
                                     , search = remainingSearch
                                     , replaceWith = remainingReplace
                                     }

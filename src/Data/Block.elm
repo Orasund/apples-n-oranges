@@ -11,15 +11,19 @@ type Organic
 
 type Optional
     = Fish
-    | BagOfCoins
     | Rock
-    | Coin
+
+
+type Item
+    = Coin
+    | BagOfCoins
     | Diamand
 
 
 type Block
     = OrganicBlock Organic
     | OptionalBlock Optional
+    | ItemBlock Item
     | FishingRod
     | Pickaxe
     | Axe
@@ -50,13 +54,13 @@ toString block =
         OptionalBlock Fish ->
             "🐟"
 
-        OptionalBlock BagOfCoins ->
-            "💰"
-
-        OptionalBlock Coin ->
+        ItemBlock Coin ->
             "🪙"
 
-        OptionalBlock Diamand ->
+        ItemBlock BagOfCoins ->
+            "💰"
+
+        ItemBlock Diamand ->
             "💎"
 
         FishingRod ->
@@ -78,11 +82,11 @@ isValidBlock p1 p2 =
         ( OrganicBlock _, OrganicBlock _ ) ->
             True
 
+        ( ItemBlock _, ItemBlock _ ) ->
+            True
+
         _ ->
             [ ( Pickaxe, OptionalBlock Rock )
-            , ( OptionalBlock Coin, OptionalBlock BagOfCoins )
-            , ( OptionalBlock Diamand, OptionalBlock BagOfCoins )
-            , ( OptionalBlock Diamand, OptionalBlock Coin )
             , ( FishingRod, OptionalBlock Fish )
             , ( Axe, Wood )
             ]
@@ -96,6 +100,9 @@ isOptional : Block -> Bool
 isOptional block =
     case block of
         OptionalBlock _ ->
+            True
+
+        ItemBlock _ ->
             True
 
         _ ->
