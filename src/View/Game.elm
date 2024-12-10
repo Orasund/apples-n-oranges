@@ -2,12 +2,13 @@ module View.Game exposing (..)
 
 import Data.Block exposing (Block(..))
 import Dict
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
+import Html.Attributes
 import Html.Events.Extra.Pointer as Pointer
+import Html.Events.Extra.Touch as Touch
 import Html.Keyed
 import Html.Style
 import ItemBag exposing (ItemBag)
-import Layout
 import Level exposing (Level)
 import Set
 import View.Coin
@@ -15,15 +16,31 @@ import View.Field
 import View.Fruit
 
 
+noEvents : Attribute msg
+noEvents =
+    Html.Attributes.class "no-events"
+
+
+calcCell : ( Float, Float ) -> ( Int, Int )
+calcCell ( x, y ) =
+    -- ( x |> floor, y |> floor )
+    ( x / View.Field.size |> floor, y / View.Field.size |> floor )
+
+
 viewGame :
     { game : Level
     , items : ItemBag
-    , onClick : ( Int, Int ) -> msg
+    , onPointerDown : { pos : ( Int, Int ), offset : ( Float, Float ) } -> msg
+    , onPointerMove : ( Int, Int ) -> msg
+    , onPointerUp : ( Int, Int ) -> msg
+    , zero : ( Float, Float )
     }
     -> Html msg
 viewGame args =
     [ [ View.Field.toHtml
-            [ View.Field.light ]
+            [ View.Field.light
+            , noEvents
+            ]
             { columns = args.game.columns
             , rows = args.game.rows
             }
@@ -50,6 +67,7 @@ viewGame args =
                         |> Html.text
                         |> List.singleton
                         |> View.Fruit.viewFruit
+                            []
                             { blockId = blockId
                             , entity = entity
                             , pos = pos
@@ -97,7 +115,8 @@ viewGame args =
                 , Html.Style.leftPx 0
                 ]
       ]
-    , args.game.fields
+
+    {--, args.game.fields
         |> Dict.toList
         |> List.filterMap
             (\( p, fruitId ) ->
@@ -108,7 +127,7 @@ viewGame args =
         |> List.map
             (\( ( x, y ), _ ) ->
                 Html.div
-                    (Layout.asButton
+                    {--Layout.asButton
                         { onPress = Just (args.onClick ( x, y ))
                         , label =
                             [ "Select "
@@ -118,27 +137,64 @@ viewGame args =
                             ]
                                 |> String.concat
                         }
-                        ++ [ Html.Style.aspectRatio "1"
-                           , Html.Style.widthPx View.Field.size
-                           , Html.Style.positionAbsolute
-                           , Html.Style.topPx (toFloat y * View.Field.size)
-                           , Html.Style.leftPx (toFloat x * View.Field.size)
-                           ]
-                    )
+                        ++--}
+                    [ Html.Style.aspectRatio "1"
+                    , Html.Style.widthPx View.Field.size
+                    , Html.Style.positionAbsolute
+                    , Html.Style.topPx (toFloat y * View.Field.size)
+                    , Html.Style.leftPx (toFloat x * View.Field.size)
+                    ]
                     []
-            )
+            )--}
+    , [ Html.div
+            [ Html.Style.positionAbsolute
+            , Pointer.onDown
+                (\event ->
+                    let
+                        ( relX, relY ) =
+                            event.pointer.offsetPos
+
+                        ( absX, absY ) =
+                            event.pointer.clientPos
+                    in
+                    args.onPointerDown
+                        { offset = ( absX - relX, absY - relY )
+                        , pos = calcCell event.pointer.offsetPos
+                        }
+                )
+
+            --, Pointer.onMove (\event -> args.onPointerMove (calcCell event.pointer.offsetPos) |> Debug.log "move")
+            , Pointer.onUp (\event -> args.onPointerUp (calcCell event.pointer.offsetPos) |> Debug.log "up")
+            , Touch.onEnd
+                (\event ->
+                    let
+                        ( zeroX, zeroY ) =
+                            args.zero
+
+                        ( absX, absY ) =
+                            event.changedTouches
+                                |> Debug.log "touchs"
+                                |> List.head
+                                |> Maybe.map (\touch -> touch.clientPos)
+                                |> Maybe.withDefault ( 0, 0 )
+
+                        ( relX, relY ) =
+                            ( absX - zeroX, absY - zeroY )
+                    in
+                    args.onPointerUp (calcCell ( relX, relY ))
+                )
+            , Html.Style.widthPx (8 * View.Field.size)
+            , Html.Style.heightPx (8 * View.Field.size)
+            , Html.Style.topPx 0
+            , Html.Style.leftPx 0
+            , Html.Style.pointerEventsAll
+            ]
+            []
+      ]
     ]
         |> List.concat
         |> Html.div
             [ Html.Style.positionRelative
             , Html.Style.overflowHidden
-
-            {--, Pointer.onDown
-                (\event ->
-                    let
-                        ( x, y ) =
-                            event.pointer.offsetPos
-                    in
-                    args.onClick ( x / View.Field.size |> round, y / View.Field.size |> round )
-                )--}
+            , noEvents
             ]

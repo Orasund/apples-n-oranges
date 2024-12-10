@@ -44,11 +44,15 @@ type alias Model =
     , shop : Bool
     , year : Int
     , items : ItemBag
+    , pointerZero : ( Float, Float )
+    , pointer : Maybe ( Int, Int )
     }
 
 
 type Msg
-    = Click ( Int, Int )
+    = PointerDown { pos : ( Int, Int ), offset : ( Float, Float ) }
+    | PointerMove ( Int, Int )
+    | PointerUp ( Int, Int )
     | ShowCoins (List CoinId)
     | Undo
     | EndDay
@@ -368,6 +372,8 @@ init () =
                   }
                 ]
             , items = ItemBag.empty
+            , pointerZero = ( 0, 0 )
+            , pointer = Nothing
             }
     in
     ( model
@@ -488,27 +494,51 @@ endDay model =
             ( model, Cmd.none )
 
 
+click : ( Int, Int ) -> Model -> ( Model, Cmd Msg )
+click pos model =
+    case model.level.selected of
+        Nothing ->
+            ( { model | level = Level.setSelected (Just pos) model.level }, Cmd.none )
+
+        Just p ->
+            if p == pos then
+                ( { model | level = Level.setSelected Nothing model.level }, Cmd.none )
+
+            else if Level.isValidPair pos p model.level then
+                join pos p model
+                    |> Maybe.withDefault model
+                    |> endTurn
+
+            else
+                ( { model | level = Level.setSelected Nothing model.level }
+                , Cmd.none
+                )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Click pos ->
-            case model.level.selected of
-                Nothing ->
-                    ( { model | level = Level.setSelected (Just pos) model.level }, Cmd.none )
+        PointerDown pointer ->
+            click pointer.pos
+                { model
+                    | pointerZero = pointer.offset
+                    , pointer = Just pointer.pos
+                }
 
-                Just p ->
-                    if p == pos then
-                        ( { model | level = Level.setSelected Nothing model.level }, Cmd.none )
+        PointerMove pos ->
+            ( { model | pointer = Just pos }, Cmd.none )
 
-                    else if Level.isValidPair pos p model.level then
-                        join pos p model
-                            |> Maybe.withDefault model
-                            |> endTurn
+        PointerUp to ->
+            model.pointer
+                |> Maybe.map
+                    (\from ->
+                        if from /= to then
+                            click to { model | pointer = Nothing }
 
-                    else
-                        ( { model | level = Level.setSelected Nothing model.level }
-                        , Cmd.none
-                        )
+                        else
+                            ( model, Cmd.none )
+                    )
+                |> Maybe.withDefault ( model, Cmd.none )
 
         Undo ->
             case model.history of
@@ -628,7 +658,10 @@ view model =
       , View.Game.viewGame
             { game = model.level
             , items = model.items
-            , onClick = Click
+            , onPointerDown = PointerDown
+            , onPointerMove = PointerMove
+            , onPointerUp = PointerUp
+            , zero = model.pointerZero
             }
       , View.Button.toHtml []
             { label = "Undo"

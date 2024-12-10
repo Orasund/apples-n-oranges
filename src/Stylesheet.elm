@@ -35,6 +35,10 @@ stylesheet =
         
     }
 
+    .no-events > * {
+        pointer-events: none
+    }
+
     @keyframes rocking {
         from { rotate:-15deg }
         50% { rotate:15deg }

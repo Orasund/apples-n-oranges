@@ -1,7 +1,7 @@
 module View.Fruit exposing (..)
 
 import Data.Block exposing (Item)
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Style
 import Level exposing (BlockId, Entity, Level)
 import View.Block
@@ -20,8 +20,8 @@ viewItem args =
         ]
 
 
-viewFruit : { blockId : BlockId, entity : Entity, pos : ( Int, Int ), game : Level } -> List (Html msg) -> Html msg
-viewFruit args =
+viewFruit : List (Attribute msg) -> { blockId : BlockId, entity : Entity, pos : ( Int, Int ), game : Level } -> List (Html msg) -> Html msg
+viewFruit attrs args =
     View.Block.withContent
         ([ Html.Style.topPx (args.entity.y * View.Field.size)
          , Html.Style.leftPx (args.entity.x * View.Field.size)
@@ -44,4 +44,5 @@ viewFruit args =
                             )
                         |> Maybe.withDefault []
                )
+            ++ attrs
         )
