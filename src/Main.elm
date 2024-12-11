@@ -515,6 +515,46 @@ click pos model =
                 )
 
 
+swipe : { from : ( Int, Int ), to : ( Int, Int ) } -> Model -> Maybe ( Int, Int )
+swipe args model =
+    let
+        ( fromX, fromY ) =
+            args.from
+
+        ( toX, toY ) =
+            args.to
+
+        rec ( x, y ) ( stepX, stepY ) =
+            if x < 0 || y < 0 || x >= 6 || y >= 6 then
+                Nothing
+
+            else
+                case Level.getBlockAt ( x + stepX, y + stepY ) model.level of
+                    Just _ ->
+                        Just ( x + stepX, y + stepY )
+
+                    Nothing ->
+                        rec ( x + stepX, y + stepY ) ( stepX, stepY )
+    in
+    if abs (fromX - toX) > abs (fromY - toY) then
+        rec args.from
+            (if (toX - fromX) < 0 then
+                ( -1, 0 )
+
+             else
+                ( 1, 0 )
+            )
+
+    else
+        rec args.from
+            (if (toY - fromY) < 0 then
+                ( 0, -1 )
+
+             else
+                ( 0, 1 )
+            )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -533,7 +573,17 @@ update msg model =
                 |> Maybe.map
                     (\from ->
                         if from /= to then
-                            click to { model | pointer = Nothing }
+                            swipe
+                                { from = from
+                                , to = to
+                                }
+                                model
+                                |> Maybe.map
+                                    (\pos ->
+                                        click pos
+                                            { model | pointer = Nothing }
+                                    )
+                                |> Maybe.withDefault ( model, Cmd.none )
 
                         else
                             ( model, Cmd.none )

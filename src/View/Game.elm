@@ -183,8 +183,8 @@ viewGame args =
                     in
                     args.onPointerUp (calcCell ( relX, relY ))
                 )
-            , Html.Style.widthPx (8 * View.Field.size)
-            , Html.Style.heightPx (8 * View.Field.size)
+            , Html.Style.widthPx (6 * View.Field.size)
+            , Html.Style.heightPx (6 * View.Field.size)
             , Html.Style.topPx 0
             , Html.Style.leftPx 0
             , Html.Style.pointerEventsAll
