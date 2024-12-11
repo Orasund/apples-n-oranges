@@ -1,4 +1,4 @@
-module ItemBag exposing (..)
+module Data.ItemBag exposing (..)
 
 import Data.Block exposing (Block(..), Item)
 import Dict exposing (Dict)

@@ -2,11 +2,11 @@ module Main exposing (main)
 
 import Browser
 import Data.Block exposing (Block(..), Item(..), Optional(..))
+import Data.ItemBag exposing (ItemBag)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Style
-import ItemBag exposing (ItemBag)
 import Level exposing (CoinId, Level, Puzzle)
 import Maths
 import Process
@@ -14,14 +14,12 @@ import Puzzle.Builder exposing (Group(..))
 import Puzzle.Setting exposing (Event)
 import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
+import Screen.Game
 import Screen.Menu exposing (MenuTab(..), Trade)
 import Set
 import Stylesheet
 import Task
 import View.Background
-import View.Button
-import View.Field
-import View.Level
 
 
 type alias Random a =
@@ -107,38 +105,38 @@ loadPuzzle : Puzzle -> Model -> Random Model
 loadPuzzle puzzle model =
     List.foldl
         (\( pos, fruit ) ->
-            Random.map (addBlock pos fruit)
+            Random.map (Level.addBlock pos fruit)
         )
-        ({ model
-            | items =
-                ItemBag.toList model.items
-                    |> List.foldl
-                        (\( item, positions ) args ->
-                            let
-                                n =
-                                    Set.size positions
-                            in
-                            { positions = List.drop n args.positions
-                            , out = ( item, List.take n args.positions ) :: args.out
-                            }
-                        )
-                        { positions = Set.toList puzzle.solids
-                        , out = []
-                        }
-                    |> .out
-                    |> ItemBag.fromList
-         }
+        (model.level
+            |> Level.clear
+            |> Level.setSolids puzzle.solids
             |> Random.constant
         )
         puzzle.blocks
-
-
-clearHistory : Model -> Model
-clearHistory model =
-    { model
-        | level = Level.clear model.level
-        , history = []
-    }
+        |> Random.map
+            (\level ->
+                { model
+                    | level = level
+                    , history = []
+                    , items =
+                        Data.ItemBag.toList model.items
+                            |> List.foldl
+                                (\( item, positions ) args ->
+                                    let
+                                        n =
+                                            Set.size positions
+                                    in
+                                    { positions = List.drop n args.positions
+                                    , out = ( item, List.take n args.positions ) :: args.out
+                                    }
+                                )
+                                { positions = Set.toList puzzle.solids
+                                , out = []
+                                }
+                            |> .out
+                            |> Data.ItemBag.fromList
+                }
+            )
 
 
 loadNextLevel : Model -> Random Model
@@ -151,14 +149,13 @@ loadNextLevel model =
                         |> List.map (\( a, b ) -> Pair a b)
                 , solids =
                     model.items
-                        |> ItemBag.toList
+                        |> Data.ItemBag.toList
                         |> List.map (\( _, set ) -> Set.size set)
                         |> List.sum
                 }
                 |> Random.andThen
                     (\puzzle ->
                         model
-                            |> clearHistory
                             |> loadPuzzle puzzle
                     )
 
@@ -271,7 +268,7 @@ increaseDifficulty model =
 
 addItem : Item -> Model -> Model
 addItem item model =
-    { model | items = model.items |> ItemBag.insert ( -1, -1 ) item }
+    { model | items = model.items |> Data.ItemBag.insert ( -1, -1 ) item }
 
 
 removeItem : Item -> Model -> Model
@@ -279,7 +276,7 @@ removeItem item model =
     { model
         | items =
             model.items
-                |> ItemBag.remove item
+                |> Data.ItemBag.remove item
                 |> Maybe.map Tuple.first
                 |> Maybe.withDefault model.items
     }
@@ -290,10 +287,10 @@ replaceItem args model =
     { model
         | items =
             model.items
-                |> ItemBag.remove args.from
+                |> Data.ItemBag.remove args.from
                 |> Maybe.map
                     (\( items, pos ) ->
-                        items |> ItemBag.insert pos args.to
+                        items |> Data.ItemBag.insert pos args.to
                     )
                 |> Maybe.withDefault model.items
     }
@@ -371,7 +368,7 @@ init () =
                   , trader = "👨🏼 Rick"
                   }
                 ]
-            , items = ItemBag.empty
+            , items = Data.ItemBag.empty
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
             }
@@ -381,13 +378,6 @@ init () =
         |> applyGenerator seed
     , Random.generate SetSeed Random.independentSeed
     )
-
-
-addBlock : ( Int, Int ) -> Block -> Model -> Model
-addBlock ( x, y ) block model =
-    model.level
-        |> Level.addBlock ( x, y ) block
-        |> (\level -> { model | level = level })
 
 
 join : ( Int, Int ) -> ( Int, Int ) -> Model -> Maybe Model
@@ -537,7 +527,10 @@ swipe args model =
                     Nothing ->
                         rec ( x + stepX, y + stepY ) ( stepX, stepY )
     in
-    if abs (fromX - toX) > abs (fromY - toY) then
+    if max (abs (fromX - toX)) (abs (fromY - toY)) < 0.25 then
+        Nothing
+
+    else if abs (fromX - toX) > abs (fromY - toY) then
         rec args.from
             (if (toX - fromX) < 0 then
                 ( -1, 0 )
@@ -702,49 +695,16 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    [ [ Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.alignItemsEnd
-            , Html.Style.justifyContentCenter
-            , Html.Style.gapPx 4
-            , Html.Style.width "100%"
-            ]
-            [ View.Button.toHtml []
-                { label = "Menu"
-                , onPress = OpenCalender
-                }
-                |> List.singleton
-                |> Html.div
-                    [ Html.Style.flex "1"
-                    , Html.Style.displayFlex
-                    ]
-            ]
-      , View.Level.viewGame
-            { game = model.level
-            , items = model.items
-            , onPointerDown = PointerDown
-            , onPointerUp = PointerUp
-            , onPointerEnd = PointerEnd
-            , zero = model.pointerZero
-            }
-      , View.Button.toHtml []
-            { label = "Undo"
-            , onPress = Undo
-            }
-            |> List.singleton
-            |> Html.div
-                [ Html.Style.flex "1"
-                , Html.Style.displayFlex
-                , Html.Style.justifyContentCenter
-                ]
-      ]
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.gapPx 16
-            , Html.Style.widthPx (View.Field.size * 6)
-            , Html.Style.positionRelative
-            ]
+    [ Screen.Game.toHtml
+        { items = model.items
+        , level = model.level
+        , pointerZero = model.pointerZero
+        , onOpenMenu = OpenCalender
+        , onPointerDown = PointerDown
+        , onPointerEnd = PointerEnd
+        , onPointerUp = PointerUp
+        , onUndo = Undo
+        }
     , case model.menu of
         CalenderTab ->
             Screen.Menu.calender

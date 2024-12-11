@@ -83,6 +83,11 @@ newEntity ( x, y ) =
     }
 
 
+setSolids : Set ( Int, Int ) -> Level -> Level
+setSolids list level =
+    { level | solids = list }
+
+
 addBlock : ( Int, Int ) -> Block -> Level -> Level
 addBlock ( x, y ) block game =
     let
@@ -140,14 +145,14 @@ isValidPair : ( Int, Int ) -> ( Int, Int ) -> Level -> Bool
 isValidPair ( x1, y1 ) ( x2, y2 ) game =
     let
         isNotSolid pos =
-            Dict.member pos game.fields
-                || Set.member pos game.solids
+            not (Dict.member pos game.fields)
+                && not (Set.member pos game.solids)
     in
     (((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
                 |> List.all
                     (\y ->
-                        isNotSolid ( x1, y ) |> not
+                        isNotSolid ( x1, y )
                     )
            )
      )
@@ -155,7 +160,7 @@ isValidPair ( x1, y1 ) ( x2, y2 ) game =
                 && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
                             (\x ->
-                                isNotSolid ( x, y1 ) |> not
+                                isNotSolid ( x, y1 )
                             )
                    )
            )

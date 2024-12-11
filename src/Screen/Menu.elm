@@ -1,10 +1,10 @@
 module Screen.Menu exposing (..)
 
 import Data.Block exposing (Block(..), Item)
+import Data.ItemBag exposing (ItemBag)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
-import ItemBag exposing (ItemBag)
 import Puzzle.Setting exposing (Event)
 import View.Background
 import View.Block
@@ -63,7 +63,7 @@ market args =
                     |> Html.div [ Html.Style.fontSizePx 50 ]
                 , if
                     trade.remove
-                        |> List.all (\( item, n ) -> ItemBag.contains n item args.items)
+                        |> List.all (\( item, n ) -> Data.ItemBag.contains n item args.items)
                   then
                     View.Button.withIcons [ View.Button.primary ]
                         { label = "Trade"

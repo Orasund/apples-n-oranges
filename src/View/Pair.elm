@@ -1,4 +1,4 @@
-module View.Coin exposing (..)
+module View.Pair exposing (..)
 
 import Data.Block exposing (Block)
 import Html exposing (Attribute, Html)

@@ -165,18 +165,18 @@ isValidPair : Builder -> ( Int, Int ) -> ( Int, Int ) -> Bool
 isValidPair builder ( x1, y1 ) ( x2, y2 ) =
     let
         isNotSolid pos =
-            Dict.member pos builder.blocks
-                || Set.member pos builder.solids
+            not (Dict.member pos builder.blocks)
+                && not (Set.member pos builder.solids)
     in
     ((x1 == x2)
         && (List.range (min y1 y2 + 1) (max y1 y2 - 1)
-                |> List.all (\y -> isNotSolid ( x1, y ) |> not)
+                |> List.all (\y -> isNotSolid ( x1, y ))
            )
     )
         || ((y1 == y2)
                 && (List.range (min x1 x2 + 1) (max x1 x2 - 1)
                         |> List.all
-                            (\x -> isNotSolid ( x, y1 ) |> not)
+                            (\x -> isNotSolid ( x, y1 ))
                    )
            )
 

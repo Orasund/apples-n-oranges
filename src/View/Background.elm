@@ -53,11 +53,11 @@ endOfDay attrs =
             """
                 ++ View.Color.blue200
                 ++ """
-            "/><circle r="10" cx="25" cy="25" fill="
+            "/><circle r="20" cx="25" cy="25" fill="
             """
                 ++ View.Color.blue100
                 ++ """
-            "/><circle r="10" cx="75" cy="75" fill="
+            "/><circle r="20" cx="75" cy="75" fill="
             """
                 ++ View.Color.blue100
                 ++ """

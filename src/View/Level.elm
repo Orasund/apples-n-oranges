@@ -1,6 +1,7 @@
 module View.Level exposing (..)
 
 import Data.Block exposing (Block(..))
+import Data.ItemBag exposing (ItemBag)
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes
@@ -8,12 +9,11 @@ import Html.Events.Extra.Pointer as Pointer
 import Html.Events.Extra.Touch as Touch
 import Html.Keyed
 import Html.Style
-import ItemBag exposing (ItemBag)
 import Level exposing (Level)
 import Set
-import View.Coin
 import View.Field
 import View.Fruit
+import View.Pair
 
 
 noEvents : Attribute msg
@@ -26,7 +26,7 @@ calcCell ( x, y ) =
     ( x / View.Field.size, y / View.Field.size )
 
 
-viewGame :
+toHtml :
     { game : Level
     , items : ItemBag
     , onPointerDown : { pos : ( Float, Float ), offset : ( Float, Float ) } -> msg
@@ -35,7 +35,7 @@ viewGame :
     , zero : ( Float, Float )
     }
     -> Html msg
-viewGame args =
+toHtml args =
     [ [ View.Field.toHtml
             [ View.Field.light
             , noEvents
@@ -75,7 +75,7 @@ viewGame args =
                     )
                 )
         , args.items
-            |> ItemBag.toList
+            |> Data.ItemBag.toList
             |> List.concatMap
                 (\( item, set ) ->
                     set
@@ -103,7 +103,7 @@ viewGame args =
             |> List.map
                 (\( id, { entity, sort } ) ->
                     ( "pair_" ++ String.fromInt id
-                    , View.Coin.asBlock entity sort
+                    , View.Pair.asBlock entity sort
                     )
                 )
         ]
@@ -160,6 +160,7 @@ viewGame args =
                         { offset = ( absX - relX, absY - relY )
                         , pos = calcCell event.pointer.offsetPos
                         }
+                        |> Debug.log "down"
                 )
 
             --, Pointer.onMove (\event -> args.onPointerMove (calcCell event.pointer.offsetPos) |> Debug.log "move")
@@ -172,7 +173,6 @@ viewGame args =
 
                         ( absX, absY ) =
                             event.changedTouches
-                                |> Debug.log "touchs"
                                 |> List.head
                                 |> Maybe.map (\touch -> touch.clientPos)
                                 |> Maybe.withDefault ( 0, 0 )
@@ -181,6 +181,7 @@ viewGame args =
                             ( absX - zeroX, absY - zeroY )
                     in
                     args.onPointerUp (calcCell ( relX, relY ))
+                        |> Debug.log "end"
                 )
             , Html.Style.widthPx (6 * View.Field.size)
             , Html.Style.heightPx (6 * View.Field.size)
