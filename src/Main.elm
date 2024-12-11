@@ -21,7 +21,7 @@ import Task
 import View.Background
 import View.Button
 import View.Field
-import View.Game
+import View.Level
 
 
 type alias Random a =
@@ -45,14 +45,14 @@ type alias Model =
     , year : Int
     , items : ItemBag
     , pointerZero : ( Float, Float )
-    , pointer : Maybe ( Int, Int )
+    , pointer : Maybe ( Float, Float )
     }
 
 
 type Msg
-    = PointerDown { pos : ( Int, Int ), offset : ( Float, Float ) }
-    | PointerMove ( Int, Int )
-    | PointerUp ( Int, Int )
+    = PointerDown { pos : ( Float, Float ), offset : ( Float, Float ) }
+    | PointerUp ( Float, Float )
+    | PointerEnd ( Float, Float )
     | ShowCoins (List CoinId)
     | Undo
     | EndDay
@@ -217,7 +217,7 @@ generateNextMonth model =
                                         (\setting ->
                                             { setting = setting
                                             , reward =
-                                                if modBy 7 i == 0 then
+                                                if i == 28 then
                                                     Coin |> Just
 
                                                 else
@@ -362,11 +362,11 @@ init () =
             , shop = False
             , year = 0
             , trades =
-                [ { remove = [ ( Coin, 3 ) ]
+                [ { remove = [ ( Coin, 2 ) ]
                   , add = BagOfCoins
                   , trader = "👩🏻 Alice"
                   }
-                , { remove = [ ( BagOfCoins, 3 ) ]
+                , { remove = [ ( BagOfCoins, 2 ) ]
                   , add = Diamand
                   , trader = "👨🏼 Rick"
                   }
@@ -515,7 +515,7 @@ click pos model =
                 )
 
 
-swipe : { from : ( Int, Int ), to : ( Int, Int ) } -> Model -> Maybe ( Int, Int )
+swipe : { from : ( Float, Float ), to : ( Float, Float ) } -> Model -> Maybe ( Int, Int )
 swipe args model =
     let
         ( fromX, fromY ) =
@@ -529,9 +529,10 @@ swipe args model =
                 Nothing
 
             else
-                case Level.getBlockAt ( x + stepX, y + stepY ) model.level of
+                case Level.getBlockAt ( x + stepX |> floor, y + stepY |> floor ) model.level of
                     Just _ ->
-                        Just ( x + stepX, y + stepY )
+                        ( x + stepX |> floor, y + stepY |> floor )
+                            |> Just
 
                     Nothing ->
                         rec ( x + stepX, y + stepY ) ( stepX, stepY )
@@ -559,34 +560,47 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PointerDown pointer ->
-            click pointer.pos
+            let
+                ( x, y ) =
+                    pointer.pos
+            in
+            click ( floor x, floor y )
                 { model
                     | pointerZero = pointer.offset
                     , pointer = Just pointer.pos
                 }
 
-        PointerMove pos ->
-            ( { model | pointer = Just pos }, Cmd.none )
-
         PointerUp to ->
             model.pointer
+                |> Maybe.andThen
+                    (\( x, y ) ->
+                        swipe
+                            { from = ( x, y )
+                            , to = to
+                            }
+                            model
+                            |> Maybe.map
+                                (\pos ->
+                                    click
+                                        pos
+                                        { model | pointer = Nothing }
+                                )
+                    )
+                |> Maybe.withDefault ( model, Cmd.none )
+
+        PointerEnd to ->
+            model.pointer
                 |> Maybe.map
-                    (\from ->
-                        if from /= to then
-                            swipe
-                                { from = from
+                    (\( x, y ) ->
+                        click
+                            (swipe
+                                { from = ( x, y )
                                 , to = to
                                 }
                                 model
-                                |> Maybe.map
-                                    (\pos ->
-                                        click pos
-                                            { model | pointer = Nothing }
-                                    )
-                                |> Maybe.withDefault ( model, Cmd.none )
-
-                        else
-                            ( model, Cmd.none )
+                                |> Maybe.withDefault ( floor x, floor y )
+                            )
+                            { model | pointer = Nothing }
                     )
                 |> Maybe.withDefault ( model, Cmd.none )
 
@@ -705,12 +719,12 @@ view model =
                     , Html.Style.displayFlex
                     ]
             ]
-      , View.Game.viewGame
+      , View.Level.viewGame
             { game = model.level
             , items = model.items
             , onPointerDown = PointerDown
-            , onPointerMove = PointerMove
             , onPointerUp = PointerUp
+            , onPointerEnd = PointerEnd
             , zero = model.pointerZero
             }
       , View.Button.toHtml []

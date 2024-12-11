@@ -1,4 +1,4 @@
-module View.Game exposing (..)
+module View.Level exposing (..)
 
 import Data.Block exposing (Block(..))
 import Dict
@@ -21,18 +21,17 @@ noEvents =
     Html.Attributes.class "no-events"
 
 
-calcCell : ( Float, Float ) -> ( Int, Int )
+calcCell : ( Float, Float ) -> ( Float, Float )
 calcCell ( x, y ) =
-    -- ( x |> floor, y |> floor )
-    ( x / View.Field.size |> floor, y / View.Field.size |> floor )
+    ( x / View.Field.size, y / View.Field.size )
 
 
 viewGame :
     { game : Level
     , items : ItemBag
-    , onPointerDown : { pos : ( Int, Int ), offset : ( Float, Float ) } -> msg
-    , onPointerMove : ( Int, Int ) -> msg
-    , onPointerUp : ( Int, Int ) -> msg
+    , onPointerDown : { pos : ( Float, Float ), offset : ( Float, Float ) } -> msg
+    , onPointerUp : ( Float, Float ) -> msg
+    , onPointerEnd : ( Float, Float ) -> msg
     , zero : ( Float, Float )
     }
     -> Html msg

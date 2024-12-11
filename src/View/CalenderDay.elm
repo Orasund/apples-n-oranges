@@ -14,39 +14,6 @@ eventToString event =
         |> Maybe.map Data.Block.toString
 
 
-stylingForEvent : Float -> Event -> List (Attribute msg)
-stylingForEvent calenderSize event =
-    case difficutlyOfEvent event of
-        0 ->
-            []
-
-        1 ->
-            []
-
-        2 ->
-            [ Html.Style.borderWidthPx (calenderSize * 0.1)
-            , Html.Style.borderStyleDouble
-            , Html.Style.borderColor "#ddd"
-            ]
-
-        3 ->
-            [ Html.Style.borderWidthPx (calenderSize * 0.1)
-            , Html.Style.borderStyleDouble
-            , Html.Style.borderColor "rgb(242 245 122)"
-            ]
-
-        _ ->
-            [ Html.Style.borderWidthPx (calenderSize * 0.1)
-            , Html.Style.borderStyleSolid
-            , Html.Style.borderColor "rgb(242 245 122)"
-            ]
-
-
-difficutlyOfEvent : Event -> Int
-difficutlyOfEvent event =
-    event.setting.difficulty
-
-
 calenderDay : { size : Float, day : Int } -> List (Attribute msg) -> Event -> Html msg
 calenderDay args attrs event =
     Html.div
@@ -62,7 +29,7 @@ calenderDay args attrs event =
             ++ attrs
         )
         [ "⭐"
-            |> List.repeat (difficutlyOfEvent event)
+            |> List.repeat event.setting.difficulty
             |> String.join " "
             |> Html.text
             |> List.singleton
@@ -81,14 +48,12 @@ calenderDay args attrs event =
             |> Html.text
             |> List.singleton
             |> Html.div
-                (stylingForEvent args.size event
-                    ++ [ Html.Style.displayFlex
-                       , Html.Style.justifyContentCenter
-                       , Html.Style.alignItemsCenter
-                       , Html.Style.height "100%"
-                       , Html.Style.boxSizingBorderBox
-                       , Html.Style.borderBottomLeftRadiusPx (args.size * 0.1)
-                       , Html.Style.borderBottomRightRadiusPx (args.size * 0.1)
-                       ]
-                )
+                [ Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
+                , Html.Style.alignItemsCenter
+                , Html.Style.height "100%"
+                , Html.Style.boxSizingBorderBox
+                , Html.Style.borderBottomLeftRadiusPx (args.size * 0.1)
+                , Html.Style.borderBottomRightRadiusPx (args.size * 0.1)
+                ]
         ]

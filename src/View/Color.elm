@@ -1,6 +1,10 @@
 module View.Color exposing (..)
 
 
+green100 =
+    "rgb(203 224 196)"
+
+
 green200 =
     "#b8d7ac"
 
@@ -17,12 +21,20 @@ green700 =
     "#399e5a"
 
 
+blue100 =
+    "rgb(203 214 255)"
+
+
 blue200 =
     "rgb(191 204 255)"
 
 
 blue300 =
     "rgb(171,188,246)"
+
+
+brown100 =
+    "rgb(225 222 214)"
 
 
 brown200 =
