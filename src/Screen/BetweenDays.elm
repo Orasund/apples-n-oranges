@@ -1,6 +1,7 @@
 module Screen.BetweenDays exposing (..)
 
 import Data.Block exposing (Block(..), Item)
+import Data.Date as Date exposing (Date)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Keyed
@@ -37,8 +38,8 @@ showFoundItem args =
 
 
 showCalenderDay :
-    { nextEvents : Dict Int Event
-    , day : Int
+    { nextEvents : Dict Date Event
+    , date : Date
     , show : Bool
     }
     -> Html msg
@@ -47,13 +48,13 @@ showCalenderDay args =
         calenderSize =
             300
     in
-    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString args.day) ]
-    , [ args.day, args.day + 1 ]
+    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Date.day args.date)) ]
+    , [ args.date, args.date |> Date.addDay ]
         |> List.map
-            (\i ->
+            (\date ->
                 args.nextEvents
-                    |> Dict.get i
-                    |> Maybe.map (\event -> ( i, event ))
+                    |> Dict.get date
+                    |> Maybe.map (\event -> ( Date.day date, event ))
                     |> Maybe.map List.singleton
                     |> Maybe.withDefault []
             )
@@ -66,7 +67,7 @@ showCalenderDay args =
                     , day = i
                     }
                     [ Html.Style.positionAbsolute
-                    , Html.Style.bottomPx (0 - toFloat (i - args.day) * (calenderSize + toFloat 64))
+                    , Html.Style.bottomPx (0 - toFloat (i - Date.day args.date) * (calenderSize + toFloat 64))
                     , Html.Style.transition "bottom 1s"
                     ]
                     event

@@ -40,9 +40,9 @@ toHtml attrs args =
             )
 
 
-fake : { label : String, onPress : msg } -> Html msg
-fake args =
-    args.label
+fake : String -> Html msg
+fake label =
+    label
         |> Html.text
         |> List.singleton
         |> Html.div

@@ -1,7 +1,9 @@
 module Screen.Menu exposing (..)
 
-import Data.Block exposing (Block(..), Item)
+import Data.Block exposing (Block(..), Item(..))
+import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
+import Data.Mail exposing (Mail)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
@@ -17,6 +19,7 @@ import View.DayOfTheWeek
 type MenuTab
     = CalenderTab
     | MarketTab
+    | MailTab
 
 
 type alias Trade =
@@ -24,6 +27,109 @@ type alias Trade =
     , add : Item
     , trader : String
     }
+
+
+messages :
+    { show : Bool
+    , mails : List Mail
+    , onClose : msg
+    , onAccept : Int -> msg
+    , onSelectTab : MenuTab -> msg
+    }
+    -> Html msg
+messages args =
+    args.mails
+        |> List.indexedMap
+            (\i mail ->
+                [ mail.sender
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.alignItemsCenter
+                        , Html.Style.justifyContentCenter
+                        , Html.Style.textAlignCenter
+                        , Html.Style.heightPx 50
+                        , Html.Style.aspectRatio "1"
+                        , Html.Style.borderRadius "100%"
+                        , Html.Style.backgroundColor View.Color.gray100
+                        ]
+                , [ [ mail.message
+                        |> Html.text
+                        |> List.singleton
+                        |> Html.div
+                            [ Html.Style.backgroundColor View.Color.gray100
+                            , Html.Style.paddingPx 8
+                            , Html.Style.borderRadiusPx 8
+                            ]
+                    ]
+                  , mail.request
+                        |> Maybe.map
+                            (\item ->
+                                [ [ ItemBlock item
+                                        |> Data.Block.toString
+                                        |> Html.text
+                                        |> List.singleton
+                                        |> Html.div
+                                            [ Html.Style.displayFlex
+                                            , Html.Style.justifyContentFlexEnd
+                                            , Html.Style.flex "1"
+                                            , Html.Style.fontSizePx 40
+                                            ]
+                                  , View.Button.toHtml []
+                                        { label = "Send"
+                                        , onPress = args.onAccept i
+                                        }
+                                  ]
+                                    |> Html.div
+                                        [ Html.Style.displayFlex
+                                        , Html.Style.alignItemsCenter
+                                        , Html.Style.justifyContentSpaceBetween
+                                        ]
+                                ]
+                            )
+                        |> Maybe.withDefault []
+                  , mail.present
+                        |> Maybe.map
+                            (\item ->
+                                [ [ ItemBlock item
+                                        |> Data.Block.toString
+                                        |> Html.text
+                                        |> List.singleton
+                                        |> Html.div [ Html.Style.fontSizePx 40 ]
+                                  , View.Button.toHtml []
+                                        { label = "Accept"
+                                        , onPress = args.onAccept i
+                                        }
+                                  ]
+                                    |> Html.div
+                                        [ Html.Style.displayFlex
+                                        , Html.Style.alignItemsCenter
+                                        , Html.Style.justifyContentSpaceBetween
+                                        ]
+                                ]
+                            )
+                        |> Maybe.withDefault []
+                  ]
+                    |> List.concat
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.flexDirectionColumn
+                        , Html.Style.gapPx 4
+                        ]
+                ]
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.flexDirectionRow
+                        , Html.Style.gapPx 8
+                        ]
+            )
+        |> toHtml
+            { show = args.show
+            , selected = MailTab
+            , onClose = args.onClose
+            , onSelectTab = args.onSelectTab
+            }
 
 
 market :
@@ -112,15 +218,14 @@ market args =
 
 calender :
     { show : Bool
-    , today : Int
-    , summer : Bool
-    , events : Dict Int Event
+    , date : Date
+    , events : Dict Date Event
     , onClose : msg
     , onSelectTab : MenuTab -> msg
     }
     -> Html msg
 calender args =
-    [ (if args.summer then
+    [ (if Date.summer args.date then
         "Summer"
 
        else
@@ -137,7 +242,7 @@ calender args =
             , Html.Style.borderTopLeftRadiusPx 8
             , Html.Style.borderTopRightRadiusPx 8
             , Html.Style.backgroundColor
-                (if args.summer then
+                (if Date.summer args.date then
                     View.Color.yellow300
 
                  else
@@ -156,18 +261,18 @@ calender args =
                             , Html.Style.borderBottom "1px solid black"
                             ]
                 )
-      , List.range 1 28
+      , Date.listOfDaysInMonth args.date
             |> List.map
-                (\n ->
-                    Dict.get n args.events
+                (\date ->
+                    Dict.get date args.events
                         |> Maybe.map
                             (\event ->
                                 [ View.CalenderDay.eventToString event
-                                    |> Maybe.withDefault (String.fromInt n)
+                                    |> Maybe.withDefault (Date.day date |> String.fromInt)
                                     |> Html.text
                                     |> List.singleton
                                     |> Html.div
-                                        (if n == args.today then
+                                        (if date == args.date then
                                             [ Html.Style.color "white"
                                             , View.Block.white
                                             ]
@@ -183,7 +288,7 @@ calender args =
                                          , Html.Style.aspectRatio "1"
                                          , Html.Style.fontSizePx 20
                                          ]
-                                            ++ (if n == args.today then
+                                            ++ (if date == args.date then
                                                     [ Html.Style.backgroundColor View.Color.red900
                                                     , Html.Style.fontWeightBold
                                                     ]
@@ -237,19 +342,20 @@ toHtml :
     -> Html msg
 toHtml args content =
     [ [ ( CalenderTab, "Calender" )
-      , ( MarketTab, "Market" )
+
+      -- , ( MarketTab, "Market" )
+      --, ( MailTab, "Messages" )
       ]
         |> List.map
             (\( tab, label ) ->
-                (if tab == args.selected then
-                    View.Button.fake
+                if tab == args.selected then
+                    View.Button.fake label
 
-                 else
+                else
                     View.Button.toHtml []
-                )
-                    { label = label
-                    , onPress = args.onSelectTab tab
-                    }
+                        { label = label
+                        , onPress = args.onSelectTab tab
+                        }
             )
         |> Html.div
             [ Html.Style.displayFlex

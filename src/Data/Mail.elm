@@ -1,6 +1,26 @@
-module Data.Message exposing (..)
+module Data.Mail exposing (..)
 
 import Array exposing (Array)
+import Data.Block exposing (Item)
+
+
+type alias Mail =
+    { sender : String
+    , message : String
+    , request : Maybe Item
+    , present : Maybe Item
+    , accepted : Bool
+    }
+
+
+alice : String
+alice =
+    "👩🏻 Alice"
+
+
+rick : String
+rick =
+    "👨🏼 Rick"
 
 
 next : Int -> String

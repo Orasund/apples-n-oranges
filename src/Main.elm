@@ -2,7 +2,9 @@ module Main exposing (main)
 
 import Browser
 import Data.Block exposing (Block(..), Item(..), Optional(..))
+import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
+import Data.Mail exposing (Mail)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -29,18 +31,17 @@ type alias Random a =
 type alias Model =
     { level : Level
     , difficutly : Float
-    , day : Int
-    , nextEvents : Dict Int Event
+    , date : Date
+    , nextEvents : Dict Date Event
     , seed : Seed
     , history : List Level
     , betweenDays : BetweenDaysAction
     , showBetweenDays : Bool
     , menu : MenuTab
     , trades : List Trade
+    , mails : Dict Int Mail
     , showMenu : Bool
-    , summer : Bool
     , shop : Bool
-    , year : Int
     , items : ItemBag
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
@@ -67,6 +68,7 @@ type Msg
     | CloseCalender
     | DoNothing
     | SetMenuTab MenuTab
+    | AcceptMail Int
 
 
 setBetweenDays : BetweenDaysAction -> Model -> Model
@@ -98,7 +100,7 @@ closeShop model =
 
 nextDay : Model -> Model
 nextDay model =
-    { model | day = model.day + 1 }
+    { model | date = Date.addDay model.date }
 
 
 loadPuzzle : Puzzle -> Model -> Random Model
@@ -141,7 +143,7 @@ loadPuzzle puzzle model =
 
 loadNextLevel : Model -> Random Model
 loadNextLevel model =
-    case Dict.get model.day model.nextEvents of
+    case Dict.get model.date model.nextEvents of
         Just event ->
             Puzzle.Builder.generate
                 { pairs =
@@ -187,22 +189,22 @@ performThenPauseAndThen msg1 msg2 =
 generateNextMonth : Model -> Random Model
 generateNextMonth model =
     let
-        summer =
-            not model.summer
-
         randomSettingsGenerator =
-            List.range 1 28
+            Date.listOfDaysInMonth model.date
                 |> List.foldl
-                    (\i ->
+                    (\date ->
                         let
+                            i =
+                                Date.day date
+
                             difficulty =
-                                model.difficutly + toFloat i / 28
+                                model.difficutly + toFloat i / Date.daysInAMonth
                         in
                         Random.andThen
                             (\l ->
-                                (Puzzle.Setting.pick
+                                Puzzle.Setting.pick
                                     { difficulty = difficulty
-                                    , summer = summer
+                                    , summer = Date.summer date
                                     }
                                     (if modBy 7 i == 0 || modBy 7 i == 6 then
                                         Puzzle.Setting.specialSettings
@@ -212,16 +214,17 @@ generateNextMonth model =
                                     )
                                     |> Random.map
                                         (\setting ->
-                                            { setting = setting
-                                            , reward =
-                                                if i == 28 then
-                                                    Coin |> Just
+                                            ( date
+                                            , { setting = setting
+                                              , reward =
+                                                    if i == Date.daysInAMonth then
+                                                        Coin |> Just
 
-                                                else
-                                                    Nothing
-                                            }
+                                                    else
+                                                        Nothing
+                                              }
+                                            )
                                         )
-                                )
                                     |> Random.map (\s -> s :: l)
                             )
                     )
@@ -233,16 +236,7 @@ generateNextMonth model =
                 | nextEvents =
                     randomSettings
                         |> List.reverse
-                        |> List.indexedMap (\i event -> ( i + 1, event ))
                         |> Dict.fromList
-                , summer = summer
-                , day = 1
-                , year =
-                    if not model.summer then
-                        model.year + 1
-
-                    else
-                        model.year
             }
         )
         randomSettingsGenerator
@@ -262,7 +256,7 @@ increaseDifficulty : Model -> Model
 increaseDifficulty model =
     { model
         | difficutly =
-            model.difficutly + 1 / 28
+            model.difficutly + 1 / Date.daysInAMonth
     }
 
 
@@ -324,6 +318,16 @@ setMenuTab menuTab model =
     { model | menu = menuTab }
 
 
+acceptMail : Int -> Model -> Model
+acceptMail n model =
+    { model
+        | mails =
+            model.mails
+                |> Dict.update n
+                    (Maybe.map (\mail -> { mail | accepted = True }))
+    }
+
+
 
 {------------------------------------------------------------
  -
@@ -345,27 +349,41 @@ init () =
         model =
             { level = Level.empty { columns = 6, rows = 6 }
             , difficutly = 0
-            , day = 0
+            , date = Date.zero
             , nextEvents =
-                [ ( 0, { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
+                [ ( Date.zero, { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
                     |> Dict.fromList
             , history = []
             , seed = seed
-            , summer = False
             , betweenDays = ShowCalenderDay
             , showBetweenDays = False
             , menu = CalenderTab
+            , mails =
+                [ { sender = Data.Mail.alice
+                  , message = "Hi, could you help me rebuild by chicken pen?"
+                  , request = Just Coin
+                  , present = Nothing
+                  , accepted = False
+                  }
+                , { sender = Data.Mail.rick
+                  , message = "Thanks for your contribution to our community."
+                  , request = Nothing
+                  , present = Just Coin
+                  , accepted = False
+                  }
+                ]
+                    |> List.indexedMap Tuple.pair
+                    |> Dict.fromList
             , showMenu = False
             , shop = False
-            , year = 0
             , trades =
                 [ { remove = [ ( Coin, 2 ) ]
                   , add = BagOfCoins
-                  , trader = "👩🏻 Alice"
+                  , trader = Data.Mail.alice
                   }
                 , { remove = [ ( BagOfCoins, 2 ) ]
                   , add = Diamand
-                  , trader = "👨🏼 Rick"
+                  , trader = Data.Mail.rick
                   }
                 ]
             , items = Data.ItemBag.empty
@@ -455,7 +473,7 @@ endDay model =
                     StartDay
                 )
     in
-    case Dict.get model.day model.nextEvents of
+    case Dict.get model.date model.nextEvents of
         Just event ->
             ( model
                 |> setBetweenDays ShowNothing
@@ -689,6 +707,9 @@ update msg model =
         SetMenuTab menu ->
             ( model |> setMenuTab menu, Cmd.none )
 
+        AcceptMail i ->
+            ( model |> acceptMail i, Cmd.none )
+
         DoNothing ->
             ( model, Cmd.none )
 
@@ -709,9 +730,8 @@ view model =
         CalenderTab ->
             Screen.Menu.calender
                 { show = model.showMenu
-                , today = model.day
+                , date = model.date
                 , events = model.nextEvents
-                , summer = model.summer
                 , onSelectTab = SetMenuTab
                 , onClose = CloseCalender
                 }
@@ -725,11 +745,20 @@ view model =
                 , onSelectTab = SetMenuTab
                 , onClose = CloseCalender
                 }
+
+        MailTab ->
+            Screen.Menu.messages
+                { show = model.showMenu
+                , mails = model.mails |> Dict.values
+                , onAccept = AcceptMail
+                , onSelectTab = SetMenuTab
+                , onClose = CloseCalender
+                }
     , case model.betweenDays of
         ShowCalenderDay ->
             Screen.BetweenDays.showCalenderDay
                 { nextEvents = model.nextEvents
-                , day = model.day
+                , date = model.date
                 , show = model.showBetweenDays
                 }
 
