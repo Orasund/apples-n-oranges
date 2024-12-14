@@ -31,16 +31,17 @@ type alias Trade =
 
 messages :
     { show : Bool
-    , mails : List Mail
+    , mails : Dict Date Mail
     , onClose : msg
-    , onAccept : Int -> msg
+    , onAccept : Date -> msg
     , onSelectTab : MenuTab -> msg
     }
     -> Html msg
 messages args =
     args.mails
-        |> List.indexedMap
-            (\i mail ->
+        |> Dict.toList
+        |> List.map
+            (\( i, mail ) ->
                 [ mail.sender
                     |> Html.text
                     |> List.singleton
@@ -76,10 +77,14 @@ messages args =
                                             , Html.Style.flex "1"
                                             , Html.Style.fontSizePx 40
                                             ]
-                                  , View.Button.toHtml []
-                                        { label = "Send"
-                                        , onPress = args.onAccept i
-                                        }
+                                  , if mail.accepted then
+                                        Html.text "You will send the item at the end of the day"
+
+                                    else
+                                        View.Button.toHtml []
+                                            { label = "Send"
+                                            , onPress = args.onAccept i
+                                            }
                                   ]
                                     |> Html.div
                                         [ Html.Style.displayFlex
@@ -97,10 +102,14 @@ messages args =
                                         |> Html.text
                                         |> List.singleton
                                         |> Html.div [ Html.Style.fontSizePx 40 ]
-                                  , View.Button.toHtml []
-                                        { label = "Accept"
-                                        , onPress = args.onAccept i
-                                        }
+                                  , if mail.accepted then
+                                        Html.text "You will get the item at the end of the day"
+
+                                    else
+                                        View.Button.toHtml []
+                                            { label = "Accept"
+                                            , onPress = args.onAccept i
+                                            }
                                   ]
                                     |> Html.div
                                         [ Html.Style.displayFlex
@@ -344,7 +353,7 @@ toHtml args content =
     [ [ ( CalenderTab, "Calender" )
 
       -- , ( MarketTab, "Market" )
-      --, ( MailTab, "Messages" )
+      , ( MailTab, "Messages" )
       ]
         |> List.map
             (\( tab, label ) ->

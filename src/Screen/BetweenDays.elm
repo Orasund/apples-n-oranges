@@ -14,8 +14,10 @@ import View.DayOfTheWeek
 
 type BetweenDaysAction
     = ShowCalenderDay
+    | AdvanceCalenderDay
     | ShowNothing
-    | ShowFoundItem Item
+    | ShowItemAdded Item
+    | ShowItemRemoved Item
 
 
 showNothing : { show : Bool } -> Html msg
@@ -23,9 +25,23 @@ showNothing args =
     [] |> toHtml { show = args.show }
 
 
-showFoundItem : { show : Bool, item : Item } -> Html msg
-showFoundItem args =
-    [ "Found"
+showItemAdded : { show : Bool, item : Item } -> Html msg
+showItemAdded args =
+    [ "Added"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 75 ]
+    , Data.Block.toString (ItemBlock args.item)
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 200 ]
+    ]
+        |> toHtml { show = args.show }
+
+
+showItemRemoved : { show : Bool, item : Item } -> Html msg
+showItemRemoved args =
+    [ "Removed"
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 75 ]
@@ -49,7 +65,7 @@ showCalenderDay args =
             300
     in
     [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Date.day args.date)) ]
-    , [ args.date, args.date |> Date.addDay ]
+    , [ args.date, args.date |> Date.next ]
         |> List.map
             (\date ->
                 args.nextEvents

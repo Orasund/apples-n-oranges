@@ -35,11 +35,11 @@ type alias Model =
     , nextEvents : Dict Date Event
     , seed : Seed
     , history : List Level
-    , betweenDays : BetweenDaysAction
+    , betweenDays : List BetweenDaysAction
     , showBetweenDays : Bool
     , menu : MenuTab
     , trades : List Trade
-    , mails : Dict Int Mail
+    , mails : Dict Date Mail
     , showMenu : Bool
     , shop : Bool
     , items : ItemBag
@@ -56,24 +56,23 @@ type Msg
     | Undo
     | EndDay
     | SetSeed Seed
-    | NextDay
     | LoadNextLevel
     | SetBetweenDays BetweenDaysAction
     | StartDay
     | OpenShop
     | AcceptTrade Trade
     | CloseShop
-    | ApplyThenWait { now : Msg, wait : Float, andThen : Msg }
     | OpenCalender
     | CloseCalender
     | DoNothing
     | SetMenuTab MenuTab
-    | AcceptMail Int
+    | AcceptMail Date
+    | NextActionBetweenDays
 
 
-setBetweenDays : BetweenDaysAction -> Model -> Model
-setBetweenDays action model =
-    { model | betweenDays = action }
+addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
+addBetweenDaysActions list model =
+    { model | betweenDays = model.betweenDays ++ list }
 
 
 showBetweenDays : Model -> Model
@@ -100,7 +99,7 @@ closeShop model =
 
 nextDay : Model -> Model
 nextDay model =
-    { model | date = Date.addDay model.date }
+    { model | date = Date.next model.date }
 
 
 loadPuzzle : Puzzle -> Model -> Random Model
@@ -174,16 +173,6 @@ applyGenerator seed generator =
             Random.step generator seed
     in
     { model | seed = newSeed }
-
-
-performThenShortPauseAndThen : Msg -> Msg -> Msg
-performThenShortPauseAndThen msg1 msg2 =
-    ApplyThenWait { now = msg1, wait = 100, andThen = msg2 }
-
-
-performThenPauseAndThen : Msg -> Msg -> Msg
-performThenPauseAndThen msg1 msg2 =
-    ApplyThenWait { now = msg1, wait = 1000, andThen = msg2 }
 
 
 generateNextMonth : Model -> Random Model
@@ -318,7 +307,7 @@ setMenuTab menuTab model =
     { model | menu = menuTab }
 
 
-acceptMail : Int -> Model -> Model
+acceptMail : Date -> Model -> Model
 acceptMail n model =
     { model
         | mails =
@@ -355,24 +344,27 @@ init () =
                     |> Dict.fromList
             , history = []
             , seed = seed
-            , betweenDays = ShowCalenderDay
+            , betweenDays = []
             , showBetweenDays = False
             , menu = CalenderTab
             , mails =
-                [ { sender = Data.Mail.alice
-                  , message = "Hi, could you help me rebuild by chicken pen?"
-                  , request = Just Coin
-                  , present = Nothing
-                  , accepted = False
-                  }
-                , { sender = Data.Mail.rick
-                  , message = "Thanks for your contribution to our community."
-                  , request = Nothing
-                  , present = Just Coin
-                  , accepted = False
-                  }
+                [ ( Date.zero
+                  , { sender = Data.Mail.alice
+                    , message = "Hi, could you help me rebuild by chicken pen?"
+                    , request = Just Coin
+                    , present = Nothing
+                    , accepted = False
+                    }
+                  )
+                , ( Date.next Date.zero
+                  , { sender = Data.Mail.rick
+                    , message = "Thanks for your contribution to our community."
+                    , request = Nothing
+                    , present = Just Coin
+                    , accepted = False
+                    }
+                  )
                 ]
-                    |> List.indexedMap Tuple.pair
                     |> Dict.fromList
             , showMenu = False
             , shop = False
@@ -445,61 +437,56 @@ endTurn model =
                     )
     in
     ( model
-    , performThenShortPauseAndThen DoNothing
-        (performThenShortPauseAndThen
-            (ShowCoins
-                [ model.level.nextCoinId - 2
-                , model.level.nextCoinId - 1
-                ]
-            )
-            (if hasWon then
-                EndDay
+    , [ Process.sleep
+            100
+            |> Task.perform
+                (\() ->
+                    ShowCoins
+                        [ model.level.nextCoinId - 2
+                        , model.level.nextCoinId - 1
+                        ]
+                )
+      , Process.sleep
+            500
+            |> Task.perform
+                (\() ->
+                    if hasWon then
+                        EndDay
 
-             else
-                DoNothing
-            )
-        )
-        |> Task.succeed
-        |> Task.perform identity
+                    else
+                        DoNothing
+                )
+      ]
+        |> Cmd.batch
     )
 
 
-endDay : Model -> ( Model, Cmd Msg )
+endDay : Model -> Model
 endDay model =
-    let
-        showCalenderAndStartNextDay =
-            performThenPauseAndThen (SetBetweenDays ShowCalenderDay)
-                (performThenPauseAndThen LoadNextLevel
-                    StartDay
-                )
-    in
     case Dict.get model.date model.nextEvents of
         Just event ->
-            ( model
-                |> setBetweenDays ShowNothing
-                |> (event.reward
-                        |> Maybe.map (\block -> addItem block)
-                        |> Maybe.withDefault identity
-                   )
-                |> showBetweenDays
-            , (case event.reward of
-                Just item ->
-                    performThenPauseAndThen DoNothing
-                        (performThenPauseAndThen (SetBetweenDays (ShowFoundItem item))
-                            (performThenPauseAndThen DoNothing
-                                showCalenderAndStartNextDay
-                            )
-                        )
+            model
+                |> addBetweenDaysActions
+                    ([ [ ShowNothing ]
+                     , case event.reward of
+                        Just item ->
+                            [ ShowItemAdded item
+                            , ShowNothing
+                            ]
 
-                Nothing ->
-                    showCalenderAndStartNextDay
-              )
-                |> Task.succeed
-                |> Task.perform identity
-            )
+                        Nothing ->
+                            []
+                     , [ ShowCalenderDay
+                       , AdvanceCalenderDay
+                       , ShowCalenderDay
+                       ]
+                     ]
+                        |> List.concat
+                    )
+                |> showBetweenDays
 
         Nothing ->
-            ( model, Cmd.none )
+            model
 
 
 click : ( Int, Int ) -> Model -> ( Model, Cmd Msg )
@@ -565,6 +552,25 @@ swipe args model =
              else
                 ( 0, 1 )
             )
+
+
+applyAction : BetweenDaysAction -> Model -> Model
+applyAction action model =
+    case action of
+        ShowItemAdded item ->
+            addItem item model
+
+        ShowItemRemoved item ->
+            removeItem item model
+
+        AdvanceCalenderDay ->
+            model |> nextDay
+
+        ShowCalenderDay ->
+            model
+
+        ShowNothing ->
+            model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -638,24 +644,21 @@ update msg model =
             )
 
         EndDay ->
-            endDay model
+            ( model |> endDay
+            , NextActionBetweenDays
+                |> Task.succeed
+                |> Task.perform identity
+            )
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
 
         LoadNextLevel ->
-            model
-                |> nextDay
+            ( model
                 |> loadNextLevel
-                |> (\m ->
-                        ( m
-                            |> applyGenerator model.seed
-                        , Cmd.none
-                        )
-                   )
-
-        NextDay ->
-            ( nextDay model, Cmd.none )
+                |> applyGenerator model.seed
+            , Cmd.none
+            )
 
         StartDay ->
             ( model
@@ -684,17 +687,6 @@ update msg model =
             , Cmd.none
             )
 
-        ApplyThenWait args ->
-            update args.now model
-                |> Tuple.mapSecond
-                    (\cmd ->
-                        Cmd.batch
-                            [ cmd
-                            , Process.sleep args.wait
-                                |> Task.perform (\() -> args.andThen)
-                            ]
-                    )
-
         OpenCalender ->
             ( model |> showCalender, Cmd.none )
 
@@ -702,16 +694,49 @@ update msg model =
             ( model |> closeCalender, Cmd.none )
 
         SetBetweenDays action ->
-            ( model |> setBetweenDays action, Cmd.none )
+            ( model |> addBetweenDaysActions [ action ], Cmd.none )
 
         SetMenuTab menu ->
             ( model |> setMenuTab menu, Cmd.none )
 
         AcceptMail i ->
-            ( model |> acceptMail i, Cmd.none )
+            ( case Dict.get i model.mails of
+                Just mail ->
+                    model
+                        |> addBetweenDaysActions
+                            ([ --[ ShowNothing ]
+                               --,
+                               mail.present |> Maybe.map (\item -> [ ShowItemAdded item ]) |> Maybe.withDefault []
+                             , mail.request |> Maybe.map (\item -> [ ShowItemRemoved item ]) |> Maybe.withDefault []
+                             ]
+                                |> List.concat
+                            )
+                        |> acceptMail i
+
+                Nothing ->
+                    model
+            , Cmd.none
+            )
 
         DoNothing ->
             ( model, Cmd.none )
+
+        NextActionBetweenDays ->
+            case model.betweenDays of
+                [ _ ] ->
+                    ( { model | showBetweenDays = False }
+                        |> loadNextLevel
+                        |> applyGenerator model.seed
+                    , Process.sleep 1000 |> Task.perform (\() -> StartDay)
+                    )
+
+                head :: tail ->
+                    ( { model | betweenDays = tail } |> applyAction head
+                    , Process.sleep 1000 |> Task.perform (\() -> NextActionBetweenDays)
+                    )
+
+                [] ->
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -749,12 +774,12 @@ view model =
         MailTab ->
             Screen.Menu.messages
                 { show = model.showMenu
-                , mails = model.mails |> Dict.values
+                , mails = model.mails
                 , onAccept = AcceptMail
                 , onSelectTab = SetMenuTab
                 , onClose = CloseCalender
                 }
-    , case model.betweenDays of
+    , case model.betweenDays |> List.head |> Maybe.withDefault ShowNothing of
         ShowCalenderDay ->
             Screen.BetweenDays.showCalenderDay
                 { nextEvents = model.nextEvents
@@ -762,8 +787,21 @@ view model =
                 , show = model.showBetweenDays
                 }
 
-        ShowFoundItem item ->
-            Screen.BetweenDays.showFoundItem
+        AdvanceCalenderDay ->
+            Screen.BetweenDays.showCalenderDay
+                { nextEvents = model.nextEvents
+                , date = model.date
+                , show = model.showBetweenDays
+                }
+
+        ShowItemAdded item ->
+            Screen.BetweenDays.showItemAdded
+                { item = item
+                , show = model.showBetweenDays
+                }
+
+        ShowItemRemoved item ->
+            Screen.BetweenDays.showItemRemoved
                 { item = item
                 , show = model.showBetweenDays
                 }

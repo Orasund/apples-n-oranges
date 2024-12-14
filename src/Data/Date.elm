@@ -29,8 +29,8 @@ year ( i, _, _ ) =
     i
 
 
-addDay : Date -> Date
-addDay ( y, s, d ) =
+next : Date -> Date
+next ( y, s, d ) =
     if d == daysInAMonth then
         if s == 0 then
             ( y, 1, 1 )
