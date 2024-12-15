@@ -35,25 +35,35 @@ messages :
     , onClose : msg
     , onAccept : Date -> msg
     , onSelectTab : MenuTab -> msg
+    , items : ItemBag
     }
     -> Html msg
 messages args =
     args.mails
         |> Dict.toList
+        |> List.reverse
         |> List.map
             (\( i, mail ) ->
-                [ mail.sender
-                    |> Html.text
-                    |> List.singleton
+                [ [ mail.sender.symbol
+                        |> Html.text
+                        |> List.singleton
+                        |> Html.div
+                            [ Html.Style.displayFlex
+                            , Html.Style.alignItemsCenter
+                            , Html.Style.justifyContentCenter
+                            , Html.Style.heightPx 50
+                            , Html.Style.aspectRatio "1"
+                            , Html.Style.borderRadius "100%"
+                            , Html.Style.backgroundColor View.Color.gray100
+                            , Html.Style.fontSizePx 30
+                            ]
+                  , mail.sender.name |> Html.text
+                  ]
                     |> Html.div
                         [ Html.Style.displayFlex
+                        , Html.Style.flexDirectionColumn
                         , Html.Style.alignItemsCenter
-                        , Html.Style.justifyContentCenter
-                        , Html.Style.textAlignCenter
-                        , Html.Style.heightPx 50
-                        , Html.Style.aspectRatio "1"
-                        , Html.Style.borderRadius "100%"
-                        , Html.Style.backgroundColor View.Color.gray100
+                        , Html.Style.justifyContentStart
                         ]
                 , [ [ mail.message
                         |> Html.text
@@ -67,28 +77,35 @@ messages args =
                   , mail.request
                         |> Maybe.map
                             (\item ->
-                                [ [ ItemBlock item
-                                        |> Data.Block.toString
+                                [ [ mail.sender.symbol
+                                        ++ "⬅️"
+                                        ++ Data.Block.toString (ItemBlock item)
                                         |> Html.text
                                         |> List.singleton
                                         |> Html.div
-                                            [ Html.Style.displayFlex
-                                            , Html.Style.justifyContentFlexEnd
-                                            , Html.Style.flex "1"
-                                            , Html.Style.fontSizePx 40
+                                            [ Html.Style.flex "1"
+                                            , Html.Style.fontSizePx 20
                                             ]
                                   , if mail.accepted then
                                         Html.text "You will send the item at the end of the day"
+                                            |> List.singleton
+                                            |> Html.div [ Html.Style.flex "1" ]
 
-                                    else
-                                        View.Button.toHtml []
+                                    else if Data.ItemBag.contains 1 item args.items then
+                                        View.Button.toHtml
+                                            [ Html.Style.flex "1"
+                                            , Html.Style.justifyContentFlexEnd
+                                            ]
                                             { label = "Send"
                                             , onPress = args.onAccept i
                                             }
+
+                                    else
+                                        Html.text "Yo don't have the item"
                                   ]
                                     |> Html.div
                                         [ Html.Style.displayFlex
-                                        , Html.Style.alignItemsCenter
+                                        , Html.Style.alignItemsFlexStart
                                         , Html.Style.justifyContentSpaceBetween
                                         ]
                                 ]
@@ -97,23 +114,32 @@ messages args =
                   , mail.present
                         |> Maybe.map
                             (\item ->
-                                [ [ ItemBlock item
-                                        |> Data.Block.toString
+                                [ [ mail.sender.symbol
+                                        ++ "➡️"
+                                        ++ Data.Block.toString (ItemBlock item)
                                         |> Html.text
                                         |> List.singleton
-                                        |> Html.div [ Html.Style.fontSizePx 40 ]
+                                        |> Html.div
+                                            [ Html.Style.flex "1"
+                                            , Html.Style.fontSizePx 20
+                                            ]
                                   , if mail.accepted then
                                         Html.text "You will get the item at the end of the day"
+                                            |> List.singleton
+                                            |> Html.div [ Html.Style.flex "1" ]
 
                                     else
-                                        View.Button.toHtml []
+                                        View.Button.toHtml
+                                            [ Html.Style.flex "1"
+                                            , Html.Style.justifyContentFlexEnd
+                                            ]
                                             { label = "Accept"
                                             , onPress = args.onAccept i
                                             }
                                   ]
                                     |> Html.div
                                         [ Html.Style.displayFlex
-                                        , Html.Style.alignItemsCenter
+                                        , Html.Style.alignItemsFlexStart
                                         , Html.Style.justifyContentSpaceBetween
                                         ]
                                 ]
@@ -306,11 +332,27 @@ calender args =
                                                     []
                                                )
                                         )
-                                , (event.reward
-                                    |> Maybe.map (\item -> Data.Block.toString (ItemBlock item))
-                                    |> Maybe.withDefault ""
+                                , (if event.mail then
+                                    Html.div
+                                        [ Html.Style.widthPx 10
+                                        , Html.Style.aspectRatio "1"
+                                        , Html.Style.borderRadiusPx 5
+                                        , Html.Style.backgroundColor View.Color.blue300
+                                        ]
+                                        []
+
+                                   else if event.reward /= Nothing then
+                                    Html.div
+                                        [ Html.Style.widthPx 10
+                                        , Html.Style.aspectRatio "1"
+                                        , Html.Style.borderRadiusPx 5
+                                        , Html.Style.backgroundColor View.Color.yellow300
+                                        ]
+                                        []
+
+                                   else
+                                    Html.text ""
                                   )
-                                    |> Html.text
                                     |> List.singleton
                                     |> Html.div [ Html.Style.fontSizePx 8 ]
                                 ]
@@ -381,6 +423,7 @@ toHtml args content =
             , Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.gapPx 8
+            , Html.Style.overflowYScroll
             ]
     , View.Button.toHtml []
         { label = "Close"

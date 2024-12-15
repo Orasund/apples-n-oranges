@@ -3,6 +3,7 @@ module Puzzle.Builder exposing (Group(..), generate)
 import Data.Block exposing (Block(..), Item(..), Organic(..))
 import Dict exposing (Dict)
 import Level exposing (Puzzle, isValidPair)
+import Maths
 import Random exposing (Generator)
 import Set exposing (Set)
 
@@ -78,7 +79,7 @@ addSolids : Int -> Builder -> Random Builder
 addSolids n builder =
     builder.remainingPositions
         |> Set.toList
-        |> shuffle
+        |> Maths.shuffle
         |> Random.map
             (\list ->
                 { builder
@@ -189,16 +190,3 @@ randomFromList list =
 
         [] ->
             Nothing
-
-
-shuffle : List a -> Random (List a)
-shuffle list =
-    Random.list (List.length list) (Random.float 0 1)
-        |> Random.map
-            (\randomList ->
-                List.map2 Tuple.pair
-                    list
-                    randomList
-                    |> List.sortBy Tuple.second
-                    |> List.map Tuple.first
-            )

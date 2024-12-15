@@ -3,7 +3,7 @@ module Screen.BetweenDays exposing (..)
 import Data.Block exposing (Block(..), Item)
 import Data.Date as Date exposing (Date)
 import Dict exposing (Dict)
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Keyed
 import Html.Style
 import Puzzle.Setting exposing (Event)
@@ -18,14 +18,29 @@ type BetweenDaysAction
     | ShowNothing
     | ShowItemAdded Item
     | ShowItemRemoved Item
+    | ShowMail
 
 
-showNothing : { show : Bool } -> Html msg
-showNothing args =
-    [] |> toHtml { show = args.show }
+showNothing : Html msg
+showNothing =
+    [] |> default []
 
 
-showItemAdded : { show : Bool, item : Item } -> Html msg
+showMail : Html msg
+showMail =
+    [ "You got Mail"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 50 ]
+    , "✉️"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 200 ]
+    ]
+        |> default []
+
+
+showItemAdded : { item : Item } -> Html msg
 showItemAdded args =
     [ "Added"
         |> Html.text
@@ -36,10 +51,10 @@ showItemAdded args =
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 200 ]
     ]
-        |> toHtml { show = args.show }
+        |> default []
 
 
-showItemRemoved : { show : Bool, item : Item } -> Html msg
+showItemRemoved : { item : Item } -> Html msg
 showItemRemoved args =
     [ "Removed"
         |> Html.text
@@ -50,13 +65,12 @@ showItemRemoved args =
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 200 ]
     ]
-        |> toHtml { show = args.show }
+        |> default []
 
 
 showCalenderDay :
     { nextEvents : Dict Date Event
     , date : Date
-    , show : Bool
     }
     -> Html msg
 showCalenderDay args =
@@ -98,11 +112,11 @@ showCalenderDay args =
             , Html.Style.positionRelative
             ]
     ]
-        |> toHtml { show = args.show }
+        |> default []
 
 
-toHtml : { show : Bool } -> List (Html msg) -> Html msg
-toHtml args content =
+default : List (Attribute msg) -> List (Html msg) -> Html msg
+default attrs content =
     content
         |> Html.div
             [ Html.Style.displayFlex
@@ -112,10 +126,27 @@ toHtml args content =
             ]
         |> List.singleton
         |> View.Background.endOfDay
+            ([ Html.Style.positionAbsolute
+             , Html.Style.height "100vh"
+             , Html.Style.width "100%"
+             , Html.Style.displayFlex
+             , Html.Style.justifyContentCenter
+             , Html.Style.alignItemsCenter
+             , Html.Style.overflowHidden
+             ]
+                ++ attrs
+            )
+
+
+toHtml : { show : Bool } -> List (Html msg) -> Html msg
+toHtml args content =
+    content
+        |> Html.div
             [ Html.Style.positionAbsolute
             , Html.Style.height "100vh"
             , Html.Style.width "100%"
             , Html.Style.transition "bottom 1s"
+            , Html.Style.leftPx 0
             , Html.Style.bottom
                 (if args.show then
                     "0vh"

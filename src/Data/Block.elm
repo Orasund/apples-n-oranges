@@ -18,6 +18,7 @@ type Item
     = Coin
     | BagOfCoins
     | Diamand
+    | Chick
 
 
 type Block
@@ -62,6 +63,9 @@ toString block =
 
         ItemBlock Diamand ->
             "💎"
+
+        ItemBlock Chick ->
+            "🐥"
 
         FishingRod ->
             "🎣"

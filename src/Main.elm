@@ -5,6 +5,7 @@ import Data.Block exposing (Block(..), Item(..), Optional(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
 import Data.Mail exposing (Mail)
+import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -35,6 +36,7 @@ type alias Model =
     , nextEvents : Dict Date Event
     , seed : Seed
     , history : List Level
+    , betweenDaysLast : BetweenDaysAction
     , betweenDays : List BetweenDaysAction
     , showBetweenDays : Bool
     , menu : MenuTab
@@ -43,6 +45,7 @@ type alias Model =
     , showMenu : Bool
     , shop : Bool
     , items : ItemBag
+    , peoples : Dict Int Person
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -211,6 +214,7 @@ generateNextMonth model =
 
                                                     else
                                                         Nothing
+                                              , mail = modBy 5 i == 0
                                               }
                                             )
                                         )
@@ -317,6 +321,33 @@ acceptMail n model =
     }
 
 
+addMail : Model -> Generator Model
+addMail model =
+    model.peoples
+        |> Dict.toList
+        |> Maths.shuffle
+        |> Random.map List.head
+        |> Random.map
+            (\maybe ->
+                maybe
+                    |> Maybe.andThen
+                        (\( id, person ) ->
+                            Data.Mail.next person
+                                |> Maybe.map
+                                    (\mail ->
+                                        { model
+                                            | mails = Dict.insert model.date mail model.mails
+                                            , peoples =
+                                                model.peoples
+                                                    |> Dict.insert id
+                                                        { person | progress = person.progress + 1 }
+                                        }
+                                    )
+                        )
+                    |> Maybe.withDefault model
+            )
+
+
 
 {------------------------------------------------------------
  -
@@ -340,47 +371,42 @@ init () =
             , difficutly = 0
             , date = Date.zero
             , nextEvents =
-                [ ( Date.zero, { setting = Puzzle.Setting.startingLevel, reward = Nothing } ) ]
-                    |> Dict.fromList
-            , history = []
-            , seed = seed
-            , betweenDays = []
-            , showBetweenDays = False
-            , menu = CalenderTab
-            , mails =
                 [ ( Date.zero
-                  , { sender = Data.Mail.alice
-                    , message = "Hi, could you help me rebuild by chicken pen?"
-                    , request = Just Coin
-                    , present = Nothing
-                    , accepted = False
-                    }
-                  )
-                , ( Date.next Date.zero
-                  , { sender = Data.Mail.rick
-                    , message = "Thanks for your contribution to our community."
-                    , request = Nothing
-                    , present = Just Coin
-                    , accepted = False
+                  , { setting = Puzzle.Setting.startingLevel
+                    , reward = Nothing
+                    , mail = False
                     }
                   )
                 ]
                     |> Dict.fromList
+            , history = []
+            , seed = seed
+            , betweenDaysLast = ShowNothing
+            , betweenDays = []
+            , showBetweenDays = False
+            , menu = CalenderTab
+            , mails = Dict.empty
             , showMenu = False
             , shop = False
             , trades =
                 [ { remove = [ ( Coin, 2 ) ]
                   , add = BagOfCoins
-                  , trader = Data.Mail.alice
+                  , trader = Data.Person.alice.name
                   }
                 , { remove = [ ( BagOfCoins, 2 ) ]
                   , add = Diamand
-                  , trader = Data.Mail.rick
+                  , trader = Data.Person.rick.name
                   }
                 ]
             , items = Data.ItemBag.empty
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
+            , peoples =
+                [ Data.Person.alice
+                , Data.Person.rick
+                ]
+                    |> List.indexedMap Tuple.pair
+                    |> Dict.fromList
             }
     in
     ( model
@@ -476,6 +502,11 @@ endDay model =
 
                         Nothing ->
                             []
+                     , if event.mail then
+                        [ ShowMail, ShowNothing ]
+
+                       else
+                        []
                      , [ ShowCalenderDay
                        , AdvanceCalenderDay
                        , ShowCalenderDay
@@ -565,6 +596,11 @@ applyAction action model =
 
         AdvanceCalenderDay ->
             model |> nextDay
+
+        ShowMail ->
+            model
+                |> addMail
+                |> applyGenerator model.seed
 
         ShowCalenderDay ->
             model
@@ -731,12 +767,48 @@ update msg model =
                     )
 
                 head :: tail ->
-                    ( { model | betweenDays = tail } |> applyAction head
+                    ( { model
+                        | betweenDaysLast = head
+                        , betweenDays = tail
+                      }
+                        |> applyAction head
                     , Process.sleep 1000 |> Task.perform (\() -> NextActionBetweenDays)
                     )
 
                 [] ->
                     ( model, Cmd.none )
+
+
+viewBetweenDays : BetweenDaysAction -> Model -> Html Msg
+viewBetweenDays action model =
+    case action of
+        ShowCalenderDay ->
+            Screen.BetweenDays.showCalenderDay
+                { nextEvents = model.nextEvents
+                , date = model.date
+                }
+
+        AdvanceCalenderDay ->
+            Screen.BetweenDays.showCalenderDay
+                { nextEvents = model.nextEvents
+                , date = model.date
+                }
+
+        ShowItemAdded item ->
+            Screen.BetweenDays.showItemAdded
+                { item = item
+                }
+
+        ShowItemRemoved item ->
+            Screen.BetweenDays.showItemRemoved
+                { item = item
+                }
+
+        ShowMail ->
+            Screen.BetweenDays.showMail
+
+        ShowNothing ->
+            Screen.BetweenDays.showNothing
 
 
 view : Model -> Html Msg
@@ -775,39 +847,19 @@ view model =
             Screen.Menu.messages
                 { show = model.showMenu
                 , mails = model.mails
+                , items = model.items
                 , onAccept = AcceptMail
                 , onSelectTab = SetMenuTab
                 , onClose = CloseCalender
                 }
-    , case model.betweenDays |> List.head |> Maybe.withDefault ShowNothing of
-        ShowCalenderDay ->
-            Screen.BetweenDays.showCalenderDay
-                { nextEvents = model.nextEvents
-                , date = model.date
-                , show = model.showBetweenDays
-                }
-
-        AdvanceCalenderDay ->
-            Screen.BetweenDays.showCalenderDay
-                { nextEvents = model.nextEvents
-                , date = model.date
-                , show = model.showBetweenDays
-                }
-
-        ShowItemAdded item ->
-            Screen.BetweenDays.showItemAdded
-                { item = item
-                , show = model.showBetweenDays
-                }
-
-        ShowItemRemoved item ->
-            Screen.BetweenDays.showItemRemoved
-                { item = item
-                , show = model.showBetweenDays
-                }
-
-        ShowNothing ->
-            Screen.BetweenDays.showNothing { show = model.showBetweenDays }
+    , viewBetweenDays
+        (model.betweenDays
+            |> List.head
+            |> Maybe.withDefault ShowNothing
+        )
+        model
+        |> List.singleton
+        |> Screen.BetweenDays.toHtml { show = model.showBetweenDays }
     , Stylesheet.stylesheet
     , Html.node "meta"
         [ Html.Attributes.name "viewport"

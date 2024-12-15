@@ -10,7 +10,10 @@ type alias Random a =
 
 
 type alias Event =
-    { setting : Setting, reward : Maybe Item }
+    { setting : Setting
+    , reward : Maybe Item
+    , mail : Bool
+    }
 
 
 type alias Setting =
