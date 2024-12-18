@@ -4,6 +4,7 @@ import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
 import Data.Mail exposing (Mail)
+import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
@@ -29,6 +30,65 @@ type alias Trade =
     }
 
 
+personBubble : Person -> Html msg
+personBubble person =
+    person.symbol
+        |> Html.text
+        |> List.singleton
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.alignItemsCenter
+            , Html.Style.justifyContentCenter
+            , Html.Style.heightPx 35
+            , Html.Style.aspectRatio "1"
+            , Html.Style.borderRadius "100%"
+            , Html.Style.backgroundColor View.Color.gray100
+            , Html.Style.fontSizePx 20
+            ]
+        |> List.singleton
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.alignItemsCenter
+            , Html.Style.justifyContentStart
+            ]
+
+
+attachment : { onAccept : msg } -> Mail -> Maybe (Html msg)
+attachment args mail =
+    mail.present
+        |> Maybe.map
+            (\item ->
+                [ Data.Block.toString (ItemBlock item)
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div
+                        [ Html.Style.fontSizePx 40
+                        ]
+                , if mail.accepted then
+                    Html.text "You will get the item at the end of the day"
+                        |> List.singleton
+                        |> Html.div []
+
+                  else
+                    View.Button.toHtml
+                        [ Html.Style.justifyContentFlexEnd
+                        ]
+                        { label = "Accept"
+                        , onPress = args.onAccept
+                        }
+                ]
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.alignItemsCenter
+                        , Html.Style.justifyContentSpaceBetween
+                        , Html.Style.backgroundColor View.Color.gray100
+                        , Html.Style.borderRadiusPx 8
+                        , Html.Style.paddingPx 8
+                        ]
+            )
+
+
 messages :
     { show : Bool
     , mails : Dict Date Mail
@@ -39,126 +99,81 @@ messages :
     }
     -> Html msg
 messages args =
-    args.mails
-        |> Dict.toList
-        |> List.reverse
-        |> List.map
-            (\( i, mail ) ->
-                [ [ mail.sender.symbol
+    let
+        viewMessage i mail =
+            [ personBubble mail.sender
+            , [ [ [ [ mail.sender.name
                         |> Html.text
                         |> List.singleton
-                        |> Html.div
-                            [ Html.Style.displayFlex
-                            , Html.Style.alignItemsCenter
-                            , Html.Style.justifyContentCenter
-                            , Html.Style.heightPx 50
-                            , Html.Style.aspectRatio "1"
-                            , Html.Style.borderRadius "100%"
-                            , Html.Style.backgroundColor View.Color.gray100
-                            , Html.Style.fontSizePx 30
-                            ]
-                  , mail.sender.name |> Html.text
-                  ]
-                    |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.flexDirectionColumn
-                        , Html.Style.alignItemsCenter
-                        , Html.Style.justifyContentStart
-                        ]
-                , [ [ mail.message
+                        |> Html.div [ Html.Style.fontWeightBold ]
+                    , mail.message
                         |> Html.text
                         |> List.singleton
-                        |> Html.div
-                            [ Html.Style.backgroundColor View.Color.gray100
-                            , Html.Style.paddingPx 8
-                            , Html.Style.borderRadiusPx 8
-                            ]
+                        |> Html.div []
                     ]
-                  , mail.request
-                        |> Maybe.map
-                            (\item ->
-                                [ [ mail.sender.symbol
-                                        ++ "⬅️"
-                                        ++ Data.Block.toString (ItemBlock item)
-                                        |> Html.text
-                                        |> List.singleton
-                                        |> Html.div
-                                            [ Html.Style.flex "1"
-                                            , Html.Style.fontSizePx 20
-                                            ]
-                                  , if mail.accepted then
-                                        Html.text "You will send the item at the end of the day"
-                                            |> List.singleton
-                                            |> Html.div [ Html.Style.flex "1" ]
-
-                                    else if Data.ItemBag.contains 1 item args.items then
-                                        View.Button.toHtml
-                                            [ Html.Style.flex "1"
-                                            , Html.Style.justifyContentFlexEnd
-                                            ]
-                                            { label = "Send"
-                                            , onPress = args.onAccept i
-                                            }
-
-                                    else
-                                        Html.text "Yo don't have the item"
-                                  ]
-                                    |> Html.div
-                                        [ Html.Style.displayFlex
-                                        , Html.Style.alignItemsFlexStart
-                                        , Html.Style.justifyContentSpaceBetween
-                                        ]
-                                ]
-                            )
-                        |> Maybe.withDefault []
-                  , mail.present
-                        |> Maybe.map
-                            (\item ->
-                                [ [ mail.sender.symbol
-                                        ++ "➡️"
-                                        ++ Data.Block.toString (ItemBlock item)
-                                        |> Html.text
-                                        |> List.singleton
-                                        |> Html.div
-                                            [ Html.Style.flex "1"
-                                            , Html.Style.fontSizePx 20
-                                            ]
-                                  , if mail.accepted then
-                                        Html.text "You will get the item at the end of the day"
-                                            |> List.singleton
-                                            |> Html.div [ Html.Style.flex "1" ]
-
-                                    else
-                                        View.Button.toHtml
-                                            [ Html.Style.flex "1"
-                                            , Html.Style.justifyContentFlexEnd
-                                            ]
-                                            { label = "Accept"
-                                            , onPress = args.onAccept i
-                                            }
-                                  ]
-                                    |> Html.div
-                                        [ Html.Style.displayFlex
-                                        , Html.Style.alignItemsFlexStart
-                                        , Html.Style.justifyContentSpaceBetween
-                                        ]
-                                ]
-                            )
+                  , attachment { onAccept = args.onAccept i } mail
+                        |> Maybe.map List.singleton
                         |> Maybe.withDefault []
                   ]
                     |> List.concat
                     |> Html.div
-                        [ Html.Style.displayFlex
+                        [ Html.Style.borderColor View.Color.gray100
+                        , Html.Style.borderStyleSolid
+                        , Html.Style.borderWidthPx 1
+                        , Html.Style.paddingPx 8
+                        , Html.Style.borderRadiusPx 8
+                        , Html.Style.displayFlex
                         , Html.Style.flexDirectionColumn
-                        , Html.Style.gapPx 4
-                        ]
-                ]
-                    |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.flexDirectionRow
                         , Html.Style.gapPx 8
                         ]
-            )
+                ]
+              , mail.request
+                    |> Maybe.map
+                        (\item ->
+                            [ [ if mail.accepted then
+                                    Html.text "You will send the item at the end of the day"
+                                        |> List.singleton
+                                        |> Html.div [ Html.Style.flex "1" ]
+
+                                else if Data.ItemBag.contains 1 item args.items then
+                                    View.Button.withIcons
+                                        [ Html.Style.flex "1"
+                                        , Html.Style.justifyContentFlexEnd
+                                        ]
+                                        { label = "Send"
+                                        , onPress = args.onAccept i
+                                        }
+                                        (Data.Block.toString (ItemBlock item))
+
+                                else
+                                    Html.text "Yo don't have the item"
+                              ]
+                                |> Html.div
+                                    [ Html.Style.displayFlex
+                                    , Html.Style.alignItemsFlexStart
+                                    , Html.Style.justifyContentEnd
+                                    ]
+                            ]
+                        )
+                    |> Maybe.withDefault []
+              ]
+                |> List.concat
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.flexDirectionColumn
+                    , Html.Style.gapPx 4
+                    ]
+            ]
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.flexDirectionRow
+                    , Html.Style.gapPx 8
+                    ]
+    in
+    args.mails
+        |> Dict.toList
+        |> List.reverse
+        |> List.map (\( i, mail ) -> viewMessage i mail)
         |> toHtml
             { show = args.show
             , selected = MailTab

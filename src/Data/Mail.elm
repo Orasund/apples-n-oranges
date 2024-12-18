@@ -17,7 +17,7 @@ type alias Mail =
 ranger : Person -> Array Mail
 ranger person =
     [ { sender = person
-      , message = "Good Morning Neighbor, I'm " ++ person.name ++ " the hunter of our community. If you maybe have some spare to help the reforestation of our land, that would be great!"
+      , message = "Good Morning Neighbor, I'm " ++ person.name ++ ", the hunter of our community. Would you have some spare to help the reforestation of our land?"
       , request = Just Coin
       , present = Nothing
       , accepted = False
@@ -29,7 +29,7 @@ ranger person =
       , accepted = False
       }
     , { sender = person
-      , message = "You woun't be live it, but some chicks actually hatched! Do you some some?"
+      , message = "You woun't be live it, but some chicks actually hatched! Do you want some?"
       , request = Nothing
       , present = Just Chick
       , accepted = False

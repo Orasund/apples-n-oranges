@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Array
 import Browser
 import Data.Block exposing (Block(..), Item(..), Optional(..))
 import Data.Date as Date exposing (Date)
