@@ -385,7 +385,7 @@ init () =
             , betweenDaysLast = ShowNothing
             , betweenDays = []
             , showBetweenDays = False
-            , menu = CalenderTab
+            , menu = MailTab
             , mails = Dict.empty
             , showMenu = False
             , shop = False
@@ -817,6 +817,11 @@ view model =
     [ Screen.Game.toHtml
         { items = model.items
         , level = model.level
+        , showDot =
+            model.mails
+                |> Dict.toList
+                |> List.any
+                    (\( _, mail ) -> not mail.accepted)
         , pointerZero = model.pointerZero
         , onOpenMenu = OpenCalender
         , onPointerDown = PointerDown

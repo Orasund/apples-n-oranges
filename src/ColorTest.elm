@@ -55,7 +55,7 @@ main =
       , View.Color.gray600
       , View.Color.gray700
       , View.Color.gray800
-      , View.Color.gray900
+      , View.Color.blue900
       ]
     , [ View.Color.gray100
       , View.Color.gray200
@@ -74,8 +74,8 @@ main =
                     |> List.map
                         (\color ->
                             Html.div
-                                [ Html.Style.widthPx 100
-                                , Html.Style.heightPx 100
+                                [ Html.Style.widthPx 80
+                                , Html.Style.heightPx 80
                                 , Html.Style.backgroundColor color
                                 ]
                                 []

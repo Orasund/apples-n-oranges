@@ -19,6 +19,7 @@ type Item
     | BagOfCoins
     | Diamand
     | Chick
+    | Wood
 
 
 type Block
@@ -28,7 +29,7 @@ type Block
     | FishingRod
     | Pickaxe
     | Axe
-    | Wood
+    | Tree
 
 
 toString : Block -> String
@@ -67,6 +68,9 @@ toString block =
         ItemBlock Chick ->
             "🐥"
 
+        ItemBlock Wood ->
+            "🪵"
+
         FishingRod ->
             "🎣"
 
@@ -76,8 +80,8 @@ toString block =
         Axe ->
             "🪓"
 
-        Wood ->
-            "🪵"
+        Tree ->
+            "🌳"
 
 
 isValidBlock : Block -> Block -> Bool
@@ -92,7 +96,7 @@ isValidBlock p1 p2 =
         _ ->
             [ ( Pickaxe, OptionalBlock Rock )
             , ( FishingRod, OptionalBlock Fish )
-            , ( Axe, Wood )
+            , ( Axe, Tree )
             ]
                 |> List.any
                     (\pair ->

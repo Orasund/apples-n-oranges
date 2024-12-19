@@ -69,7 +69,7 @@ stylesheet =
 
     .button-base {
         border-radius: 20px;
-        border-width: 0px;
+        border: 0px solid;
         padding: 8px 16px;
         height: 40px;
         font-size: 16px;
@@ -92,6 +92,9 @@ stylesheet =
         background-color: """
         ++ View.Color.red600
         ++ """;
+        border-color: """
+        ++ View.Color.red600
+        ++ """;
     }
 
     .button.primary-button:hover {
@@ -101,6 +104,9 @@ stylesheet =
         background-color: """
         ++ View.Color.red700
         ++ """;
+        border-color: """
+        ++ View.Color.red700
+        ++ """;
     }
 
     .button.primary-button:active {
@@ -108,6 +114,9 @@ stylesheet =
         ++ View.Color.white
         ++ """;
         background-color: """
+        ++ View.Color.red800
+        ++ """;
+        border-color: """
         ++ View.Color.red800
         ++ """;
     }
@@ -129,7 +138,10 @@ stylesheet =
         ++ View.Color.white
         ++ """;
         background-color: """
-        ++ View.Color.red600
+        ++ View.Color.red100
+        ++ """;
+        border-color: """
+        ++ View.Color.red100
         ++ """;
     }
     """

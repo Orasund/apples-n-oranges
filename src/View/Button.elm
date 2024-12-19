@@ -4,6 +4,7 @@ import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.Style
 import Layout
+import View.Color
 
 
 primary : Attribute msg
@@ -24,6 +25,30 @@ withIcons attrs args content =
                 { onPress = Just args.onPress, label = args.label }
                 ++ attrs
                 ++ [ Html.Attributes.class "button-base button" ]
+            )
+
+
+withDot : List (Attribute msg) -> { label : String, onPress : msg } -> Html msg
+withDot attrs args =
+    [ Html.div
+        [ Html.Style.heightPx 16
+        , Html.Style.aspectRatio "1"
+        , Html.Style.borderRadiusPx 8
+        , Html.Style.backgroundColor View.Color.red900
+        , Html.Style.positionAbsolute
+        , Html.Style.rightPx -4
+        , Html.Style.topPx -4
+        ]
+        []
+    , Html.text args.label
+    ]
+        |> Html.button
+            (Layout.asButton
+                { onPress = Just args.onPress, label = args.label }
+                ++ attrs
+                ++ [ Html.Attributes.class "button-base button"
+                   , Html.Style.positionRelative
+                   ]
             )
 
 

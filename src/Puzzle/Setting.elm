@@ -110,9 +110,9 @@ lemons args =
 woodAndStone : { difficulty : Int, summer : Bool } -> Setting
 woodAndStone args =
     template
-        { symbol = Wood |> Just
+        { symbol = Tree |> Just
         , difficulty = args.difficulty
-        , primary = ( Axe, Wood )
+        , primary = ( Axe, Tree )
         , secondary = ( Pickaxe, OptionalBlock Rock )
         }
 

@@ -63,16 +63,22 @@ attachment args mail =
                     |> Html.text
                     |> List.singleton
                     |> Html.div
-                        [ Html.Style.fontSizePx 40
+                        [ Html.Style.fontSizePx
+                            (if mail.accepted then
+                                20
+
+                             else
+                                40
+                            )
                         ]
                 , if mail.accepted then
-                    Html.text "You will get the item at the end of the day"
+                    Html.text "Accepted"
                         |> List.singleton
                         |> Html.div []
 
                   else
                     View.Button.toHtml
-                        [ Html.Style.justifyContentFlexEnd
+                        [ View.Button.primary
                         ]
                         { label = "Accept"
                         , onPress = args.onAccept
@@ -85,6 +91,49 @@ attachment args mail =
                         , Html.Style.backgroundColor View.Color.gray100
                         , Html.Style.borderRadiusPx 8
                         , Html.Style.paddingPx 8
+                        ]
+            )
+
+
+request : { onAccept : msg } -> Mail -> Maybe (Html msg)
+request args mail =
+    mail.request
+        |> Maybe.map
+            (\item ->
+                [ Data.Block.toString (ItemBlock item)
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div
+                        [ Html.Style.fontSizePx
+                            (if mail.accepted then
+                                20
+
+                             else
+                                40
+                            )
+                        ]
+                , if mail.accepted then
+                    Html.text "Sent"
+                        |> List.singleton
+                        |> Html.div []
+
+                  else
+                    View.Button.toHtml
+                        [ View.Button.primary
+                        ]
+                        { label = "Send"
+                        , onPress = args.onAccept
+                        }
+                ]
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.alignItemsCenter
+                        , Html.Style.justifyContentSpaceBetween
+                        , Html.Style.backgroundColor View.Color.red100
+                        , Html.Style.borderRadiusPx 8
+                        , Html.Style.paddingPx 8
+                        , Html.Style.alignSelfEnd
+                        , Html.Style.width "80%"
                         ]
             )
 
@@ -125,36 +174,11 @@ messages args =
                         , Html.Style.displayFlex
                         , Html.Style.flexDirectionColumn
                         , Html.Style.gapPx 8
+                        , Html.Style.width "80%"
                         ]
                 ]
-              , mail.request
-                    |> Maybe.map
-                        (\item ->
-                            [ [ if mail.accepted then
-                                    Html.text "You will send the item at the end of the day"
-                                        |> List.singleton
-                                        |> Html.div [ Html.Style.flex "1" ]
-
-                                else if Data.ItemBag.contains 1 item args.items then
-                                    View.Button.withIcons
-                                        [ Html.Style.flex "1"
-                                        , Html.Style.justifyContentFlexEnd
-                                        ]
-                                        { label = "Send"
-                                        , onPress = args.onAccept i
-                                        }
-                                        (Data.Block.toString (ItemBlock item))
-
-                                else
-                                    Html.text "Yo don't have the item"
-                              ]
-                                |> Html.div
-                                    [ Html.Style.displayFlex
-                                    , Html.Style.alignItemsFlexStart
-                                    , Html.Style.justifyContentEnd
-                                    ]
-                            ]
-                        )
+              , request { onAccept = args.onAccept i } mail
+                    |> Maybe.map List.singleton
                     |> Maybe.withDefault []
               ]
                 |> List.concat
@@ -336,7 +360,7 @@ calender args =
                                          , Html.Style.borderRadius "100%"
                                          , Html.Style.paddingPx 4
                                          , Html.Style.aspectRatio "1"
-                                         , Html.Style.fontSizePx 20
+                                         , Html.Style.fontSizePx 18
                                          ]
                                             ++ (if date == args.date then
                                                     [ Html.Style.backgroundColor View.Color.red900

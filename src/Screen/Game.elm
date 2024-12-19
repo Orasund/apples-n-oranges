@@ -12,6 +12,7 @@ import View.Level
 toHtml :
     { level : Level
     , items : ItemBag
+    , showDot : Bool
     , pointerZero : ( Float, Float )
     , onUndo : msg
     , onOpenMenu : msg
@@ -28,14 +29,21 @@ toHtml args =
         , Html.Style.gapPx 4
         , Html.Style.width "100%"
         ]
-        [ View.Button.toHtml []
-            { label = "Menu"
+        [ (if args.showDot then
+            View.Button.withDot
+
+           else
+            View.Button.toHtml
+          )
+            []
+            { label = "Messages"
             , onPress = args.onOpenMenu
             }
             |> List.singleton
             |> Html.div
                 [ Html.Style.flex "1"
                 , Html.Style.displayFlex
+                , Html.Style.justifyContentFlexEnd
                 ]
         ]
     , View.Level.toHtml
