@@ -845,8 +845,8 @@ view model =
         , showDot =
             model.messages
                 |> Dict.toList
-                |> List.any
-                    (\( _, mail ) -> not mail.accepted)
+                |> List.filter (\( _, mail ) -> not mail.accepted)
+                |> List.length
         , pointerZero = model.pointerZero
         , onOpenMenu = OpenCalender
         , onPointerDown = PointerDown

@@ -112,13 +112,13 @@ request args mail =
                                 40
                             )
                         ]
-                , if Data.ItemBag.contains 1 item args.items |> not then
-                    Html.text "You dont have the item"
+                , if mail.accepted then
+                    Html.text "Sent"
                         |> List.singleton
                         |> Html.div []
 
-                  else if mail.accepted then
-                    Html.text "Sent"
+                  else if Data.ItemBag.contains 1 item args.items |> not then
+                    Html.text "You dont have the item"
                         |> List.singleton
                         |> Html.div []
 
@@ -195,6 +195,7 @@ messages args =
                     [ Html.Style.displayFlex
                     , Html.Style.flexDirectionColumn
                     , Html.Style.gapPx 4
+                    , Html.Style.width "100%"
                     ]
             ]
                 |> Html.div

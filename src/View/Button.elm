@@ -28,7 +28,7 @@ withIcons attrs args content =
             )
 
 
-withDot : List (Attribute msg) -> { label : String, onPress : msg } -> Html msg
+withDot : List (Attribute msg) -> { label : String, onPress : msg, amount : Int } -> Html msg
 withDot attrs args =
     [ Html.div
         [ Html.Style.heightPx 16
@@ -38,8 +38,14 @@ withDot attrs args =
         , Html.Style.positionAbsolute
         , Html.Style.rightPx -4
         , Html.Style.topPx -4
+        , Html.Style.fontSizePx 10
+        , Html.Style.color View.Color.white
+        , Html.Style.boxSizingBorderBox
+        , Html.Style.displayFlex
+        , Html.Style.justifyContentCenter
+        , Html.Style.alignItemsCenter
         ]
-        []
+        [ Html.text (String.fromInt args.amount) ]
     , Html.text args.label
     ]
         |> Html.button
