@@ -1,8 +1,13 @@
-module Data.Mail exposing (..)
+module Data.Message exposing (..)
 
 import Array exposing (Array)
-import Data.Block exposing (Item(..))
+import Data.Block exposing (Block(..), Item(..))
 import Data.Person exposing (Job(..), Person)
+import Random exposing (Generator)
+
+
+type alias Random a =
+    Generator a
 
 
 type alias Mail =
@@ -76,3 +81,13 @@ ellen =
     , "Hello, It's me Ellen ;) The local rescue shelter asked if we could take care of a little cat. Would you be interested?"
     ]
         |> Array.fromList
+
+
+default : Item -> Person -> Mail
+default item person =
+    { sender = person
+    , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+    , request = Just item
+    , present = Nothing
+    , accepted = False
+    }

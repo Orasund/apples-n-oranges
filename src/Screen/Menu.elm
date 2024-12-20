@@ -3,7 +3,7 @@ module Screen.Menu exposing (..)
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Mail exposing (Mail)
+import Data.Message exposing (Mail)
 import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -95,7 +95,7 @@ attachment args mail =
             )
 
 
-request : { onAccept : msg } -> Mail -> Maybe (Html msg)
+request : { onAccept : msg, items : ItemBag } -> Mail -> Maybe (Html msg)
 request args mail =
     mail.request
         |> Maybe.map
@@ -112,7 +112,12 @@ request args mail =
                                 40
                             )
                         ]
-                , if mail.accepted then
+                , if Data.ItemBag.contains 1 item args.items |> not then
+                    Html.text "You dont have the item"
+                        |> List.singleton
+                        |> Html.div []
+
+                  else if mail.accepted then
                     Html.text "Sent"
                         |> List.singleton
                         |> Html.div []
@@ -177,7 +182,11 @@ messages args =
                         , Html.Style.width "80%"
                         ]
                 ]
-              , request { onAccept = args.onAccept i } mail
+              , request
+                    { onAccept = args.onAccept i
+                    , items = args.items
+                    }
+                    mail
                     |> Maybe.map List.singleton
                     |> Maybe.withDefault []
               ]

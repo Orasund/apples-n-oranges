@@ -2,6 +2,7 @@ module View.Field exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Style
+import Set exposing (Set)
 import View.Color
 
 
@@ -20,7 +21,7 @@ size =
     60
 
 
-toHtml : List (Attribute msg) -> { rows : Int, columns : Int } -> Html msg
+toHtml : List (Attribute msg) -> { rows : Int, columns : Int, holes : Set ( Int, Int ) } -> Html msg
 toHtml attrs args =
     List.range 0 (args.rows - 1)
         |> List.map
@@ -31,7 +32,10 @@ toHtml attrs args =
                             Html.div
                                 [ Html.Style.aspectRatio "1"
                                 , Html.Style.widthPx size
-                                , if x + y |> modBy 2 |> (==) 0 then
+                                , if Set.member ( x, y ) args.holes then
+                                    Html.Style.backgroundColor "transparent"
+
+                                  else if x + y |> modBy 2 |> (==) 0 then
                                     light
 
                                   else

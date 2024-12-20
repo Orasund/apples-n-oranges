@@ -1,11 +1,10 @@
 module Main exposing (main)
 
-import Array
 import Browser
 import Data.Block exposing (Block(..), Item(..), Optional(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Mail exposing (Mail)
+import Data.Message exposing (Mail)
 import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -42,7 +41,8 @@ type alias Model =
     , showBetweenDays : Bool
     , menu : MenuTab
     , trades : List Trade
-    , mails : Dict Date Mail
+    , messages : Dict Date Mail
+    , nextMessages : Dict String Mail
     , showMenu : Bool
     , shop : Bool
     , items : ItemBag
@@ -314,36 +314,50 @@ setMenuTab menuTab model =
 
 acceptMail : Date -> Model -> Model
 acceptMail n model =
-    { model
-        | mails =
-            model.mails
-                |> Dict.update n
-                    (Maybe.map (\mail -> { mail | accepted = True }))
-    }
+    model.messages
+        |> Dict.get n
+        |> Maybe.map
+            (\mail ->
+                let
+                    sender =
+                        mail.sender |> (\s -> { s | progress = s.progress + 1 })
+                in
+                { model
+                    | messages =
+                        model.messages
+                            |> Dict.insert n
+                                { mail | accepted = True }
+                    , nextMessages =
+                        model.nextMessages
+                            |> Dict.insert (Data.Person.jobToString mail.sender.job)
+                                (Data.Message.next sender
+                                    |> Maybe.withDefault (Data.Message.default Data.Block.Coin sender)
+                                )
+                }
+            )
+        |> Maybe.withDefault model
 
 
 addMail : Model -> Generator Model
 addMail model =
-    model.peoples
-        |> Dict.toList
+    model.nextMessages
+        |> Dict.values
         |> Maths.shuffle
         |> Random.map List.head
         |> Random.map
             (\maybe ->
                 maybe
-                    |> Maybe.andThen
-                        (\( id, person ) ->
-                            Data.Mail.next person
-                                |> Maybe.map
-                                    (\mail ->
-                                        { model
-                                            | mails = Dict.insert model.date mail model.mails
-                                            , peoples =
-                                                model.peoples
-                                                    |> Dict.insert id
-                                                        { person | progress = person.progress + 1 }
-                                        }
-                                    )
+                    |> Maybe.map
+                        (\mail ->
+                            { model
+                                | messages = Dict.insert model.date mail model.messages
+                                , nextMessages =
+                                    model.nextMessages
+                                        |> Dict.insert (Data.Person.jobToString mail.sender.job)
+                                            (Data.Message.next mail.sender
+                                                |> Maybe.withDefault (Data.Message.default Data.Block.Coin mail.sender)
+                                            )
+                            }
                         )
                     |> Maybe.withDefault model
             )
@@ -366,6 +380,11 @@ init () =
         seed =
             Random.initialSeed 42
 
+        people =
+            [ Data.Person.alice
+            , Data.Person.rick
+            ]
+
         model : Model
         model =
             { level = Level.empty { columns = 6, rows = 6 }
@@ -386,7 +405,17 @@ init () =
             , betweenDays = []
             , showBetweenDays = False
             , menu = MailTab
-            , mails = Dict.empty
+            , messages = Dict.empty
+            , nextMessages =
+                people
+                    |> List.map
+                        (\person ->
+                            ( Data.Person.jobToString person.job
+                            , Data.Message.next person
+                                |> Maybe.withDefault (Data.Message.default Data.Block.Coin person)
+                            )
+                        )
+                    |> Dict.fromList
             , showMenu = False
             , shop = False
             , trades =
@@ -403,9 +432,7 @@ init () =
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
             , peoples =
-                [ Data.Person.alice
-                , Data.Person.rick
-                ]
+                people
                     |> List.indexedMap Tuple.pair
                     |> Dict.fromList
             }
@@ -737,13 +764,11 @@ update msg model =
             ( model |> setMenuTab menu, Cmd.none )
 
         AcceptMail i ->
-            ( case Dict.get i model.mails of
+            ( case Dict.get i model.messages of
                 Just mail ->
                     model
                         |> addBetweenDaysActions
-                            ([ --[ ShowNothing ]
-                               --,
-                               mail.present |> Maybe.map (\item -> [ ShowItemAdded item ]) |> Maybe.withDefault []
+                            ([ mail.present |> Maybe.map (\item -> [ ShowItemAdded item ]) |> Maybe.withDefault []
                              , mail.request |> Maybe.map (\item -> [ ShowItemRemoved item ]) |> Maybe.withDefault []
                              ]
                                 |> List.concat
@@ -818,7 +843,7 @@ view model =
         { items = model.items
         , level = model.level
         , showDot =
-            model.mails
+            model.messages
                 |> Dict.toList
                 |> List.any
                     (\( _, mail ) -> not mail.accepted)
@@ -852,7 +877,7 @@ view model =
         MailTab ->
             Screen.Menu.messages
                 { show = model.showMenu
-                , mails = model.mails
+                , mails = model.messages
                 , items = model.items
                 , onAccept = AcceptMail
                 , onSelectTab = SetMenuTab

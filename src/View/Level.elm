@@ -37,11 +37,11 @@ toHtml :
     -> Html msg
 toHtml args =
     [ [ View.Field.toHtml
-            [ View.Field.light
-            , noEvents
+            [ noEvents
             ]
             { columns = args.game.columns
             , rows = args.game.rows
+            , holes = args.game.solids
             }
       , [ args.game.entities
             |> Dict.toList

@@ -30,3 +30,13 @@ rick =
     , job = Major
     , progress = 0
     }
+
+
+jobToString : Job -> String
+jobToString job =
+    case job of
+        Ranger ->
+            "Ranger"
+
+        Major ->
+            "Major"
