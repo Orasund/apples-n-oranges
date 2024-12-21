@@ -354,9 +354,7 @@ addMail model =
                                 , nextMessages =
                                     model.nextMessages
                                         |> Dict.insert (Data.Person.jobToString mail.sender.job)
-                                            (Data.Message.next mail.sender
-                                                |> Maybe.withDefault (Data.Message.default Data.Block.Coin mail.sender)
-                                            )
+                                            (Data.Message.default Data.Block.Coin mail.sender)
                             }
                         )
                     |> Maybe.withDefault model

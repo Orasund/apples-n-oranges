@@ -474,7 +474,10 @@ toHtml args content =
             , Html.Style.gapPx 8
             , Html.Style.overflowYScroll
             ]
-    , View.Button.toHtml []
+    , View.Button.toHtml
+        [ View.Button.primary
+        , Html.Style.fontSizePx 24
+        ]
         { label = "Close"
         , onPress = args.onClose
         }

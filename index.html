@@ -7546,10 +7546,7 @@ var $author$project$Main$addMail = function (model) {
 								nextMessages: A3(
 									$elm$core$Dict$insert,
 									$author$project$Data$Person$jobToString(mail.sender.job),
-									A2(
-										$elm$core$Maybe$withDefault,
-										A2($author$project$Data$Message$default, $author$project$Data$Block$Coin, mail.sender),
-										$author$project$Data$Message$next(mail.sender)),
+									A2($author$project$Data$Message$default, $author$project$Data$Block$Coin, mail.sender),
 									model.nextMessages)
 							});
 					},
@@ -8667,6 +8664,7 @@ var $Orasund$elm_html_style$Html$Style$overflowY = function (value) {
 };
 var $Orasund$elm_html_style$Html$Style$overflowYScroll = $Orasund$elm_html_style$Html$Style$overflowY('scroll');
 var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary-button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -8830,7 +8828,11 @@ var $author$project$Screen$Menu$toHtml = F2(
 					content),
 					A2(
 					$author$project$View$Button$toHtml,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$author$project$View$Button$primary,
+							$Orasund$elm_html_style$Html$Style$fontSizePx(24)
+						]),
 					{label: 'Close', onPress: args.onClose})
 				]));
 	});
@@ -9024,7 +9026,6 @@ var $Orasund$elm_html_style$Html$Style$flexWrap = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex-wrap', value);
 };
 var $Orasund$elm_html_style$Html$Style$flexWrapWrap = $Orasund$elm_html_style$Html$Style$flexWrap('wrap');
-var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary-button');
 var $author$project$View$Button$withIcons = F3(
 	function (attrs, args, content) {
 		return A2(
@@ -10147,7 +10148,11 @@ var $author$project$Screen$Game$toHtml = function (args) {
 				$elm$core$List$singleton(
 					A2(
 						$author$project$View$Button$toHtml,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$author$project$View$Button$primary,
+								$Orasund$elm_html_style$Html$Style$fontSizePx(24)
+							]),
 						{label: 'Undo', onPress: args.onUndo})))
 			]));
 };
