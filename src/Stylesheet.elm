@@ -21,6 +21,10 @@ stylesheet =
         font-family: serif, "NotoEmoji";
     }
 
+    html, body {
+        overscroll-behavior: contain;
+    }
+
     html {
         height: 100%
     }
