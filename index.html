@@ -6619,23 +6619,6 @@ var $author$project$Data$Date$listOfDaysInMonth = function (_v0) {
 		},
 		A2($elm$core$List$range, 1, $author$project$Data$Date$daysInAMonth));
 };
-var $elm$random$Random$map2 = F3(
-	function (func, _v0, _v1) {
-		var genA = _v0.a;
-		var genB = _v1.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v2 = genA(seed0);
-				var a = _v2.a;
-				var seed1 = _v2.b;
-				var _v3 = genB(seed1);
-				var b = _v3.a;
-				var seed2 = _v3.b;
-				return _Utils_Tuple2(
-					A2(func, a, b),
-					seed2);
-			});
-	});
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Data$Block$Coin = {$: 'Coin'};
 var $author$project$Puzzle$Setting$empty = {difficulty: 0, pairs: _List_Nil, reward: $author$project$Data$Block$Coin, symbol: $elm$core$Maybe$Nothing};
@@ -6807,19 +6790,17 @@ var $author$project$Main$generateNextMonth = function (model) {
 						function (s) {
 							return A2($elm$core$List$cons, s, l);
 						},
-						A3(
-							$elm$random$Random$map2,
-							F2(
-								function (rand01, setting) {
-									return _Utils_Tuple2(
-										date,
-										{
-											mail: !A2($elm$core$Basics$modBy, 6, i - (-1)),
-											reward: !A2($elm$core$Basics$modBy, 7, i),
-											setting: setting
-										});
-								}),
-							A2($elm$random$Random$int, 0, 3),
+						A2(
+							$elm$random$Random$map,
+							function (setting) {
+								return _Utils_Tuple2(
+									date,
+									{
+										mail: !A2($elm$core$Basics$modBy, 6, i - (-1)),
+										reward: !A2($elm$core$Basics$modBy, 7, i),
+										setting: setting
+									});
+							},
 							A2(
 								$author$project$Puzzle$Setting$pick,
 								{
@@ -7552,6 +7533,8 @@ var $author$project$Main$applyAction = F2(
 					$author$project$Main$addMail(model));
 			case 'ShowCalenderDay':
 				return model;
+			case 'ShowNothing':
+				return model;
 			default:
 				return model;
 		}
@@ -7928,6 +7911,7 @@ var $author$project$Main$closeShop = function (model) {
 var $author$project$Screen$BetweenDays$AdvanceCalenderDay = {$: 'AdvanceCalenderDay'};
 var $author$project$Screen$BetweenDays$ShowCalenderDay = {$: 'ShowCalenderDay'};
 var $author$project$Screen$BetweenDays$ShowMail = {$: 'ShowMail'};
+var $author$project$Screen$BetweenDays$ShowYear = {$: 'ShowYear'};
 var $author$project$Main$showBetweenDays = function (model) {
 	return _Utils_update(
 		model,
@@ -7951,7 +7935,10 @@ var $author$project$Main$endDay = function (model) {
 							]) : _List_Nil,
 							event.mail ? _List_fromArray(
 							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$ShowMail]) : _List_Nil,
-							_List_fromArray(
+							((!$author$project$Data$Date$summer(model.date)) && _Utils_eq(
+							$author$project$Data$Date$day(model.date),
+							$author$project$Data$Date$daysInAMonth)) ? _List_fromArray(
+							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowYear]) : _List_fromArray(
 							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowCalenderDay])
 						])),
 				model));
@@ -8784,6 +8771,10 @@ var $Orasund$elm_html_style$Html$Style$filter = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'filter', value);
 };
 var $author$project$View$Block$white = $Orasund$elm_html_style$Html$Style$filter('grayscale(1) brightness(3)');
+var $author$project$Data$Date$year = function (_v0) {
+	var i = _v0.a;
+	return i;
+};
 var $author$project$View$Color$yellow300 = '#f0f086';
 var $author$project$Screen$Menu$calender = function (args) {
 	return A2(
@@ -8795,9 +8786,9 @@ var $author$project$Screen$Menu$calender = function (args) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$Orasund$elm_html_style$Html$Style$fontSizePx(32),
 						$Orasund$elm_html_style$Html$Style$height('100%'),
 						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
 						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
 						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
 						$Orasund$elm_html_style$Html$Style$borderTopLeftRadiusPx(8),
@@ -8805,9 +8796,25 @@ var $author$project$Screen$Menu$calender = function (args) {
 						$Orasund$elm_html_style$Html$Style$backgroundColor(
 						$author$project$Data$Date$summer(args.date) ? $author$project$View$Color$yellow300 : $author$project$View$Color$blue300)
 					]),
-				$elm$core$List$singleton(
-					$elm$html$Html$text(
-						$author$project$Data$Date$summer(args.date) ? 'Summer' : 'Winter'))),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$fontSizePx(32)
+							]),
+						$elm$core$List$singleton(
+							$elm$html$Html$text(
+								$author$project$Data$Date$summer(args.date) ? 'Summer' : 'Winter'))),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						$elm$core$List$singleton(
+							$elm$html$Html$text(
+								'Year ' + $elm$core$String$fromInt(
+									$author$project$Data$Date$year(args.date) + 1))))
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -10365,6 +10372,31 @@ var $author$project$Screen$BetweenDays$showMail = A2(
 				$elm$html$Html$text('✉️')))
 		]));
 var $author$project$Screen$BetweenDays$showNothing = A2($author$project$Screen$BetweenDays$default, _List_Nil, _List_Nil);
+var $author$project$Screen$BetweenDays$showYear = function (args) {
+	return A2(
+		$author$project$Screen$BetweenDays$default,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$fontSizePx(75)
+					]),
+				$elm$core$List$singleton(
+					$elm$html$Html$text('Year'))),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$fontSizePx(200)
+					]),
+				$elm$core$List$singleton(
+					$elm$html$Html$text(
+						$elm$core$String$fromInt(args.year + 1))))
+			]));
+};
 var $author$project$Main$viewBetweenDays = F2(
 	function (action, model) {
 		switch (action.$) {
@@ -10384,8 +10416,13 @@ var $author$project$Main$viewBetweenDays = F2(
 					{item: item});
 			case 'ShowMail':
 				return $author$project$Screen$BetweenDays$showMail;
-			default:
+			case 'ShowNothing':
 				return $author$project$Screen$BetweenDays$showNothing;
+			default:
+				return $author$project$Screen$BetweenDays$showYear(
+					{
+						year: $author$project$Data$Date$year(model.date)
+					});
 		}
 	});
 var $author$project$Main$view = function (model) {

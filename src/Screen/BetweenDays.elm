@@ -19,6 +19,7 @@ type BetweenDaysAction
     | ShowItemAdded Item
     | ShowItemRemoved Item
     | ShowMail
+    | ShowYear
 
 
 showNothing : Html msg
@@ -61,6 +62,20 @@ showItemRemoved args =
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 75 ]
     , Data.Block.toString (ItemBlock args.item)
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 200 ]
+    ]
+        |> default []
+
+
+showYear : { year : Int } -> Html msg
+showYear args =
+    [ "Year"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 75 ]
+    , String.fromInt (args.year + 1)
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 200 ]

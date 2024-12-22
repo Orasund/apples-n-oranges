@@ -205,8 +205,8 @@ generateNextMonth model =
                                      else
                                         Puzzle.Setting.settings
                                     )
-                                    |> Random.map2
-                                        (\rand01 setting ->
+                                    |> Random.map
+                                        (\setting ->
                                             ( date
                                             , { setting = setting
                                               , reward = modBy 7 i == 0
@@ -214,7 +214,6 @@ generateNextMonth model =
                                               }
                                             )
                                         )
-                                        (Random.int 0 3)
                                     |> Random.map (\s -> s :: l)
                             )
                     )
@@ -527,10 +526,17 @@ endDay model =
 
                        else
                         []
-                     , [ ShowNothing
-                       , AdvanceCalenderDay
-                       , ShowCalenderDay
-                       ]
+                     , if not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
+                        [ ShowNothing
+                        , AdvanceCalenderDay
+                        , ShowYear
+                        ]
+
+                       else
+                        [ ShowNothing
+                        , AdvanceCalenderDay
+                        , ShowCalenderDay
+                        ]
                      ]
                         |> List.concat
                     )
@@ -626,6 +632,9 @@ applyAction action model =
             model
 
         ShowNothing ->
+            model
+
+        ShowYear ->
             model
 
 
@@ -845,6 +854,10 @@ viewBetweenDays action model =
 
         ShowNothing ->
             Screen.BetweenDays.showNothing
+
+        ShowYear ->
+            Screen.BetweenDays.showYear
+                { year = Date.year model.date }
 
 
 view : Model -> Html Msg

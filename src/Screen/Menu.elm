@@ -314,18 +314,25 @@ calender :
     }
     -> Html msg
 calender args =
-    [ (if Date.summer args.date then
-        "Summer"
+    [ [ (if Date.summer args.date then
+            "Summer"
 
-       else
-        "Winter"
-      )
-        |> Html.text
-        |> List.singleton
+         else
+            "Winter"
+        )
+            |> Html.text
+            |> List.singleton
+            |> Html.div [ Html.Style.fontSizePx 32 ]
+      , "Year "
+            ++ String.fromInt (Date.year args.date + 1)
+            |> Html.text
+            |> List.singleton
+            |> Html.div []
+      ]
         |> Html.div
-            [ Html.Style.fontSizePx 32
-            , Html.Style.height "100%"
+            [ Html.Style.height "100%"
             , Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
             , Html.Style.justifyContentCenter
             , Html.Style.alignItemsCenter
             , Html.Style.borderTopLeftRadiusPx 8
