@@ -199,7 +199,7 @@ generateNextMonth model =
                                     { difficulty = difficulty
                                     , summer = Date.summer date
                                     }
-                                    (if modBy 7 i == 0 || modBy 7 i == 6 then
+                                    (if modBy 7 i == 0 then
                                         Puzzle.Setting.specialSettings
 
                                      else
@@ -209,8 +209,8 @@ generateNextMonth model =
                                         (\rand01 setting ->
                                             ( date
                                             , { setting = setting
-                                              , reward = (rand01 == 0) && (modBy 7 i == 0 || modBy 7 i == 6)
-                                              , mail = modBy 9 (i - 7) == 0
+                                              , reward = modBy 7 i == 0
+                                              , mail = modBy 6 (i - -1) == 0
                                               }
                                             )
                                         )
@@ -418,16 +418,7 @@ init () =
                     |> Dict.fromList
             , showMenu = False
             , shop = False
-            , trades =
-                [ { remove = [ ( Coin, 2 ) ]
-                  , add = BagOfCoins
-                  , trader = Data.Person.alice.name
-                  }
-                , { remove = [ ( BagOfCoins, 2 ) ]
-                  , add = Diamand
-                  , trader = Data.Person.rick.name
-                  }
-                ]
+            , trades = []
             , items = Data.ItemBag.empty
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
@@ -521,22 +512,23 @@ endDay model =
         Just event ->
             model
                 |> addBetweenDaysActions
-                    ([ [ ShowNothing ]
+                    ([ []
                      , if event.reward then
-                        [ ShowItemAdded event.setting.reward
-                        , ShowNothing
+                        [ ShowNothing
+                        , ShowItemAdded event.setting.reward
                         ]
 
                        else
                         []
                      , if event.mail then
-                        [ ShowMail, ShowNothing ]
+                        [ ShowNothing
+                        , ShowMail
+                        ]
 
                        else
                         []
-                     , [ --ShowCalenderDay
-                         --,
-                         AdvanceCalenderDay
+                     , [ ShowNothing
+                       , AdvanceCalenderDay
                        , ShowCalenderDay
                        ]
                      ]
@@ -782,8 +774,8 @@ update msg model =
                             ([ mail.present
                                 |> Maybe.map
                                     (\item ->
-                                        [ ShowItemAdded item
-                                        , ShowNothing
+                                        [ ShowNothing
+                                        , ShowItemAdded item
                                         ]
                                     )
                                 |> Maybe.withDefault []
@@ -816,7 +808,7 @@ update msg model =
                         , betweenDays = tail
                       }
                         |> applyAction head
-                    , Process.sleep 800 |> Task.perform (\() -> NextActionBetweenDays)
+                    , Process.sleep 700 |> Task.perform (\() -> NextActionBetweenDays)
                     )
 
                 [] ->

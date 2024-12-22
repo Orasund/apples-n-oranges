@@ -21,7 +21,7 @@ type alias Mail =
 
 ranger : Person -> Array Mail
 ranger person =
-    [ { sender = person
+    {--[ { sender = person
       , message = "Good Morning Neighbor, I'm " ++ person.name ++ ", the hunter of our community. Would you have some spare to help the reforestation of our land?"
       , request = Just Coin
       , present = Nothing
@@ -33,19 +33,21 @@ ranger person =
       , present = Nothing
       , accepted = False
       }
+
     , { sender = person
       , message = "You woun't be live it, but some chicks actually hatched! Do you want some?"
       , request = Nothing
       , present = Just Chick
       , accepted = False
       }
-    ]
+    ]--}
+    [ defaultRequest Data.Block.Wood person ]
         |> Array.fromList
 
 
 major : Person -> Array Mail
 major person =
-    [ { sender = person
+    {--[ { sender = person
       , message = "Hello, my name is " ++ person.name ++ ". Im the mayor of this little community. Take this as a little welcome gift."
       , request = Nothing
       , present = Just Coin
@@ -57,7 +59,8 @@ major person =
       , present = Just Coin
       , accepted = False
       }
-    ]
+    ]--}
+    [ defaultRequest Data.Block.Stone person ]
         |> Array.fromList
 
 
@@ -74,37 +77,19 @@ next person =
         |> Array.get person.progress
 
 
-ellen : Array String
-ellen =
-    [ "Hi, Ellen here! I wanted to check in, if you came on save and sound. Heres a little gift to get you started"
-    , "Hi again! I forgot to setup  your telephone. You should now be able to trade with your neighbors!"
-    , "Hello, It's me Ellen ;) The local rescue shelter asked if we could take care of a little cat. Would you be interested?"
-    ]
-        |> Array.fromList
+defaultRequest item person =
+    { sender = person
+    , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+    , request = Just item
+    , present = Nothing
+    , accepted = False
+    }
 
 
 default : Person -> Random Mail
 default person =
-    let
-        defaultRequest item =
-            { sender = person
-            , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
-            , request = Just item
-            , present = Nothing
-            , accepted = False
-            }
+    Random.uniform (defaultRequest Data.Block.Stone person)
+        [ defaultRequest Data.Block.Wood person
 
-        defaultPresent item =
-            { sender = person
-            , message = "Hi, would you want some " ++ Data.Block.toString (ItemBlock item) ++ "?"
-            , request = Nothing
-            , present = Just item
-            , accepted = False
-            }
-    in
-    Random.uniform (defaultRequest Data.Block.Coin)
-        [ defaultRequest Data.Block.Berries
-        , defaultRequest Data.Block.Diamand
-        , defaultRequest Data.Block.Shrimps
-        , defaultRequest Data.Block.Wood
+        --, defaultRequest Data.Block.Wood
         ]

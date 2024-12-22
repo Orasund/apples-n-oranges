@@ -5256,9 +5256,6 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Data$Block$BagOfCoins = {$: 'BagOfCoins'};
-var $author$project$Data$Block$Coin = {$: 'Coin'};
-var $author$project$Data$Block$Diamand = {$: 'Diamand'};
 var $author$project$Screen$Menu$MailTab = {$: 'MailTab'};
 var $author$project$Main$SetSeed = function (a) {
 	return {$: 'SetSeed', a: a};
@@ -6640,6 +6637,7 @@ var $elm$random$Random$map2 = F3(
 			});
 	});
 var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Data$Block$Coin = {$: 'Coin'};
 var $author$project$Puzzle$Setting$empty = {difficulty: 0, pairs: _List_Nil, reward: $author$project$Data$Block$Coin, symbol: $elm$core$Maybe$Nothing};
 var $author$project$Puzzle$Setting$pick = F2(
 	function (args, fun) {
@@ -6666,18 +6664,15 @@ var $author$project$Puzzle$Setting$pick = F2(
 	});
 var $author$project$Data$Block$Apple = {$: 'Apple'};
 var $author$project$Data$Block$Carrot = {$: 'Carrot'};
+var $author$project$Data$Block$Fish1 = {$: 'Fish1'};
+var $author$project$Data$Block$Fish2 = {$: 'Fish2'};
+var $author$project$Data$Block$Ice = {$: 'Ice'};
 var $author$project$Data$Block$Orange = {$: 'Orange'};
 var $author$project$Data$Block$OrganicBlock = function (a) {
 	return {$: 'OrganicBlock', a: a};
 };
 var $author$project$Data$Block$Potato = {$: 'Potato'};
-var $author$project$Puzzle$Setting$seasonalFruit = function (args) {
-	return args.summer ? _Utils_Tuple2(
-		$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Apple),
-		$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Orange)) : _Utils_Tuple2(
-		$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Potato),
-		$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Carrot));
-};
+var $author$project$Data$Block$Snow = {$: 'Snow'};
 var $elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
 		repeatHelp:
@@ -6699,217 +6694,99 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $author$project$Puzzle$Setting$template = function (args) {
-	return _Utils_update(
-		$author$project$Puzzle$Setting$empty,
-		{
-			difficulty: args.difficulty,
-			pairs: _Utils_ap(
-				A2(
-					$elm$core$List$repeat,
-					2 + A2($elm$core$Basics$max, 0, args.difficulty - 1),
-					args.primary),
-				A2($elm$core$List$repeat, args.difficulty + 1, args.secondary)),
-			symbol: args.symbol
-		});
+var $author$project$Puzzle$Setting$template = F3(
+	function (primary, secondary, _v0) {
+		var difficulty = _v0.difficulty;
+		return _Utils_update(
+			$author$project$Puzzle$Setting$empty,
+			{
+				difficulty: difficulty,
+				pairs: _Utils_ap(
+					A2(
+						$elm$core$List$repeat,
+						2 + A2($elm$core$Basics$max, 0, difficulty - 1),
+						primary),
+					A2($elm$core$List$repeat, difficulty + 1, secondary))
+			});
+	});
+var $author$project$Puzzle$Setting$settings = function (args) {
+	var list = args.summer ? _List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Apple),
+			$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Orange)),
+			_Utils_Tuple2($author$project$Data$Block$Fish1, $author$project$Data$Block$Fish2)
+		]) : _List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Potato),
+			$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Carrot)),
+			_Utils_Tuple2($author$project$Data$Block$Ice, $author$project$Data$Block$Snow)
+		]);
+	return A2(
+		$elm$core$List$concatMap,
+		function (pair1) {
+			return A2(
+				$elm$core$List$map,
+				function (pair2) {
+					return A3(
+						$author$project$Puzzle$Setting$template,
+						pair1,
+						pair2,
+						{difficulty: args.difficulty});
+				},
+				list);
+		},
+		list);
 };
-var $author$project$Puzzle$Setting$default = function (args) {
-	return $author$project$Puzzle$Setting$template(
-		{
-			difficulty: args.difficulty,
-			primary: $author$project$Puzzle$Setting$seasonalFruit(
-				{summer: args.summer}),
-			secondary: $author$project$Puzzle$Setting$seasonalFruit(
-				{summer: args.summer}),
-			symbol: $elm$core$Maybe$Nothing
-		});
-};
-var $author$project$Data$Block$Berries = {$: 'Berries'};
+var $author$project$Data$Block$Bagle = {$: 'Bagle'};
+var $author$project$Data$Block$Crouson = {$: 'Crouson'};
 var $author$project$Data$Block$FlowerBlock = function (a) {
 	return {$: 'FlowerBlock', a: a};
 };
 var $author$project$Data$Block$Hyacinth = {$: 'Hyacinth'};
+var $author$project$Data$Block$PastryBlock = function (a) {
+	return {$: 'PastryBlock', a: a};
+};
+var $author$project$Data$Block$Prezel = {$: 'Prezel'};
 var $author$project$Data$Block$Rose = {$: 'Rose'};
+var $author$project$Data$Block$Stone = {$: 'Stone'};
 var $author$project$Data$Block$Sunflower = {$: 'Sunflower'};
+var $author$project$Data$Block$Wood = {$: 'Wood'};
 var $author$project$Puzzle$Setting$withReward = F2(
 	function (item, setting) {
 		return _Utils_update(
 			setting,
 			{reward: item});
 	});
-var $author$project$Puzzle$Setting$flowers = function (args) {
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Berries,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2(
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Hyacinth),
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower)),
-				secondary: _Utils_Tuple2(
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Rose),
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower)),
-				symbol: $elm$core$Maybe$Just(
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower))
-			}));
-};
-var $author$project$Data$Block$Fish1 = {$: 'Fish1'};
-var $author$project$Data$Block$Fish2 = {$: 'Fish2'};
-var $author$project$Puzzle$Setting$summerDefault = function (args) {
-	return $author$project$Puzzle$Setting$template(
-		{
-			difficulty: args.difficulty,
-			primary: $author$project$Puzzle$Setting$seasonalFruit(
-				{summer: args.summer}),
-			secondary: _Utils_Tuple2($author$project$Data$Block$Fish2, $author$project$Data$Block$Fish1),
-			symbol: $elm$core$Maybe$Just($author$project$Data$Block$Fish1)
-		});
-};
-var $author$project$Data$Block$Pickaxe = {$: 'Pickaxe'};
-var $author$project$Data$Block$Rock = {$: 'Rock'};
-var $author$project$Puzzle$Setting$winterDefault = function (args) {
-	return $author$project$Puzzle$Setting$template(
-		{
-			difficulty: args.difficulty,
-			primary: $author$project$Puzzle$Setting$seasonalFruit(
-				{summer: args.summer}),
-			secondary: _Utils_Tuple2($author$project$Data$Block$Pickaxe, $author$project$Data$Block$Rock),
-			symbol: $elm$core$Maybe$Just($author$project$Data$Block$Rock)
-		});
-};
-var $author$project$Puzzle$Setting$withNoSymbol = function (setting) {
-	return _Utils_update(
-		setting,
-		{symbol: $elm$core$Maybe$Nothing});
-};
-var $author$project$Puzzle$Setting$settings = function (args) {
-	return args.summer ? _List_fromArray(
-		[
-			$author$project$Puzzle$Setting$default(args),
-			$author$project$Puzzle$Setting$default(args),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$summerDefault(args)),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$summerDefault(args)),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$flowers(args))
-		]) : _List_fromArray(
-		[
-			$author$project$Puzzle$Setting$default(args),
-			$author$project$Puzzle$Setting$default(args),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$winterDefault(args)),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$winterDefault(args))
-		]);
-};
-var $author$project$Data$Block$Shrimps = {$: 'Shrimps'};
-var $author$project$Puzzle$Setting$fishAndApples = function (args) {
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Shrimps,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2($author$project$Data$Block$Fish2, $author$project$Data$Block$Fish1),
-				secondary: $author$project$Puzzle$Setting$seasonalFruit(
-					{summer: args.summer}),
-				symbol: $elm$core$Maybe$Just($author$project$Data$Block$Fish1)
-			}));
-};
-var $author$project$Data$Block$Lemon = {$: 'Lemon'};
-var $author$project$Puzzle$Setting$lemons = function (args) {
-	var _v0 = $author$project$Puzzle$Setting$seasonalFruit(
-		{summer: args.summer});
-	var f1 = _v0.a;
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Berries,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2(
-					$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Lemon),
-					f1),
-				secondary: $author$project$Puzzle$Setting$seasonalFruit(
-					{summer: args.summer}),
-				symbol: $elm$core$Maybe$Just(
-					$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Lemon))
-			}));
-};
-var $author$project$Puzzle$Setting$rocks = function (args) {
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Diamand,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2($author$project$Data$Block$Pickaxe, $author$project$Data$Block$Rock),
-				secondary: $author$project$Puzzle$Setting$seasonalFruit(
-					{summer: args.summer}),
-				symbol: $elm$core$Maybe$Just($author$project$Data$Block$Rock)
-			}));
-};
-var $author$project$Data$Block$Tree1 = {$: 'Tree1'};
-var $author$project$Data$Block$Tree2 = {$: 'Tree2'};
-var $author$project$Data$Block$Wood = {$: 'Wood'};
-var $author$project$Puzzle$Setting$woodAndStone = function (args) {
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Wood,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2($author$project$Data$Block$Tree1, $author$project$Data$Block$Tree2),
-				secondary: _Utils_Tuple2($author$project$Data$Block$Pickaxe, $author$project$Data$Block$Rock),
-				symbol: $elm$core$Maybe$Just($author$project$Data$Block$Tree2)
-			}));
-};
 var $author$project$Puzzle$Setting$specialSettings = function (args) {
 	return args.summer ? _List_fromArray(
 		[
-			$author$project$Puzzle$Setting$lemons(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$lemons(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$fishAndApples(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$fishAndApples(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$winterDefault(
-			_Utils_update(
-				args,
+			A2(
+			$author$project$Puzzle$Setting$withReward,
+			$author$project$Data$Block$Wood,
+			A3(
+				$author$project$Puzzle$Setting$template,
+				_Utils_Tuple2(
+					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Hyacinth),
+					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower)),
+				_Utils_Tuple2(
+					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Hyacinth),
+					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Rose)),
 				{difficulty: args.difficulty + 1}))
 		]) : _List_fromArray(
 		[
-			$author$project$Puzzle$Setting$woodAndStone(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$woodAndStone(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$rocks(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$rocks(
-			_Utils_update(
-				args,
-				{difficulty: args.difficulty + 1})),
-			$author$project$Puzzle$Setting$summerDefault(
-			_Utils_update(
-				args,
+			A2(
+			$author$project$Puzzle$Setting$withReward,
+			$author$project$Data$Block$Stone,
+			A3(
+				$author$project$Puzzle$Setting$template,
+				_Utils_Tuple2(
+					$author$project$Data$Block$PastryBlock($author$project$Data$Block$Prezel),
+					$author$project$Data$Block$PastryBlock($author$project$Data$Block$Crouson)),
+				_Utils_Tuple2(
+					$author$project$Data$Block$PastryBlock($author$project$Data$Block$Prezel),
+					$author$project$Data$Block$PastryBlock($author$project$Data$Block$Bagle)),
 				{difficulty: args.difficulty + 1}))
 		]);
 };
@@ -6937,8 +6814,8 @@ var $author$project$Main$generateNextMonth = function (model) {
 									return _Utils_Tuple2(
 										date,
 										{
-											mail: !A2($elm$core$Basics$modBy, 9, i - 7),
-											reward: (!rand01) && ((!A2($elm$core$Basics$modBy, 7, i)) || (A2($elm$core$Basics$modBy, 7, i) === 6)),
+											mail: !A2($elm$core$Basics$modBy, 6, i - (-1)),
+											reward: !A2($elm$core$Basics$modBy, 7, i),
 											setting: setting
 										});
 								}),
@@ -6949,7 +6826,7 @@ var $author$project$Main$generateNextMonth = function (model) {
 									difficulty: difficulty,
 									summer: $author$project$Data$Date$summer(date)
 								},
-								((!A2($elm$core$Basics$modBy, 7, i)) || (A2($elm$core$Basics$modBy, 7, i) === 6)) ? $author$project$Puzzle$Setting$specialSettings : $author$project$Puzzle$Setting$settings)));
+								(!A2($elm$core$Basics$modBy, 7, i)) ? $author$project$Puzzle$Setting$specialSettings : $author$project$Puzzle$Setting$settings)));
 				});
 		},
 		$elm$random$Random$constant(_List_Nil),
@@ -7040,62 +6917,57 @@ var $author$project$Data$Block$toString = function (block) {
 				case 'Carrot':
 					var _v4 = block.a;
 					return '🥕';
-				default:
+				case 'Potato':
 					var _v5 = block.a;
 					return '🥔';
+				default:
+					var _v6 = block.a;
+					return '🧅';
 			}
 		case 'ItemBlock':
 			switch (block.a.$) {
 				case 'Coin':
-					var _v6 = block.a;
-					return '🪙';
-				case 'BagOfCoins':
 					var _v7 = block.a;
-					return '💰';
-				case 'Diamand':
-					var _v8 = block.a;
-					return '💎';
-				case 'Chick':
-					var _v9 = block.a;
-					return '🐥';
+					return '🪙';
 				case 'Wood':
-					var _v10 = block.a;
+					var _v8 = block.a;
 					return '🪵';
-				case 'Shrimps':
-					var _v11 = block.a;
-					return '🦐';
 				default:
-					var _v12 = block.a;
-					return '🍇';
+					var _v9 = block.a;
+					return '🪨';
 			}
-		case 'Rock':
-			return '🪨';
-		case 'Pickaxe':
-			return '⛏️';
 		case 'Fish1':
 			return '🐟';
 		case 'Fish2':
 			return '🎣';
-		case 'Tree1':
-			return '🌲';
-		case 'Tree2':
-			return '🌳';
 		case 'FlowerBlock':
 			switch (block.a.$) {
 				case 'Sunflower':
-					var _v13 = block.a;
+					var _v10 = block.a;
 					return '🌻';
 				case 'Rose':
-					var _v14 = block.a;
+					var _v11 = block.a;
 					return '🌹';
 				default:
-					var _v15 = block.a;
+					var _v12 = block.a;
 					return '\uD83E\uDEBB';
 			}
-		case 'Mushroom1':
-			return '🍄';
+		case 'PastryBlock':
+			switch (block.a.$) {
+				case 'Bagle':
+					var _v13 = block.a;
+					return '🥯';
+				case 'Prezel':
+					var _v14 = block.a;
+					return '🥨';
+				default:
+					var _v15 = block.a;
+					return '🥐';
+			}
+		case 'Snow':
+			return '❄️';
 		default:
-			return '🍄\u200D🟫';
+			return '🧊';
 	}
 };
 var $elm$core$Dict$foldl = F3(
@@ -7320,6 +7192,17 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
+var $author$project$Data$Message$defaultRequest = F2(
+	function (item, person) {
+		return {
+			accepted: false,
+			message: 'Hi, do you have some ' + ($author$project$Data$Block$toString(
+				$author$project$Data$Block$ItemBlock(item)) + '?'),
+			present: $elm$core$Maybe$Nothing,
+			request: $elm$core$Maybe$Just(item),
+			sender: person
+		};
+	});
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -7359,48 +7242,14 @@ var $author$project$Data$Message$major = function (person) {
 	return $elm$core$Array$fromList(
 		_List_fromArray(
 			[
-				{
-				accepted: false,
-				message: 'Hello, my name is ' + (person.name + '. Im the mayor of this little community. Take this as a little welcome gift.'),
-				present: $elm$core$Maybe$Just($author$project$Data$Block$Coin),
-				request: $elm$core$Maybe$Nothing,
-				sender: person
-			},
-				{
-				accepted: false,
-				message: 'Thanks for your contribution to our community.',
-				present: $elm$core$Maybe$Just($author$project$Data$Block$Coin),
-				request: $elm$core$Maybe$Nothing,
-				sender: person
-			}
+				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Stone, person)
 			]));
 };
-var $author$project$Data$Block$Chick = {$: 'Chick'};
 var $author$project$Data$Message$ranger = function (person) {
 	return $elm$core$Array$fromList(
 		_List_fromArray(
 			[
-				{
-				accepted: false,
-				message: 'Good Morning Neighbor, I\'m ' + (person.name + ', the hunter of our community. Would you have some spare to help the reforestation of our land?'),
-				present: $elm$core$Maybe$Nothing,
-				request: $elm$core$Maybe$Just($author$project$Data$Block$Coin),
-				sender: person
-			},
-				{
-				accepted: false,
-				message: 'Hi, could you help me rebuild by chicken pen?',
-				present: $elm$core$Maybe$Nothing,
-				request: $elm$core$Maybe$Just($author$project$Data$Block$Coin),
-				sender: person
-			},
-				{
-				accepted: false,
-				message: 'You woun\'t be live it, but some chicks actually hatched! Do you want some?',
-				present: $elm$core$Maybe$Just($author$project$Data$Block$Chick),
-				request: $elm$core$Maybe$Nothing,
-				sender: person
-			}
+				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Wood, person)
 			]));
 };
 var $author$project$Data$Message$next = function (person) {
@@ -7472,25 +7321,7 @@ var $author$project$Main$init = function (_v0) {
 		shop: false,
 		showBetweenDays: false,
 		showMenu: false,
-		trades: _List_fromArray(
-			[
-				{
-				add: $author$project$Data$Block$BagOfCoins,
-				remove: _List_fromArray(
-					[
-						_Utils_Tuple2($author$project$Data$Block$Coin, 2)
-					]),
-				trader: $author$project$Data$Person$alice.name
-			},
-				{
-				add: $author$project$Data$Block$Diamand,
-				remove: _List_fromArray(
-					[
-						_Utils_Tuple2($author$project$Data$Block$BagOfCoins, 2)
-					]),
-				trader: $author$project$Data$Person$rick.name
-			}
-			])
+		trades: _List_Nil
 	};
 	return _Utils_Tuple2(
 		A2(
@@ -7507,35 +7338,12 @@ var $author$project$Screen$BetweenDays$ShowItemAdded = function (a) {
 };
 var $author$project$Main$StartDay = {$: 'StartDay'};
 var $author$project$Data$Message$default = function (person) {
-	var defaultRequest = function (item) {
-		return {
-			accepted: false,
-			message: 'Hi, do you have some ' + ($author$project$Data$Block$toString(
-				$author$project$Data$Block$ItemBlock(item)) + '?'),
-			present: $elm$core$Maybe$Nothing,
-			request: $elm$core$Maybe$Just(item),
-			sender: person
-		};
-	};
-	var defaultPresent = function (item) {
-		return {
-			accepted: false,
-			message: 'Hi, would you want some ' + ($author$project$Data$Block$toString(
-				$author$project$Data$Block$ItemBlock(item)) + '?'),
-			present: $elm$core$Maybe$Just(item),
-			request: $elm$core$Maybe$Nothing,
-			sender: person
-		};
-	};
 	return A2(
 		$elm$random$Random$uniform,
-		defaultRequest($author$project$Data$Block$Coin),
+		A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Stone, person),
 		_List_fromArray(
 			[
-				defaultRequest($author$project$Data$Block$Berries),
-				defaultRequest($author$project$Data$Block$Diamand),
-				defaultRequest($author$project$Data$Block$Shrimps),
-				defaultRequest($author$project$Data$Block$Wood)
+				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Wood, person)
 			]));
 };
 var $author$project$Main$acceptMail = F2(
@@ -7809,29 +7617,35 @@ var $author$project$Level$getBlockAt = F2(
 var $author$project$Data$Block$isValidBlock = F2(
 	function (p1, p2) {
 		var _v0 = _Utils_Tuple2(p1, p2);
-		_v0$3:
+		_v0$4:
 		while (true) {
 			switch (_v0.a.$) {
 				case 'OrganicBlock':
 					if (_v0.b.$ === 'OrganicBlock') {
 						return true;
 					} else {
-						break _v0$3;
+						break _v0$4;
 					}
 				case 'ItemBlock':
 					if (_v0.b.$ === 'ItemBlock') {
 						return true;
 					} else {
-						break _v0$3;
+						break _v0$4;
 					}
 				case 'FlowerBlock':
 					if (_v0.b.$ === 'FlowerBlock') {
 						return true;
 					} else {
-						break _v0$3;
+						break _v0$4;
+					}
+				case 'PastryBlock':
+					if (_v0.b.$ === 'PastryBlock') {
+						return true;
+					} else {
+						break _v0$4;
 					}
 				default:
-					break _v0$3;
+					break _v0$4;
 			}
 		}
 		return A2(
@@ -7845,9 +7659,8 @@ var $author$project$Data$Block$isValidBlock = F2(
 			},
 			_List_fromArray(
 				[
-					_Utils_Tuple2($author$project$Data$Block$Pickaxe, $author$project$Data$Block$Rock),
 					_Utils_Tuple2($author$project$Data$Block$Fish2, $author$project$Data$Block$Fish1),
-					_Utils_Tuple2($author$project$Data$Block$Tree1, $author$project$Data$Block$Tree2)
+					_Utils_Tuple2($author$project$Data$Block$Snow, $author$project$Data$Block$Ice)
 				]));
 	});
 var $elm$core$Maybe$map2 = F3(
@@ -8130,17 +7943,16 @@ var $author$project$Main$endDay = function (model) {
 				$elm$core$List$concat(
 					_List_fromArray(
 						[
-							_List_fromArray(
-							[$author$project$Screen$BetweenDays$ShowNothing]),
+							_List_Nil,
 							event.reward ? _List_fromArray(
 							[
-								$author$project$Screen$BetweenDays$ShowItemAdded(event.setting.reward),
-								$author$project$Screen$BetweenDays$ShowNothing
+								$author$project$Screen$BetweenDays$ShowNothing,
+								$author$project$Screen$BetweenDays$ShowItemAdded(event.setting.reward)
 							]) : _List_Nil,
 							event.mail ? _List_fromArray(
-							[$author$project$Screen$BetweenDays$ShowMail, $author$project$Screen$BetweenDays$ShowNothing]) : _List_Nil,
+							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$ShowMail]) : _List_Nil,
 							_List_fromArray(
-							[$author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowCalenderDay])
+							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowCalenderDay])
 						])),
 				model));
 	} else {
@@ -8499,8 +8311,8 @@ var $author$project$Main$update = F2(
 														function (item) {
 															return _List_fromArray(
 																[
-																	$author$project$Screen$BetweenDays$ShowItemAdded(item),
-																	$author$project$Screen$BetweenDays$ShowNothing
+																	$author$project$Screen$BetweenDays$ShowNothing,
+																	$author$project$Screen$BetweenDays$ShowItemAdded(item)
 																]);
 														},
 														mail.present))
@@ -8564,7 +8376,7 @@ var $author$project$Main$update = F2(
 								function (_v8) {
 									return $author$project$Main$NextActionBetweenDays;
 								},
-								$elm$core$Process$sleep(800)));
+								$elm$core$Process$sleep(700)));
 					}
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);

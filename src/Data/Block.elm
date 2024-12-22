@@ -7,6 +7,7 @@ type Organic
     | Lemon
     | Carrot
     | Potato
+    | Onion
 
 
 type Flower
@@ -15,28 +16,35 @@ type Flower
     | Hyacinth
 
 
+type Pastries
+    = Prezel
+    | Crouson
+    | Bagle
+
+
 type Item
     = Coin
-    | BagOfCoins
-    | Diamand
-    | Chick
+      --| BagOfCoins
+      --| Diamand
+      --| Chick
     | Wood
-    | Shrimps
-    | Berries
+    | Stone
+
+
+
+--| Shrimps
+--| Berries
 
 
 type Block
     = OrganicBlock Organic
     | FlowerBlock Flower
+    | PastryBlock Pastries
     | ItemBlock Item
-    | Rock
-    | Pickaxe
     | Fish1
     | Fish2
-    | Tree1
-    | Tree2
-    | Mushroom1
-    | Mushroom2
+    | Snow
+    | Ice
 
 
 toString : Block -> String
@@ -57,44 +65,34 @@ toString block =
         OrganicBlock Potato ->
             "🥔"
 
+        OrganicBlock Onion ->
+            "🧅"
+
         ItemBlock Coin ->
             "🪙"
 
-        ItemBlock BagOfCoins ->
-            "💰"
-
-        ItemBlock Diamand ->
-            "💎"
-
-        ItemBlock Chick ->
-            "🐥"
-
+        --ItemBlock BagOfCoins ->
+        --    "💰"
+        --ItemBlock Diamand ->
+        --    "💎"
+        --ItemBlock Chick ->
+        --    "🐥"
         ItemBlock Wood ->
             "🪵"
 
-        ItemBlock Shrimps ->
-            "🦐"
-
-        ItemBlock Berries ->
-            "🍇"
-
-        Rock ->
+        --ItemBlock Shrimps ->
+        --    "🦐"
+        --ItemBlock Berries ->
+        --    "🍇"
+        --Rock ->
+        ItemBlock Stone ->
             "🪨"
-
-        Pickaxe ->
-            "⛏️"
 
         Fish1 ->
             "🐟"
 
         Fish2 ->
             "🎣"
-
-        Tree1 ->
-            "🌲"
-
-        Tree2 ->
-            "🌳"
 
         FlowerBlock Sunflower ->
             "🌻"
@@ -105,11 +103,20 @@ toString block =
         FlowerBlock Hyacinth ->
             "\u{1FABB}"
 
-        Mushroom1 ->
-            "🍄"
+        PastryBlock Bagle ->
+            "🥯"
 
-        Mushroom2 ->
-            "🍄\u{200D}🟫"
+        PastryBlock Prezel ->
+            "🥨"
+
+        PastryBlock Crouson ->
+            "🥐"
+
+        Snow ->
+            "❄️"
+
+        Ice ->
+            "🧊"
 
 
 isValidBlock : Block -> Block -> Bool
@@ -124,10 +131,12 @@ isValidBlock p1 p2 =
         ( FlowerBlock _, FlowerBlock _ ) ->
             True
 
+        ( PastryBlock _, PastryBlock _ ) ->
+            True
+
         _ ->
-            [ ( Pickaxe, Rock )
-            , ( Fish2, Fish1 )
-            , ( Tree1, Tree2 )
+            [ ( Fish2, Fish1 )
+            , ( Snow, Ice )
             ]
                 |> List.any
                     (\pair ->
