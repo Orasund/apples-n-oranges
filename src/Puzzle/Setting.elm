@@ -190,7 +190,8 @@ settings args =
         , default args
         , winterDefault args |> withNoSymbol
         , winterDefault args |> withNoSymbol
-        , mushroomAndWoods args |> withNoSymbol
+
+        -- , mushroomAndWoods args |> withNoSymbol
         ]
 
 

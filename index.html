@@ -6754,23 +6754,6 @@ var $author$project$Puzzle$Setting$flowers = function (args) {
 					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower))
 			}));
 };
-var $author$project$Data$Block$Mushroom1 = {$: 'Mushroom1'};
-var $author$project$Data$Block$Mushroom2 = {$: 'Mushroom2'};
-var $author$project$Data$Block$Tree1 = {$: 'Tree1'};
-var $author$project$Data$Block$Tree2 = {$: 'Tree2'};
-var $author$project$Data$Block$Wood = {$: 'Wood'};
-var $author$project$Puzzle$Setting$mushroomAndWoods = function (args) {
-	return A2(
-		$author$project$Puzzle$Setting$withReward,
-		$author$project$Data$Block$Wood,
-		$author$project$Puzzle$Setting$template(
-			{
-				difficulty: args.difficulty,
-				primary: _Utils_Tuple2($author$project$Data$Block$Mushroom1, $author$project$Data$Block$Mushroom2),
-				secondary: _Utils_Tuple2($author$project$Data$Block$Tree1, $author$project$Data$Block$Tree2),
-				symbol: $elm$core$Maybe$Just($author$project$Data$Block$Mushroom1)
-			}));
-};
 var $author$project$Data$Block$Fish1 = {$: 'Fish1'};
 var $author$project$Data$Block$Fish2 = {$: 'Fish2'};
 var $author$project$Puzzle$Setting$summerDefault = function (args) {
@@ -6818,9 +6801,7 @@ var $author$project$Puzzle$Setting$settings = function (args) {
 			$author$project$Puzzle$Setting$withNoSymbol(
 			$author$project$Puzzle$Setting$winterDefault(args)),
 			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$winterDefault(args)),
-			$author$project$Puzzle$Setting$withNoSymbol(
-			$author$project$Puzzle$Setting$mushroomAndWoods(args))
+			$author$project$Puzzle$Setting$winterDefault(args))
 		]);
 };
 var $author$project$Data$Block$Shrimps = {$: 'Shrimps'};
@@ -6870,6 +6851,9 @@ var $author$project$Puzzle$Setting$rocks = function (args) {
 				symbol: $elm$core$Maybe$Just($author$project$Data$Block$Rock)
 			}));
 };
+var $author$project$Data$Block$Tree1 = {$: 'Tree1'};
+var $author$project$Data$Block$Tree2 = {$: 'Tree2'};
+var $author$project$Data$Block$Wood = {$: 'Wood'};
 var $author$project$Puzzle$Setting$woodAndStone = function (args) {
 	return A2(
 		$author$project$Puzzle$Setting$withReward,
