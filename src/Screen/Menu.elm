@@ -88,7 +88,7 @@ attachment args mail =
                         [ Html.Style.displayFlex
                         , Html.Style.alignItemsCenter
                         , Html.Style.justifyContentSpaceBetween
-                        , Html.Style.backgroundColor View.Color.gray100
+                        , Html.Style.backgroundColor View.Color.green100
                         , Html.Style.borderRadiusPx 8
                         , Html.Style.paddingPx 8
                         ]
@@ -202,6 +202,11 @@ messages args =
                     [ Html.Style.displayFlex
                     , Html.Style.flexDirectionRow
                     , Html.Style.gapPx 8
+                    , if mail.accepted then
+                        Html.Style.backgroundColor View.Color.white
+
+                      else
+                        Html.Style.backgroundColor View.Color.white
                     ]
     in
     args.mails
@@ -390,7 +395,7 @@ calender args =
                                         ]
                                         []
 
-                                   else if event.reward /= Nothing then
+                                   else if event.reward then
                                     Html.div
                                         [ Html.Style.widthPx 10
                                         , Html.Style.aspectRatio "1"
@@ -474,10 +479,7 @@ toHtml args content =
             , Html.Style.gapPx 8
             , Html.Style.overflowYScroll
             ]
-    , View.Button.toHtml
-        [ View.Button.primary
-        , Html.Style.fontSizePx 24
-        ]
+    , View.Button.toHtml (View.Button.big ++ [ View.Button.primary ])
         { label = "Close"
         , onPress = args.onClose
         }

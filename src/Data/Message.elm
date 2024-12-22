@@ -83,11 +83,33 @@ ellen =
         |> Array.fromList
 
 
-default : Item -> Person -> Mail
-default item person =
-    { sender = person
-    , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
-    , request = Just item
-    , present = Nothing
-    , accepted = False
-    }
+default : Person -> Random Mail
+default person =
+    let
+        defaultRequest item =
+            { sender = person
+            , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+            , request = Just item
+            , present = Nothing
+            , accepted = False
+            }
+
+        defaultPresent item =
+            { sender = person
+            , message = "Hi, would you want some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+            , request = Nothing
+            , present = Just item
+            , accepted = False
+            }
+    in
+    Random.uniform (defaultRequest Data.Block.Coin)
+        [ defaultRequest Data.Block.Berries
+        , defaultRequest Data.Block.Diamand
+        , defaultRequest Data.Block.Shrimps
+        , defaultRequest Data.Block.Wood
+        , defaultPresent Data.Block.Coin
+        , defaultPresent Data.Block.Berries
+        , defaultPresent Data.Block.Diamand
+        , defaultPresent Data.Block.Shrimps
+        , defaultPresent Data.Block.Wood
+        ]

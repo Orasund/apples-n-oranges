@@ -17,6 +17,8 @@ viewItem args =
     View.Block.withContent
         [ Html.Style.topPx (toFloat y * View.Field.size)
         , Html.Style.leftPx (toFloat x * View.Field.size)
+        , Html.Style.widthPx View.Field.size
+        , Html.Style.fontSizePx 32
         ]
 
 

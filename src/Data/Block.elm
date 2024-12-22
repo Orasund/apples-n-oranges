@@ -20,6 +20,8 @@ type Item
     | Diamand
     | Chick
     | Wood
+    | Shrimps
+    | Berries
 
 
 type Block
@@ -70,6 +72,12 @@ toString block =
 
         ItemBlock Wood ->
             "🪵"
+
+        ItemBlock Shrimps ->
+            "🦐"
+
+        ItemBlock Berries ->
+            "🍇"
 
         FishingRod ->
             "🎣"

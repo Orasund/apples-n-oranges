@@ -7,9 +7,9 @@ import View.Color
 
 main : Html msg
 main =
-    [ [ View.Color.gray100
-      , View.Color.gray200
-      , View.Color.gray300
+    [ [ View.Color.red100
+      , View.Color.red200
+      , View.Color.red300
       , View.Color.gray400
       , View.Color.gray500
       , View.Color.red600

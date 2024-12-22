@@ -58,9 +58,10 @@ toHtml args =
         , zero = args.pointerZero
         }
     , View.Button.toHtml
-        [ View.Button.primary
-        , Html.Style.fontSizePx 24
-        ]
+        (View.Button.big
+            ++ [ View.Button.primary
+               ]
+        )
         { label = "Undo"
         , onPress = args.onUndo
         }

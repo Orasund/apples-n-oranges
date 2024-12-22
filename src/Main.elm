@@ -205,20 +205,16 @@ generateNextMonth model =
                                      else
                                         Puzzle.Setting.settings
                                     )
-                                    |> Random.map
-                                        (\setting ->
+                                    |> Random.map2
+                                        (\rand01 setting ->
                                             ( date
                                             , { setting = setting
-                                              , reward =
-                                                    if i == Date.daysInAMonth then
-                                                        Coin |> Just
-
-                                                    else
-                                                        Nothing
+                                              , reward = (rand01 == 0) && (modBy 7 i == 0 || modBy 7 i == 6)
                                               , mail = modBy 5 i == 0
                                               }
                                             )
                                         )
+                                        (Random.int 0 3)
                                     |> Random.map (\s -> s :: l)
                             )
                     )
@@ -312,7 +308,7 @@ setMenuTab menuTab model =
     { model | menu = menuTab }
 
 
-acceptMail : Date -> Model -> Model
+acceptMail : Date -> Model -> Random Model
 acceptMail n model =
     model.messages
         |> Dict.get n
@@ -322,20 +318,24 @@ acceptMail n model =
                     sender =
                         mail.sender |> (\s -> { s | progress = s.progress + 1 })
                 in
-                { model
-                    | messages =
-                        model.messages
-                            |> Dict.insert n
-                                { mail | accepted = True }
-                    , nextMessages =
-                        model.nextMessages
-                            |> Dict.insert (Data.Person.jobToString mail.sender.job)
-                                (Data.Message.next sender
-                                    |> Maybe.withDefault (Data.Message.default Data.Block.Coin sender)
-                                )
-                }
+                Data.Message.next sender
+                    |> Maybe.map Random.constant
+                    |> Maybe.withDefault (Data.Message.default sender)
+                    |> Random.map
+                        (\nextMessage ->
+                            { model
+                                | messages =
+                                    model.messages
+                                        |> Dict.insert n
+                                            { mail | accepted = True }
+                                , nextMessages =
+                                    model.nextMessages
+                                        |> Dict.insert (Data.Person.jobToString mail.sender.job)
+                                            nextMessage
+                            }
+                        )
             )
-        |> Maybe.withDefault model
+        |> Maybe.withDefault (Random.constant model)
 
 
 addMail : Model -> Generator Model
@@ -344,20 +344,24 @@ addMail model =
         |> Dict.values
         |> Maths.shuffle
         |> Random.map List.head
-        |> Random.map
+        |> Random.andThen
             (\maybe ->
                 maybe
                     |> Maybe.map
                         (\mail ->
-                            { model
-                                | messages = Dict.insert model.date mail model.messages
-                                , nextMessages =
-                                    model.nextMessages
-                                        |> Dict.insert (Data.Person.jobToString mail.sender.job)
-                                            (Data.Message.default Data.Block.Coin mail.sender)
-                            }
+                            Data.Message.default mail.sender
+                                |> Random.map
+                                    (\nextMessage ->
+                                        { model
+                                            | messages = Dict.insert model.date mail model.messages
+                                            , nextMessages =
+                                                model.nextMessages
+                                                    |> Dict.insert (Data.Person.jobToString mail.sender.job)
+                                                        nextMessage
+                                        }
+                                    )
                         )
-                    |> Maybe.withDefault model
+                    |> Maybe.withDefault (Random.constant model)
             )
 
 
@@ -391,7 +395,7 @@ init () =
             , nextEvents =
                 [ ( Date.zero
                   , { setting = Puzzle.Setting.startingLevel
-                    , reward = Nothing
+                    , reward = False
                     , mail = False
                     }
                   )
@@ -406,12 +410,10 @@ init () =
             , messages = Dict.empty
             , nextMessages =
                 people
-                    |> List.map
+                    |> List.filterMap
                         (\person ->
-                            ( Data.Person.jobToString person.job
-                            , Data.Message.next person
-                                |> Maybe.withDefault (Data.Message.default Data.Block.Coin person)
-                            )
+                            Data.Message.next person
+                                |> Maybe.map (Tuple.pair (Data.Person.jobToString person.job))
                         )
                     |> Dict.fromList
             , showMenu = False
@@ -520,21 +522,21 @@ endDay model =
             model
                 |> addBetweenDaysActions
                     ([ [ ShowNothing ]
-                     , case event.reward of
-                        Just item ->
-                            [ ShowItemAdded item
-                            , ShowNothing
-                            ]
+                     , if event.reward then
+                        [ ShowItemAdded event.setting.reward
+                        , ShowNothing
+                        ]
 
-                        Nothing ->
-                            []
+                       else
+                        []
                      , if event.mail then
                         [ ShowMail, ShowNothing ]
 
                        else
                         []
-                     , [ ShowCalenderDay
-                       , AdvanceCalenderDay
+                     , [ --ShowCalenderDay
+                         --,
+                         AdvanceCalenderDay
                        , ShowCalenderDay
                        ]
                      ]
@@ -764,14 +766,32 @@ update msg model =
         AcceptMail i ->
             ( case Dict.get i model.messages of
                 Just mail ->
-                    model
+                    mail.request
+                        |> Maybe.map
+                            (\item ->
+                                { model
+                                    | items =
+                                        model.items
+                                            |> Data.ItemBag.remove item
+                                            |> Maybe.map Tuple.first
+                                            |> Maybe.withDefault model.items
+                                }
+                            )
+                        |> Maybe.withDefault model
                         |> addBetweenDaysActions
-                            ([ mail.present |> Maybe.map (\item -> [ ShowItemAdded item ]) |> Maybe.withDefault []
-                             , mail.request |> Maybe.map (\item -> [ ShowItemRemoved item ]) |> Maybe.withDefault []
+                            ([ mail.present
+                                |> Maybe.map
+                                    (\item ->
+                                        [ ShowItemAdded item
+                                        , ShowNothing
+                                        ]
+                                    )
+                                |> Maybe.withDefault []
                              ]
                                 |> List.concat
                             )
                         |> acceptMail i
+                        |> applyGenerator model.seed
 
                 Nothing ->
                     model
@@ -796,7 +816,7 @@ update msg model =
                         , betweenDays = tail
                       }
                         |> applyAction head
-                    , Process.sleep 1000 |> Task.perform (\() -> NextActionBetweenDays)
+                    , Process.sleep 800 |> Task.perform (\() -> NextActionBetweenDays)
                     )
 
                 [] ->

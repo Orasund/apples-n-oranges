@@ -1,6 +1,6 @@
 module Puzzle.Setting exposing (Event, Setting, pick, settings, specialSettings, startingLevel, toList)
 
-import Data.Block exposing (Block(..), Item, Optional(..), Organic(..))
+import Data.Block exposing (Block(..), Item(..), Optional(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
 import Random
 
@@ -11,7 +11,7 @@ type alias Random a =
 
 type alias Event =
     { setting : Setting
-    , reward : Maybe Item
+    , reward : Bool
     , mail : Bool
     }
 
@@ -20,6 +20,7 @@ type alias Setting =
     { symbol : Maybe Block
     , difficulty : Int
     , pairs : List ( Block, Block )
+    , reward : Item
     }
 
 
@@ -28,6 +29,7 @@ empty =
     { symbol = Nothing
     , difficulty = 0
     , pairs = []
+    , reward = Coin
     }
 
 
@@ -91,6 +93,7 @@ rocks args =
         , primary = ( Pickaxe, OptionalBlock Rock )
         , secondary = seasonalFruit { summer = args.summer }
         }
+        |> withReward Diamand
 
 
 lemons : { difficulty : Int, summer : Bool } -> Setting
@@ -105,6 +108,7 @@ lemons args =
         , primary = ( OrganicBlock Lemon, f1 )
         , secondary = seasonalFruit { summer = args.summer }
         }
+        |> withReward Berries
 
 
 woodAndStone : { difficulty : Int, summer : Bool } -> Setting
@@ -115,6 +119,7 @@ woodAndStone args =
         , primary = ( Axe, Tree )
         , secondary = ( Pickaxe, OptionalBlock Rock )
         }
+        |> withReward Wood
 
 
 summerDefault : { difficulty : Int, summer : Bool } -> Setting
@@ -135,6 +140,7 @@ fishAndApples args =
         , primary = ( FishingRod, OptionalBlock Fish )
         , secondary = seasonalFruit { summer = args.summer }
         }
+        |> withReward Shrimps
 
 
 winterDefault : { difficulty : Int, summer : Bool } -> Setting
@@ -188,6 +194,11 @@ specialSettings args =
 withNoSymbol : Setting -> Setting
 withNoSymbol setting =
     { setting | symbol = Nothing }
+
+
+withReward : Item -> Setting -> Setting
+withReward item setting =
+    { setting | reward = item }
 
 
 pick : { difficulty : Float, summer : Bool } -> ({ difficulty : Int, summer : Bool } -> List Setting) -> Random Setting

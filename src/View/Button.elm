@@ -12,6 +12,18 @@ primary =
     Html.Attributes.class "primary-button"
 
 
+big : List (Attribute msg)
+big =
+    [ Html.Style.fontSizePx 28
+    , Html.Style.widthPx 100
+    , Html.Style.heightPx 100
+    , Html.Style.borderRadius "100%"
+    , Html.Style.displayFlex
+    , Html.Style.alignItemsCenter
+    , Html.Style.justifyContentCenter
+    ]
+
+
 withIcons : List (Attribute msg) -> { label : String, onPress : msg } -> String -> Html msg
 withIcons attrs args content =
     [ content

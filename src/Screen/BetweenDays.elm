@@ -116,7 +116,12 @@ showCalenderDay args =
 
 
 default : List (Attribute msg) -> List (Html msg) -> Html msg
-default attrs content =
+default =
+    withBackground View.Background.endOfDay
+
+
+withBackground : (List (Attribute msg) -> List (Html a) -> b) -> List (Attribute msg) -> List (Html a) -> b
+withBackground background attrs content =
     content
         |> Html.div
             [ Html.Style.displayFlex
@@ -125,7 +130,7 @@ default attrs content =
             , Html.Style.gapPx 32
             ]
         |> List.singleton
-        |> View.Background.endOfDay
+        |> background
             ([ Html.Style.positionAbsolute
              , Html.Style.height "100vh"
              , Html.Style.width "100%"
