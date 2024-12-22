@@ -37,7 +37,7 @@ main =
       , View.Color.gray800
       , View.Color.gray900
       ]
-    , [ View.Color.gray100
+    , [ View.Color.green100
       , View.Color.green200
       , View.Color.green300
       , View.Color.gray400
@@ -47,7 +47,7 @@ main =
       , View.Color.gray800
       , View.Color.gray900
       ]
-    , [ View.Color.gray100
+    , [ View.Color.blue100
       , View.Color.blue200
       , View.Color.blue300
       , View.Color.gray400

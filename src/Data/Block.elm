@@ -9,9 +9,10 @@ type Organic
     | Potato
 
 
-type Optional
-    = Fish
-    | Rock
+type Flower
+    = Sunflower
+    | Rose
+    | Hyacinth
 
 
 type Item
@@ -26,12 +27,16 @@ type Item
 
 type Block
     = OrganicBlock Organic
-    | OptionalBlock Optional
+    | FlowerBlock Flower
     | ItemBlock Item
-    | FishingRod
+    | Rock
     | Pickaxe
-    | Axe
-    | Tree
+    | Fish1
+    | Fish2
+    | Tree1
+    | Tree2
+    | Mushroom1
+    | Mushroom2
 
 
 toString : Block -> String
@@ -51,12 +56,6 @@ toString block =
 
         OrganicBlock Potato ->
             "🥔"
-
-        OptionalBlock Rock ->
-            "🪨"
-
-        OptionalBlock Fish ->
-            "🐟"
 
         ItemBlock Coin ->
             "🪙"
@@ -79,17 +78,38 @@ toString block =
         ItemBlock Berries ->
             "🍇"
 
-        FishingRod ->
-            "🎣"
+        Rock ->
+            "🪨"
 
         Pickaxe ->
             "⛏️"
 
-        Axe ->
-            "🪓"
+        Fish1 ->
+            "🐟"
 
-        Tree ->
+        Fish2 ->
+            "🎣"
+
+        Tree1 ->
+            "🌲"
+
+        Tree2 ->
             "🌳"
+
+        FlowerBlock Sunflower ->
+            "🌻"
+
+        FlowerBlock Rose ->
+            "🌹"
+
+        FlowerBlock Hyacinth ->
+            "\u{1FABB}"
+
+        Mushroom1 ->
+            "🍄"
+
+        Mushroom2 ->
+            "🍄\u{200D}🟫"
 
 
 isValidBlock : Block -> Block -> Bool
@@ -101,10 +121,13 @@ isValidBlock p1 p2 =
         ( ItemBlock _, ItemBlock _ ) ->
             True
 
+        ( FlowerBlock _, FlowerBlock _ ) ->
+            True
+
         _ ->
-            [ ( Pickaxe, OptionalBlock Rock )
-            , ( FishingRod, OptionalBlock Fish )
-            , ( Axe, Tree )
+            [ ( Pickaxe, Rock )
+            , ( Fish2, Fish1 )
+            , ( Tree1, Tree2 )
             ]
                 |> List.any
                     (\pair ->
@@ -115,9 +138,6 @@ isValidBlock p1 p2 =
 isOptional : Block -> Bool
 isOptional block =
     case block of
-        OptionalBlock _ ->
-            True
-
         ItemBlock _ ->
             True
 

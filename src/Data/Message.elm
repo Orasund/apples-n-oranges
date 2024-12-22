@@ -107,9 +107,4 @@ default person =
         , defaultRequest Data.Block.Diamand
         , defaultRequest Data.Block.Shrimps
         , defaultRequest Data.Block.Wood
-        , defaultPresent Data.Block.Coin
-        , defaultPresent Data.Block.Berries
-        , defaultPresent Data.Block.Diamand
-        , defaultPresent Data.Block.Shrimps
-        , defaultPresent Data.Block.Wood
         ]

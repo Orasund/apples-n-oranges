@@ -1,6 +1,6 @@
 module Puzzle.Setting exposing (Event, Setting, pick, settings, specialSettings, startingLevel, toList)
 
-import Data.Block exposing (Block(..), Item(..), Optional(..), Organic(..))
+import Data.Block exposing (Block(..), Flower(..), Item(..), Organic(..))
 import Puzzle.Builder exposing (Group(..))
 import Random
 
@@ -88,9 +88,9 @@ default args =
 rocks : { difficulty : Int, summer : Bool } -> Setting
 rocks args =
     template
-        { symbol = OptionalBlock Rock |> Just
+        { symbol = Rock |> Just
         , difficulty = args.difficulty
-        , primary = ( Pickaxe, OptionalBlock Rock )
+        , primary = ( Pickaxe, Rock )
         , secondary = seasonalFruit { summer = args.summer }
         }
         |> withReward Diamand
@@ -111,13 +111,35 @@ lemons args =
         |> withReward Berries
 
 
+flowers : { difficulty : Int, summer : Bool } -> Setting
+flowers args =
+    template
+        { symbol = FlowerBlock Sunflower |> Just
+        , difficulty = args.difficulty
+        , primary = ( FlowerBlock Hyacinth, FlowerBlock Sunflower )
+        , secondary = ( FlowerBlock Rose, FlowerBlock Sunflower )
+        }
+        |> withReward Berries
+
+
 woodAndStone : { difficulty : Int, summer : Bool } -> Setting
 woodAndStone args =
     template
-        { symbol = Tree |> Just
+        { symbol = Tree2 |> Just
         , difficulty = args.difficulty
-        , primary = ( Axe, Tree )
-        , secondary = ( Pickaxe, OptionalBlock Rock )
+        , primary = ( Tree1, Tree2 )
+        , secondary = ( Pickaxe, Rock )
+        }
+        |> withReward Wood
+
+
+mushroomAndWoods : { difficulty : Int, summer : Bool } -> Setting
+mushroomAndWoods args =
+    template
+        { symbol = Mushroom1 |> Just
+        , difficulty = args.difficulty
+        , primary = ( Mushroom1, Mushroom2 )
+        , secondary = ( Tree1, Tree2 )
         }
         |> withReward Wood
 
@@ -125,19 +147,19 @@ woodAndStone args =
 summerDefault : { difficulty : Int, summer : Bool } -> Setting
 summerDefault args =
     template
-        { symbol = Just (OptionalBlock Fish)
+        { symbol = Just Fish1
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
-        , secondary = ( FishingRod, OptionalBlock Fish )
+        , secondary = ( Fish2, Fish1 )
         }
 
 
 fishAndApples : { difficulty : Int, summer : Bool } -> Setting
 fishAndApples args =
     template
-        { symbol = Just (OptionalBlock Fish)
+        { symbol = Just Fish1
         , difficulty = args.difficulty
-        , primary = ( FishingRod, OptionalBlock Fish )
+        , primary = ( Fish2, Fish1 )
         , secondary = seasonalFruit { summer = args.summer }
         }
         |> withReward Shrimps
@@ -146,10 +168,10 @@ fishAndApples args =
 winterDefault : { difficulty : Int, summer : Bool } -> Setting
 winterDefault args =
     template
-        { symbol = Just (OptionalBlock Rock)
+        { symbol = Just Rock
         , difficulty = args.difficulty
         , primary = seasonalFruit { summer = args.summer }
-        , secondary = ( Pickaxe, OptionalBlock Rock )
+        , secondary = ( Pickaxe, Rock )
         }
 
 
@@ -160,7 +182,7 @@ settings args =
         , default args
         , summerDefault args |> withNoSymbol
         , summerDefault args |> withNoSymbol
-        , lemons args |> withNoSymbol
+        , flowers args |> withNoSymbol
         ]
 
     else
@@ -168,7 +190,7 @@ settings args =
         , default args
         , winterDefault args |> withNoSymbol
         , winterDefault args |> withNoSymbol
-        , woodAndStone args |> withNoSymbol
+        , mushroomAndWoods args |> withNoSymbol
         ]
 
 

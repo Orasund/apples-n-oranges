@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Data.Block exposing (Block(..), Item(..), Optional(..))
+import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
 import Data.Message exposing (Mail)
@@ -210,7 +210,7 @@ generateNextMonth model =
                                             ( date
                                             , { setting = setting
                                               , reward = (rand01 == 0) && (modBy 7 i == 0 || modBy 7 i == 6)
-                                              , mail = modBy 5 i == 0
+                                              , mail = modBy 9 (i - 7) == 0
                                               }
                                             )
                                         )
