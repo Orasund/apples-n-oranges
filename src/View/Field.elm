@@ -18,7 +18,11 @@ dark =
 
 size : Float
 size =
-    60
+    70
+
+
+
+--60
 
 
 toHtml : List (Attribute msg) -> { rows : Int, columns : Int, holes : Set ( Int, Int ) } -> Html msg

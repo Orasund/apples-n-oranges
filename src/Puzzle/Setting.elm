@@ -48,6 +48,7 @@ startingLevel =
 level 1 (4): 2+0+2
 level 2 (6): 2+1+3
 level 3 (8): 2+2+4
+level 4: 2+3 prim, 5 sec.
 -}
 template :
     ( Block, Block )

@@ -114,37 +114,6 @@ toHtml args =
                 , Html.Style.leftPx 0
                 ]
       ]
-
-    {--, args.game.fields
-        |> Dict.toList
-        |> List.filterMap
-            (\( p, fruitId ) ->
-                args.game.blocks
-                    |> Dict.get fruitId
-                    |> Maybe.map (Tuple.pair p)
-            )
-        |> List.map
-            (\( ( x, y ), _ ) ->
-                Html.div
-                    {--Layout.asButton
-                        { onPress = Just (args.onClick ( x, y ))
-                        , label =
-                            [ "Select "
-                            , String.fromInt x
-                            , ", "
-                            , String.fromInt y
-                            ]
-                                |> String.concat
-                        }
-                        ++--}
-                    [ Html.Style.aspectRatio "1"
-                    , Html.Style.widthPx View.Field.size
-                    , Html.Style.positionAbsolute
-                    , Html.Style.topPx (toFloat y * View.Field.size)
-                    , Html.Style.leftPx (toFloat x * View.Field.size)
-                    ]
-                    []
-            )--}
     , [ Html.div
             [ Html.Style.positionAbsolute
             , Pointer.onDown
@@ -183,8 +152,8 @@ toHtml args =
                     args.onPointerUp (calcCell ( relX, relY ))
                         |> Debug.log "end"
                 )
-            , Html.Style.widthPx (6 * View.Field.size)
-            , Html.Style.heightPx (6 * View.Field.size)
+            , Html.Style.widthPx (toFloat args.game.columns * View.Field.size)
+            , Html.Style.heightPx (toFloat args.game.rows * View.Field.size)
             , Html.Style.topPx 0
             , Html.Style.leftPx 0
             , Html.Style.pointerEventsAll

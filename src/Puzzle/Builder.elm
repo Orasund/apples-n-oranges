@@ -56,8 +56,8 @@ generate args =
     let
         initial =
             new
-                { columns = 6
-                , rows = 6
+                { columns = 5
+                , rows = 5
                 }
                 |> addSolids args.solids
     in

@@ -76,7 +76,7 @@ type Msg
 
 maxAmountOfItems : Int
 maxAmountOfItems =
-    10
+    5
 
 
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
@@ -397,7 +397,7 @@ init () =
 
         model : Model
         model =
-            { level = Level.empty { columns = 6, rows = 6 }
+            { level = Level.empty { columns = 5, rows = 5 }
             , difficutly = 0
             , date = Date.zero
             , nextEvents =

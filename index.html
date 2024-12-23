@@ -6583,7 +6583,7 @@ var $author$project$Puzzle$Builder$generate = function (args) {
 		$author$project$Puzzle$Builder$addSolids,
 		args.solids,
 		$author$project$Puzzle$Builder$new(
-			{columns: 6, rows: 6}));
+			{columns: 5, rows: 5}));
 	return A2(
 		$elm$random$Random$map,
 		$author$project$Puzzle$Builder$build,
@@ -7273,7 +7273,7 @@ var $author$project$Main$init = function (_v0) {
 		history: _List_Nil,
 		items: $author$project$Data$ItemBag$empty,
 		level: $author$project$Level$empty(
-			{columns: 6, rows: 6}),
+			{columns: 5, rows: 5}),
 		menu: $author$project$Screen$Menu$MailTab,
 		messages: $elm$core$Dict$empty,
 		nextEvents: $elm$core$Dict$fromList(
@@ -7393,7 +7393,7 @@ var $author$project$Data$ItemBag$insert = function (pos) {
 		_List_fromArray(
 			[pos]));
 };
-var $author$project$Main$maxAmountOfItems = 10;
+var $author$project$Main$maxAmountOfItems = 5;
 var $author$project$Data$ItemBag$size = function (bag) {
 	return $elm$core$Dict$size(bag);
 };
@@ -9424,7 +9424,7 @@ var $Orasund$elm_html_style$Html$Style$flex = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex', value);
 };
 var $Orasund$elm_html_style$Html$Style$justifyContentFlexEnd = $Orasund$elm_html_style$Html$Style$justifyContent('flex-end');
-var $author$project$View$Field$size = 60;
+var $author$project$View$Field$size = 70;
 var $Orasund$elm_html_style$Html$Style$scale = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'scale', value);
 };
@@ -9975,8 +9975,8 @@ var $author$project$View$Level$toHtml = function (args) {
 											$author$project$View$Level$calcCell(
 												_Utils_Tuple2(relX, relY))));
 								}),
-								$Orasund$elm_html_style$Html$Style$widthPx(6 * $author$project$View$Field$size),
-								$Orasund$elm_html_style$Html$Style$heightPx(6 * $author$project$View$Field$size),
+								$Orasund$elm_html_style$Html$Style$widthPx(args.game.columns * $author$project$View$Field$size),
+								$Orasund$elm_html_style$Html$Style$heightPx(args.game.rows * $author$project$View$Field$size),
 								$Orasund$elm_html_style$Html$Style$topPx(0),
 								$Orasund$elm_html_style$Html$Style$leftPx(0),
 								$Orasund$elm_html_style$Html$Style$pointerEventsAll
@@ -10048,7 +10048,7 @@ var $author$project$Screen$Game$toHtml = function (args) {
 				$Orasund$elm_html_style$Html$Style$displayFlex,
 				$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
 				$Orasund$elm_html_style$Html$Style$gapPx(16),
-				$Orasund$elm_html_style$Html$Style$widthPx($author$project$View$Field$size * 6),
+				$Orasund$elm_html_style$Html$Style$widthPx(args.level.columns * $author$project$View$Field$size),
 				$Orasund$elm_html_style$Html$Style$positionRelative
 			]),
 		_List_fromArray(

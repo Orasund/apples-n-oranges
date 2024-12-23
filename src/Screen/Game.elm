@@ -76,6 +76,6 @@ toHtml args =
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.gapPx 16
-            , Html.Style.widthPx (View.Field.size * 6)
+            , Html.Style.widthPx (toFloat args.level.columns * View.Field.size)
             , Html.Style.positionRelative
             ]
