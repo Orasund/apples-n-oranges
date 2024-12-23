@@ -74,6 +74,11 @@ type Msg
     | NextActionBetweenDays
 
 
+maxAmountOfItems : Int
+maxAmountOfItems =
+    10
+
+
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
 addBetweenDaysActions list model =
     { model | betweenDays = model.betweenDays ++ list }
@@ -251,7 +256,11 @@ increaseDifficulty model =
 
 addItem : Item -> Model -> Model
 addItem item model =
-    { model | items = model.items |> Data.ItemBag.insert ( -1, -1 ) item }
+    if Data.ItemBag.size model.items < maxAmountOfItems then
+        { model | items = model.items |> Data.ItemBag.insert ( -1, -1 ) item }
+
+    else
+        model
 
 
 removeItem : Item -> Model -> Model
@@ -528,7 +537,7 @@ endDay model =
                         []
                      , if not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
                         [ ShowNothing
-                        , AdvanceCalenderDay
+                        , AdvanceYear
                         , ShowYear
                         ]
 
@@ -634,7 +643,13 @@ applyAction action model =
         ShowNothing ->
             model
 
+        AdvanceYear ->
+            model |> nextDay
+
         ShowYear ->
+            model
+
+        ShowEndscreen ->
             model
 
 
@@ -709,11 +724,21 @@ update msg model =
             )
 
         EndDay ->
-            ( model |> endDay
-            , NextActionBetweenDays
-                |> Task.succeed
-                |> Task.perform identity
-            )
+            if Date.year model.date == 2 && not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
+                ( { model
+                    | betweenDays = [ ShowEndscreen ]
+                    , betweenDaysLast = ShowEndscreen
+                  }
+                    |> showBetweenDays
+                , Cmd.none
+                )
+
+            else
+                ( model |> endDay
+                , NextActionBetweenDays
+                    |> Task.succeed
+                    |> Task.perform identity
+                )
 
         SetSeed seed ->
             ( { model | seed = seed }, Cmd.none )
@@ -855,9 +880,16 @@ viewBetweenDays action model =
         ShowNothing ->
             Screen.BetweenDays.showNothing
 
+        AdvanceYear ->
+            Screen.BetweenDays.showYear
+                { year = Date.year model.date }
+
         ShowYear ->
             Screen.BetweenDays.showYear
                 { year = Date.year model.date }
+
+        ShowEndscreen ->
+            Screen.BetweenDays.showEndscreen
 
 
 view : Model -> Html Msg

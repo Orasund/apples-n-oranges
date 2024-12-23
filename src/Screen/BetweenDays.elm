@@ -20,6 +20,26 @@ type BetweenDaysAction
     | ShowItemRemoved Item
     | ShowMail
     | ShowYear
+    | AdvanceYear
+    | ShowEndscreen
+
+
+showEndscreen : Html msg
+showEndscreen =
+    [ "You reached the end of"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 30 ]
+    , "Year 3"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 100 ]
+    , "Thanks for playing"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 30 ]
+    ]
+        |> default []
 
 
 showNothing : Html msg

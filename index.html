@@ -7314,6 +7314,7 @@ var $author$project$Main$init = function (_v0) {
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$NextActionBetweenDays = {$: 'NextActionBetweenDays'};
+var $author$project$Screen$BetweenDays$ShowEndscreen = {$: 'ShowEndscreen'};
 var $author$project$Screen$BetweenDays$ShowItemAdded = function (a) {
 	return {$: 'ShowItemAdded', a: a};
 };
@@ -7392,9 +7393,15 @@ var $author$project$Data$ItemBag$insert = function (pos) {
 		_List_fromArray(
 			[pos]));
 };
+var $author$project$Main$maxAmountOfItems = 10;
+var $author$project$Data$ItemBag$size = function (bag) {
+	return $elm$core$Dict$size(bag);
+};
 var $author$project$Main$addItem = F2(
 	function (item, model) {
-		return _Utils_update(
+		return (_Utils_cmp(
+			$author$project$Data$ItemBag$size(model.items),
+			$author$project$Main$maxAmountOfItems) < 0) ? _Utils_update(
 			model,
 			{
 				items: A3(
@@ -7402,7 +7409,7 @@ var $author$project$Main$addItem = F2(
 					_Utils_Tuple2(-1, -1),
 					item,
 					model.items)
-			});
+			}) : model;
 	});
 var $elm$core$List$head = function (list) {
 	if (list.b) {
@@ -7534,6 +7541,10 @@ var $author$project$Main$applyAction = F2(
 			case 'ShowCalenderDay':
 				return model;
 			case 'ShowNothing':
+				return model;
+			case 'AdvanceYear':
+				return $author$project$Main$nextDay(model);
+			case 'ShowYear':
 				return model;
 			default:
 				return model;
@@ -7909,6 +7920,7 @@ var $author$project$Main$closeShop = function (model) {
 		{shop: false});
 };
 var $author$project$Screen$BetweenDays$AdvanceCalenderDay = {$: 'AdvanceCalenderDay'};
+var $author$project$Screen$BetweenDays$AdvanceYear = {$: 'AdvanceYear'};
 var $author$project$Screen$BetweenDays$ShowCalenderDay = {$: 'ShowCalenderDay'};
 var $author$project$Screen$BetweenDays$ShowMail = {$: 'ShowMail'};
 var $author$project$Screen$BetweenDays$ShowYear = {$: 'ShowYear'};
@@ -7938,7 +7950,7 @@ var $author$project$Main$endDay = function (model) {
 							((!$author$project$Data$Date$summer(model.date)) && _Utils_eq(
 							$author$project$Data$Date$day(model.date),
 							$author$project$Data$Date$daysInAMonth)) ? _List_fromArray(
-							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowYear]) : _List_fromArray(
+							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceYear, $author$project$Screen$BetweenDays$ShowYear]) : _List_fromArray(
 							[$author$project$Screen$BetweenDays$ShowNothing, $author$project$Screen$BetweenDays$AdvanceCalenderDay, $author$project$Screen$BetweenDays$ShowCalenderDay])
 						])),
 				model));
@@ -8102,6 +8114,10 @@ var $author$project$Main$tradeItems = F2(
 				},
 				args.remove)).out;
 	});
+var $author$project$Data$Date$year = function (_v0) {
+	var i = _v0.a;
+	return i;
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -8205,7 +8221,18 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'EndDay':
-				return _Utils_Tuple2(
+				return (($author$project$Data$Date$year(model.date) === 2) && ((!$author$project$Data$Date$summer(model.date)) && _Utils_eq(
+					$author$project$Data$Date$day(model.date),
+					$author$project$Data$Date$daysInAMonth))) ? _Utils_Tuple2(
+					$author$project$Main$showBetweenDays(
+						_Utils_update(
+							model,
+							{
+								betweenDays: _List_fromArray(
+									[$author$project$Screen$BetweenDays$ShowEndscreen]),
+								betweenDaysLast: $author$project$Screen$BetweenDays$ShowEndscreen
+							})),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					$author$project$Main$endDay(model),
 					A2(
 						$elm$core$Task$perform,
@@ -8771,10 +8798,6 @@ var $Orasund$elm_html_style$Html$Style$filter = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'filter', value);
 };
 var $author$project$View$Block$white = $Orasund$elm_html_style$Html$Style$filter('grayscale(1) brightness(3)');
-var $author$project$Data$Date$year = function (_v0) {
-	var i = _v0.a;
-	return i;
-};
 var $author$project$View$Color$yellow300 = '#f0f086';
 var $author$project$Screen$Menu$calender = function (args) {
 	return A2(
@@ -10297,6 +10320,36 @@ var $author$project$Screen$BetweenDays$showCalenderDay = function (args) {
 									]))))))
 			]));
 };
+var $author$project$Screen$BetweenDays$showEndscreen = A2(
+	$author$project$Screen$BetweenDays$default,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$fontSizePx(30)
+				]),
+			$elm$core$List$singleton(
+				$elm$html$Html$text('You reached the end of'))),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$fontSizePx(100)
+				]),
+			$elm$core$List$singleton(
+				$elm$html$Html$text('Year 3'))),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$fontSizePx(30)
+				]),
+			$elm$core$List$singleton(
+				$elm$html$Html$text('Thanks for playing')))
+		]));
 var $author$project$Screen$BetweenDays$showItemAdded = function (args) {
 	return A2(
 		$author$project$Screen$BetweenDays$default,
@@ -10418,11 +10471,18 @@ var $author$project$Main$viewBetweenDays = F2(
 				return $author$project$Screen$BetweenDays$showMail;
 			case 'ShowNothing':
 				return $author$project$Screen$BetweenDays$showNothing;
-			default:
+			case 'AdvanceYear':
 				return $author$project$Screen$BetweenDays$showYear(
 					{
 						year: $author$project$Data$Date$year(model.date)
 					});
+			case 'ShowYear':
+				return $author$project$Screen$BetweenDays$showYear(
+					{
+						year: $author$project$Data$Date$year(model.date)
+					});
+			default:
+				return $author$project$Screen$BetweenDays$showEndscreen;
 		}
 	});
 var $author$project$Main$view = function (model) {

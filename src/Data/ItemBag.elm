@@ -82,3 +82,8 @@ fromList =
 contains : Int -> Item -> ItemBag -> Bool
 contains n item bag =
     get item bag >= n
+
+
+size : ItemBag -> Int
+size bag =
+    Dict.size bag
