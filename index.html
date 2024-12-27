@@ -7393,15 +7393,9 @@ var $author$project$Data$ItemBag$insert = function (pos) {
 		_List_fromArray(
 			[pos]));
 };
-var $author$project$Main$maxAmountOfItems = 5;
-var $author$project$Data$ItemBag$size = function (bag) {
-	return $elm$core$Dict$size(bag);
-};
 var $author$project$Main$addItem = F2(
 	function (item, model) {
-		return (_Utils_cmp(
-			$author$project$Data$ItemBag$size(model.items),
-			$author$project$Main$maxAmountOfItems) < 0) ? _Utils_update(
+		return _Utils_update(
 			model,
 			{
 				items: A3(
@@ -7409,7 +7403,7 @@ var $author$project$Main$addItem = F2(
 					_Utils_Tuple2(-1, -1),
 					item,
 					model.items)
-			}) : model;
+			});
 	});
 var $elm$core$List$head = function (list) {
 	if (list.b) {
@@ -7924,10 +7918,21 @@ var $author$project$Screen$BetweenDays$AdvanceYear = {$: 'AdvanceYear'};
 var $author$project$Screen$BetweenDays$ShowCalenderDay = {$: 'ShowCalenderDay'};
 var $author$project$Screen$BetweenDays$ShowMail = {$: 'ShowMail'};
 var $author$project$Screen$BetweenDays$ShowYear = {$: 'ShowYear'};
+var $author$project$Data$ItemBag$maxAmountOfItems = 5;
 var $author$project$Main$showBetweenDays = function (model) {
 	return _Utils_update(
 		model,
 		{showBetweenDays: true});
+};
+var $author$project$Data$ItemBag$size = function (bag) {
+	return $elm$core$List$sum(
+		A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var set = _v0.b;
+				return $elm$core$Set$size(set);
+			},
+			$elm$core$Dict$values(bag)));
 };
 var $author$project$Main$endDay = function (model) {
 	var _v0 = A2($elm$core$Dict$get, model.date, model.nextEvents);
@@ -7940,7 +7945,9 @@ var $author$project$Main$endDay = function (model) {
 					_List_fromArray(
 						[
 							_List_Nil,
-							event.reward ? _List_fromArray(
+							(event.reward && (_Utils_cmp(
+							$author$project$Data$ItemBag$size(model.items),
+							$author$project$Data$ItemBag$maxAmountOfItems) < 0)) ? _List_fromArray(
 							[
 								$author$project$Screen$BetweenDays$ShowNothing,
 								$author$project$Screen$BetweenDays$ShowItemAdded(event.setting.reward)
@@ -9141,11 +9148,17 @@ var $author$project$Screen$Menu$attachment = F2(
 							$elm$html$Html$div,
 							_List_Nil,
 							$elm$core$List$singleton(
-								$elm$html$Html$text('Accepted'))) : A2(
+								$elm$html$Html$text('Accepted'))) : ((_Utils_cmp(
+							$author$project$Data$ItemBag$size(args.items),
+							$author$project$Data$ItemBag$maxAmountOfItems) > -1) ? A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							$elm$core$List$singleton(
+								$elm$html$Html$text('You don\'t have enough space'))) : A2(
 							$author$project$View$Button$toHtml,
 							_List_fromArray(
 								[$author$project$View$Button$primary]),
-							{label: 'Accept', onPress: args.onAccept})
+							{label: 'Accept', onPress: args.onAccept}))
 						]));
 			},
 			mail.present);
@@ -9314,6 +9327,7 @@ var $author$project$Screen$Menu$messages = function (args) {
 														A2(
 															$author$project$Screen$Menu$attachment,
 															{
+																items: args.items,
 																onAccept: args.onAccept(i)
 															},
 															mail)))

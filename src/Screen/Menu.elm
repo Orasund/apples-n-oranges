@@ -54,7 +54,7 @@ personBubble person =
             ]
 
 
-attachment : { onAccept : msg } -> Mail -> Maybe (Html msg)
+attachment : { onAccept : msg, items : ItemBag } -> Mail -> Maybe (Html msg)
 attachment args mail =
     mail.present
         |> Maybe.map
@@ -73,6 +73,11 @@ attachment args mail =
                         ]
                 , if mail.accepted then
                     Html.text "Accepted"
+                        |> List.singleton
+                        |> Html.div []
+
+                  else if Data.ItemBag.size args.items >= Data.ItemBag.maxAmountOfItems then
+                    Html.text "You don't have enough space"
                         |> List.singleton
                         |> Html.div []
 
@@ -165,7 +170,11 @@ messages args =
                         |> List.singleton
                         |> Html.div []
                     ]
-                  , attachment { onAccept = args.onAccept i } mail
+                  , attachment
+                        { onAccept = args.onAccept i
+                        , items = args.items
+                        }
+                        mail
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
                   ]

@@ -74,11 +74,6 @@ type Msg
     | NextActionBetweenDays
 
 
-maxAmountOfItems : Int
-maxAmountOfItems =
-    5
-
-
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
 addBetweenDaysActions list model =
     { model | betweenDays = model.betweenDays ++ list }
@@ -256,11 +251,7 @@ increaseDifficulty model =
 
 addItem : Item -> Model -> Model
 addItem item model =
-    if Data.ItemBag.size model.items < maxAmountOfItems then
-        { model | items = model.items |> Data.ItemBag.insert ( -1, -1 ) item }
-
-    else
-        model
+    { model | items = model.items |> Data.ItemBag.insert ( -1, -1 ) item }
 
 
 removeItem : Item -> Model -> Model
@@ -521,7 +512,7 @@ endDay model =
             model
                 |> addBetweenDaysActions
                     ([ []
-                     , if event.reward then
+                     , if event.reward && Data.ItemBag.size model.items < Data.ItemBag.maxAmountOfItems then
                         [ ShowNothing
                         , ShowItemAdded event.setting.reward
                         ]

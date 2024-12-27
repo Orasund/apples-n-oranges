@@ -9,6 +9,11 @@ type alias ItemBag =
     Dict String ( Item, Set ( Int, Int ) )
 
 
+maxAmountOfItems : Int
+maxAmountOfItems =
+    5
+
+
 empty : ItemBag
 empty =
     Dict.empty
@@ -86,4 +91,6 @@ contains n item bag =
 
 size : ItemBag -> Int
 size bag =
-    Dict.size bag
+    Dict.values bag
+        |> List.map (\( _, set ) -> Set.size set)
+        |> List.sum
