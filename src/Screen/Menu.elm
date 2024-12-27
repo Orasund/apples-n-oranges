@@ -90,13 +90,24 @@ attachment args mail =
                         }
                 ]
                     |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.alignItemsCenter
-                        , Html.Style.justifyContentSpaceBetween
-                        , Html.Style.backgroundColor View.Color.green100
-                        , Html.Style.borderRadiusPx 8
-                        , Html.Style.paddingPx 8
-                        ]
+                        ([ Html.Style.displayFlex
+                         , Html.Style.alignItemsCenter
+                         , Html.Style.justifyContentSpaceBetween
+                         , Html.Style.borderRadiusPx 8
+                         , Html.Style.paddingPx 8
+                         ]
+                            ++ (if mail.accepted then
+                                    [ Html.Style.backgroundColor View.Color.white
+                                    , Html.Style.borderWidthPx 1
+                                    , Html.Style.borderStyleSolid
+                                    , Html.Style.borderColor View.Color.gray100
+                                    ]
+
+                                else
+                                    [ Html.Style.backgroundColor View.Color.green100
+                                    ]
+                               )
+                        )
             )
 
 
@@ -136,15 +147,25 @@ request args mail =
                         }
                 ]
                     |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.alignItemsCenter
-                        , Html.Style.justifyContentSpaceBetween
-                        , Html.Style.backgroundColor View.Color.red100
-                        , Html.Style.borderRadiusPx 8
-                        , Html.Style.paddingPx 8
-                        , Html.Style.alignSelfEnd
-                        , Html.Style.width "80%"
-                        ]
+                        ([ Html.Style.displayFlex
+                         , Html.Style.alignItemsCenter
+                         , Html.Style.justifyContentSpaceBetween
+                         , Html.Style.borderRadiusPx 8
+                         , Html.Style.paddingPx 8
+                         , Html.Style.alignSelfEnd
+                         , Html.Style.width "80%"
+                         ]
+                            ++ (if mail.accepted then
+                                    [ Html.Style.backgroundColor View.Color.white
+                                    , Html.Style.borderWidthPx 1
+                                    , Html.Style.borderStyleSolid
+                                    , Html.Style.borderColor View.Color.gray100
+                                    ]
+
+                                else
+                                    [ Html.Style.backgroundColor View.Color.red100 ]
+                               )
+                        )
             )
 
 

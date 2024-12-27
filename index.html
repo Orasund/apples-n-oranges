@@ -9114,7 +9114,26 @@ var $author$project$Screen$Menu$market = function (args) {
 					},
 					args.trades))));
 };
+var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-color', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-style', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
+var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-width', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderWidth(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
 var $author$project$View$Color$green100 = 'rgb(203 224 196)';
+var $author$project$View$Color$white = 'white';
 var $author$project$Screen$Menu$attachment = F2(
 	function (args, mail) {
 		return A2(
@@ -9122,15 +9141,25 @@ var $author$project$Screen$Menu$attachment = F2(
 			function (item) {
 				return A2(
 					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-							$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
-							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$green100),
-							$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
-							$Orasund$elm_html_style$Html$Style$paddingPx(8)
-						]),
+					_Utils_ap(
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
+								$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
+								$Orasund$elm_html_style$Html$Style$paddingPx(8)
+							]),
+						mail.accepted ? _List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white),
+								$Orasund$elm_html_style$Html$Style$borderWidthPx(1),
+								$Orasund$elm_html_style$Html$Style$borderStyleSolid,
+								$Orasund$elm_html_style$Html$Style$borderColor($author$project$View$Color$gray100)
+							]) : _List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$green100)
+							])),
 					_List_fromArray(
 						[
 							A2(
@@ -9163,24 +9192,6 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
-var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-color', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-style', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
-var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-width', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderWidth(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
 var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
 var $author$project$Screen$Menu$personBubble = function (person) {
 	return A2(
@@ -9216,17 +9227,27 @@ var $author$project$Screen$Menu$request = F2(
 			function (item) {
 				return A2(
 					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-							$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
-							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red100),
-							$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
-							$Orasund$elm_html_style$Html$Style$paddingPx(8),
-							$Orasund$elm_html_style$Html$Style$alignSelfEnd,
-							$Orasund$elm_html_style$Html$Style$width('80%')
-						]),
+					_Utils_ap(
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
+								$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
+								$Orasund$elm_html_style$Html$Style$paddingPx(8),
+								$Orasund$elm_html_style$Html$Style$alignSelfEnd,
+								$Orasund$elm_html_style$Html$Style$width('80%')
+							]),
+						mail.accepted ? _List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white),
+								$Orasund$elm_html_style$Html$Style$borderWidthPx(1),
+								$Orasund$elm_html_style$Html$Style$borderStyleSolid,
+								$Orasund$elm_html_style$Html$Style$borderColor($author$project$View$Color$gray100)
+							]) : _List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red100)
+							])),
 					_List_fromArray(
 						[
 							A2(
@@ -9257,7 +9278,6 @@ var $author$project$Screen$Menu$request = F2(
 			},
 			mail.request);
 	});
-var $author$project$View$Color$white = 'white';
 var $author$project$Screen$Menu$messages = function (args) {
 	var viewMessage = F2(
 		function (i, mail) {
