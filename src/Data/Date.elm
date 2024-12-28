@@ -9,9 +9,9 @@ daysInAMonth =
     28
 
 
-zero : Date
-zero =
-    ( 0, 0, 0 )
+first : Date
+first =
+    ( 0, 0, 1 )
 
 
 day : Date -> Int

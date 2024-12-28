@@ -376,9 +376,9 @@ init () =
         model =
             { level = Level.empty { columns = 5, rows = 5 }
             , difficutly = 0
-            , date = Date.zero
+            , date = Date.first
             , nextEvents =
-                [ ( Date.zero
+                [ ( Date.first
                   , { setting = Puzzle.Setting.startingLevel
                     , reward = False
                     , mail = False
@@ -743,7 +743,10 @@ update msg model =
                 )
 
         SetSeed seed ->
-            ( { model | seed = seed }, Cmd.none )
+            ( generateNextMonth model
+                |> applyGenerator seed
+            , Cmd.none
+            )
 
         LoadNextLevel ->
             ( model
