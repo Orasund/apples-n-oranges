@@ -10,7 +10,7 @@ main =
     [ [ View.Color.red100
       , View.Color.red200
       , View.Color.red300
-      , View.Color.gray400
+      , View.Color.red400
       , View.Color.gray500
       , View.Color.red600
       , View.Color.red700

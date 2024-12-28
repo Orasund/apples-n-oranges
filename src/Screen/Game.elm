@@ -32,14 +32,14 @@ toHtml args =
         ]
         [ (if args.unansweredMessages > 0 then
             View.Button.withDot []
-                { label = "Messages"
+                { label = "✉️ Messages"
                 , onPress = args.onOpenMenu
                 , amount = args.unansweredMessages
                 }
 
            else
             View.Button.toHtml []
-                { label = "Messages"
+                { label = "✉️ Messages"
                 , onPress = args.onOpenMenu
                 }
           )

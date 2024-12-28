@@ -5256,14 +5256,15 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Data$Block$Coin = {$: 'Coin'};
 var $author$project$Main$SetSeed = function (a) {
 	return {$: 'SetSeed', a: a};
 };
 var $author$project$Screen$BetweenDays$ShowNothing = {$: 'ShowNothing'};
 var $author$project$Data$Block$Stone = {$: 'Stone'};
 var $author$project$Data$Block$Wood = {$: 'Wood'};
-var $author$project$Data$Person$Ranger = {$: 'Ranger'};
-var $author$project$Data$Person$alice = {job: $author$project$Data$Person$Ranger, name: 'Alice', progress: 0, symbol: '👩🏻'};
+var $author$project$Data$Person$Major = {$: 'Major'};
+var $author$project$Data$Person$alice = {job: $author$project$Data$Person$Major, name: 'Alice', symbol: '👩🏻'};
 var $elm$random$Random$step = F2(
 	function (_v0, seed) {
 		var generator = _v0.a;
@@ -5278,6 +5279,86 @@ var $author$project$Main$applyGenerator = F2(
 			model,
 			{seed: newSeed});
 	});
+var $author$project$Data$Block$ItemBlock = function (a) {
+	return {$: 'ItemBlock', a: a};
+};
+var $author$project$Data$Block$toString = function (block) {
+	switch (block.$) {
+		case 'OrganicBlock':
+			switch (block.a.$) {
+				case 'Apple':
+					var _v1 = block.a;
+					return '🍎';
+				case 'Orange':
+					var _v2 = block.a;
+					return '🍊';
+				case 'Lemon':
+					var _v3 = block.a;
+					return '🍋';
+				case 'Carrot':
+					var _v4 = block.a;
+					return '🥕';
+				case 'Potato':
+					var _v5 = block.a;
+					return '🥔';
+				default:
+					var _v6 = block.a;
+					return '🧅';
+			}
+		case 'ItemBlock':
+			switch (block.a.$) {
+				case 'Coin':
+					var _v7 = block.a;
+					return '🪙';
+				case 'Wood':
+					var _v8 = block.a;
+					return '🪵';
+				default:
+					var _v9 = block.a;
+					return '🪨';
+			}
+		case 'Fish1':
+			return '🐟';
+		case 'Fish2':
+			return '🎣';
+		case 'FlowerBlock':
+			switch (block.a.$) {
+				case 'Sunflower':
+					var _v10 = block.a;
+					return '🌻';
+				case 'Rose':
+					var _v11 = block.a;
+					return '🌹';
+				default:
+					var _v12 = block.a;
+					return '\uD83E\uDEBB';
+			}
+		case 'PastryBlock':
+			switch (block.a.$) {
+				case 'Bagle':
+					var _v13 = block.a;
+					return '🥯';
+				case 'Prezel':
+					var _v14 = block.a;
+					return '🥨';
+				default:
+					var _v15 = block.a;
+					return '🥐';
+			}
+		case 'Snow':
+			return '❄️';
+		default:
+			return '🧊';
+	}
+};
+var $author$project$Data$Person$defaultRequest = function (item) {
+	return {
+		content: 'Hi, do you have some ' + ($author$project$Data$Block$toString(
+			$author$project$Data$Block$ItemBlock(item)) + '?'),
+		present: $elm$core$Maybe$Nothing,
+		request: $elm$core$Maybe$Just(item)
+	};
+};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Data$ItemBag$empty = $elm$core$Dict$empty;
@@ -5288,24 +5369,7 @@ var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $author$project$Level$empty = function (args) {
 	return {blocks: $elm$core$Dict$empty, columns: args.columns, entities: $elm$core$Dict$empty, fields: $elm$core$Dict$empty, nextCoinId: 0, pairs: $elm$core$Dict$empty, rows: args.rows, selected: $elm$core$Maybe$Nothing, solids: $elm$core$Set$empty};
 };
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
+var $author$project$Data$Date$first = _Utils_Tuple3(0, 0, 1);
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5606,13 +5670,6 @@ var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
 			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
 			seed0);
 	});
-var $author$project$Data$Person$jobToString = function (job) {
-	if (job.$ === 'Ranger') {
-		return 'Ranger';
-	} else {
-		return 'Major';
-	}
-};
 var $author$project$Puzzle$Builder$Pair = F2(
 	function (a, b) {
 		return {$: 'Pair', a: a, b: b};
@@ -6621,7 +6678,6 @@ var $author$project$Data$Date$listOfDaysInMonth = function (_v0) {
 		A2($elm$core$List$range, 1, $author$project$Data$Date$daysInAMonth));
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $author$project$Data$Block$Coin = {$: 'Coin'};
 var $author$project$Puzzle$Setting$empty = {difficulty: 0, pairs: _List_Nil, reward: $author$project$Data$Block$Coin, symbol: $elm$core$Maybe$Nothing};
 var $author$project$Puzzle$Setting$pick = F2(
 	function (args, fun) {
@@ -6878,78 +6934,6 @@ var $author$project$Level$clear = function (level) {
 	return $author$project$Level$empty(
 		{columns: level.columns, rows: level.rows});
 };
-var $author$project$Data$Block$ItemBlock = function (a) {
-	return {$: 'ItemBlock', a: a};
-};
-var $author$project$Data$Block$toString = function (block) {
-	switch (block.$) {
-		case 'OrganicBlock':
-			switch (block.a.$) {
-				case 'Apple':
-					var _v1 = block.a;
-					return '🍎';
-				case 'Orange':
-					var _v2 = block.a;
-					return '🍊';
-				case 'Lemon':
-					var _v3 = block.a;
-					return '🍋';
-				case 'Carrot':
-					var _v4 = block.a;
-					return '🥕';
-				case 'Potato':
-					var _v5 = block.a;
-					return '🥔';
-				default:
-					var _v6 = block.a;
-					return '🧅';
-			}
-		case 'ItemBlock':
-			switch (block.a.$) {
-				case 'Coin':
-					var _v7 = block.a;
-					return '🪙';
-				case 'Wood':
-					var _v8 = block.a;
-					return '🪵';
-				default:
-					var _v9 = block.a;
-					return '🪨';
-			}
-		case 'Fish1':
-			return '🐟';
-		case 'Fish2':
-			return '🎣';
-		case 'FlowerBlock':
-			switch (block.a.$) {
-				case 'Sunflower':
-					var _v10 = block.a;
-					return '🌻';
-				case 'Rose':
-					var _v11 = block.a;
-					return '🌹';
-				default:
-					var _v12 = block.a;
-					return '\uD83E\uDEBB';
-			}
-		case 'PastryBlock':
-			switch (block.a.$) {
-				case 'Bagle':
-					var _v13 = block.a;
-					return '🥯';
-				case 'Prezel':
-					var _v14 = block.a;
-					return '🥨';
-				default:
-					var _v15 = block.a;
-					return '🥐';
-			}
-		case 'Snow':
-			return '❄️';
-		default:
-			return '🧊';
-	}
-};
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -7172,17 +7156,6 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
-var $author$project$Data$Message$defaultRequest = F2(
-	function (item, person) {
-		return {
-			accepted: false,
-			message: 'Hi, do you have some ' + ($author$project$Data$Block$toString(
-				$author$project$Data$Block$ItemBlock(item)) + '?'),
-			present: $elm$core$Maybe$Nothing,
-			request: $elm$core$Maybe$Just(item),
-			sender: person
-		};
-	});
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -7218,35 +7191,31 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
-var $author$project$Data$Message$major = function (person) {
-	return $elm$core$Array$fromList(
-		_List_fromArray(
-			[
-				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Stone, person)
-			]));
-};
-var $author$project$Data$Message$ranger = function (person) {
-	return $elm$core$Array$fromList(
-		_List_fromArray(
-			[
-				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Wood, person)
-			]));
-};
-var $author$project$Data$Message$next = function (person) {
+var $author$project$Data$Person$major = $elm$core$Array$fromList(
+	_List_fromArray(
+		[
+			$author$project$Data$Person$defaultRequest($author$project$Data$Block$Stone)
+		]));
+var $author$project$Data$Person$ranger = $elm$core$Array$fromList(
+	_List_fromArray(
+		[
+			$author$project$Data$Person$defaultRequest($author$project$Data$Block$Wood)
+		]));
+var $author$project$Data$Person$next = function (args) {
 	return A2(
 		$elm$core$Array$get,
-		person.progress,
+		args.progress,
 		function () {
-			var _v0 = person.job;
+			var _v0 = args.job;
 			if (_v0.$ === 'Ranger') {
-				return $author$project$Data$Message$ranger;
+				return $author$project$Data$Person$ranger;
 			} else {
-				return $author$project$Data$Message$major;
+				return $author$project$Data$Person$major;
 			}
-		}()(person));
+		}());
 };
-var $author$project$Data$Person$Major = {$: 'Major'};
-var $author$project$Data$Person$rick = {job: $author$project$Data$Person$Major, name: 'Rick', progress: 0, symbol: '👨🏼'};
+var $author$project$Data$Person$Ranger = {$: 'Ranger'};
+var $author$project$Data$Person$rick = {job: $author$project$Data$Person$Ranger, name: 'Rick', symbol: '👨🏼'};
 var $author$project$Puzzle$Setting$startingLevel = _Utils_update(
 	$author$project$Puzzle$Setting$empty,
 	{
@@ -7259,15 +7228,15 @@ var $author$project$Puzzle$Setting$startingLevel = _Utils_update(
 				$author$project$Data$Block$OrganicBlock($author$project$Data$Block$Orange))),
 		symbol: $elm$core$Maybe$Nothing
 	});
-var $author$project$Data$Date$zero = _Utils_Tuple3(0, 0, 0);
 var $author$project$Main$init = function (_v0) {
 	var seed = $elm$random$Random$initialSeed(42);
 	var people = _List_fromArray(
 		[$author$project$Data$Person$alice, $author$project$Data$Person$rick]);
 	var model = {
+		answeredMessages: $elm$core$Set$empty,
 		betweenDays: _List_Nil,
 		betweenDaysLast: $author$project$Screen$BetweenDays$ShowNothing,
-		date: $author$project$Data$Date$zero,
+		date: $author$project$Data$Date$first,
 		difficutly: 0,
 		history: _List_Nil,
 		items: $author$project$Data$ItemBag$empty,
@@ -7279,22 +7248,31 @@ var $author$project$Main$init = function (_v0) {
 			_List_fromArray(
 				[
 					_Utils_Tuple2(
-					$author$project$Data$Date$zero,
+					$author$project$Data$Date$first,
 					{mail: false, reward: false, setting: $author$project$Puzzle$Setting$startingLevel})
 				])),
-		nextMessages: $elm$core$Dict$fromList(
+		persons: $elm$core$Dict$fromList(
 			A2(
-				$elm$core$List$filterMap,
-				function (person) {
-					return A2(
-						$elm$core$Maybe$map,
-						$elm$core$Tuple$pair(
-							$author$project$Data$Person$jobToString(person.job)),
-						$author$project$Data$Message$next(person));
-				},
-				people)),
-		peoples: $elm$core$Dict$fromList(
-			A2($elm$core$List$indexedMap, $elm$core$Tuple$pair, people)),
+				$elm$core$List$indexedMap,
+				$elm$core$Tuple$pair,
+				A2(
+					$elm$core$List$map,
+					function (person) {
+						var progress = 0;
+						return {
+							friendship: 0,
+							job: person.job,
+							name: person.name,
+							nextMessage: A2(
+								$elm$core$Maybe$withDefault,
+								$author$project$Data$Person$defaultRequest($author$project$Data$Block$Coin),
+								$author$project$Data$Person$next(
+									{job: person.job, progress: progress})),
+							progress: progress,
+							symbol: person.symbol
+						};
+					},
+					people))),
 		pointer: $elm$core$Maybe$Nothing,
 		pointerZero: _Utils_Tuple2(0, 0),
 		seed: seed,
@@ -7307,16 +7285,14 @@ var $author$project$Main$init = function (_v0) {
 				remove: _List_fromArray(
 					[
 						_Utils_Tuple2($author$project$Data$Block$Wood, 2)
-					]),
-				trader: $author$project$Data$Person$alice
+					])
 			},
 				{
 				add: $author$project$Data$Block$Wood,
 				remove: _List_fromArray(
 					[
 						_Utils_Tuple2($author$project$Data$Block$Stone, 2)
-					]),
-				trader: $author$project$Data$Person$rick
+					])
 			}
 			])
 	};
@@ -7336,66 +7312,11 @@ var $author$project$Screen$BetweenDays$ShowItemAdded = function (a) {
 	return {$: 'ShowItemAdded', a: a};
 };
 var $author$project$Main$StartDay = {$: 'StartDay'};
-var $author$project$Data$Message$default = function (person) {
-	return A2(
-		$elm$random$Random$uniform,
-		A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Stone, person),
-		_List_fromArray(
-			[
-				A2($author$project$Data$Message$defaultRequest, $author$project$Data$Block$Wood, person)
-			]));
+var $author$project$Data$Person$advanceProgress = function (person) {
+	return _Utils_update(
+		person,
+		{progress: person.progress + 1});
 };
-var $author$project$Main$acceptMail = F2(
-	function (n, model) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$random$Random$constant(model),
-			A2(
-				$elm$core$Maybe$map,
-				function (mail) {
-					var sender = function (s) {
-						return _Utils_update(
-							s,
-							{progress: s.progress + 1});
-					}(mail.sender);
-					return A2(
-						$elm$random$Random$map,
-						function (nextMessage) {
-							return _Utils_update(
-								model,
-								{
-									messages: A3(
-										$elm$core$Dict$insert,
-										n,
-										_Utils_update(
-											mail,
-											{accepted: true}),
-										model.messages),
-									nextMessages: A3(
-										$elm$core$Dict$insert,
-										$author$project$Data$Person$jobToString(mail.sender.job),
-										nextMessage,
-										model.nextMessages)
-								});
-						},
-						A2(
-							$elm$core$Maybe$withDefault,
-							$author$project$Data$Message$default(sender),
-							A2(
-								$elm$core$Maybe$map,
-								$elm$random$Random$constant,
-								$author$project$Data$Message$next(sender))));
-				},
-				A2($elm$core$Dict$get, n, model.messages)));
-	});
-var $author$project$Main$addBetweenDaysActions = F2(
-	function (list, model) {
-		return _Utils_update(
-			model,
-			{
-				betweenDays: _Utils_ap(model.betweenDays, list)
-			});
-	});
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -7404,6 +7325,89 @@ var $elm$core$Maybe$andThen = F2(
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
+	});
+var $author$project$Data$Person$default = A2(
+	$elm$random$Random$uniform,
+	$author$project$Data$Person$defaultRequest($author$project$Data$Block$Stone),
+	_List_fromArray(
+		[
+			$author$project$Data$Person$defaultRequest($author$project$Data$Block$Wood)
+		]));
+var $author$project$Data$Person$increaseFriendship = function (person) {
+	return _Utils_update(
+		person,
+		{friendship: person.friendship + 1});
+};
+var $author$project$Data$Person$setNextMessage = F2(
+	function (mail, person) {
+		return _Utils_update(
+			person,
+			{nextMessage: mail});
+	});
+var $author$project$Main$acceptMail = F2(
+	function (date, model) {
+		var fun = function (_v1) {
+			var personId = _v1.personId;
+			var person = _v1.person;
+			var mail = _v1.mail;
+			return A2(
+				$elm$random$Random$map,
+				function (nextMessage) {
+					return _Utils_update(
+						model,
+						{
+							answeredMessages: A2($elm$core$Set$insert, date, model.answeredMessages),
+							messages: A3(
+								$elm$core$Dict$insert,
+								date,
+								{message: mail, personId: personId},
+								model.messages),
+							persons: A3(
+								$elm$core$Dict$insert,
+								personId,
+								$author$project$Data$Person$increaseFriendship(
+									A2($author$project$Data$Person$setNextMessage, nextMessage, person)),
+								model.persons)
+						});
+				},
+				A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Data$Person$default,
+					A2(
+						$elm$core$Maybe$map,
+						$elm$random$Random$constant,
+						$author$project$Data$Person$next(
+							{job: person.job, progress: person.progress}))));
+		};
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$random$Random$constant(model),
+			A2(
+				$elm$core$Maybe$andThen,
+				function (_v0) {
+					var personId = _v0.personId;
+					var message = _v0.message;
+					return A2(
+						$elm$core$Maybe$map,
+						function (person) {
+							return fun(
+								{
+									mail: message,
+									person: $author$project$Data$Person$advanceProgress(person),
+									personId: personId
+								});
+						},
+						A2($elm$core$Dict$get, personId, model.persons));
+				},
+				A2($elm$core$Dict$get, date, model.messages)));
+	});
+var $author$project$Main$addBetweenDaysActions = F2(
+	function (list, model) {
+		return _Utils_update(
+			model,
+			{
+				betweenDays: _Utils_ap(model.betweenDays, list)
+			});
 	});
 var $author$project$Data$ItemBag$insert = function (pos) {
 	return $author$project$Data$ItemBag$add(
@@ -7431,17 +7435,28 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var $author$project$Main$addMail = function (model) {
+	var fun = function (args) {
+		return A2(
+			$elm$random$Random$map,
+			function (newMessage) {
+				return _Utils_update(
+					model,
+					{
+						messages: A3(
+							$elm$core$Dict$insert,
+							model.date,
+							{message: args.person.nextMessage, personId: args.personId},
+							model.messages),
+						persons: A3(
+							$elm$core$Dict$insert,
+							args.personId,
+							A2($author$project$Data$Person$setNextMessage, newMessage, args.person),
+							model.persons)
+					});
+			},
+			$author$project$Data$Person$default);
+	};
 	return A2(
 		$elm$random$Random$andThen,
 		function (maybe) {
@@ -7450,22 +7465,11 @@ var $author$project$Main$addMail = function (model) {
 				$elm$random$Random$constant(model),
 				A2(
 					$elm$core$Maybe$map,
-					function (mail) {
-						return A2(
-							$elm$random$Random$map,
-							function (nextMessage) {
-								return _Utils_update(
-									model,
-									{
-										messages: A3($elm$core$Dict$insert, model.date, mail, model.messages),
-										nextMessages: A3(
-											$elm$core$Dict$insert,
-											$author$project$Data$Person$jobToString(mail.sender.job),
-											nextMessage,
-											model.nextMessages)
-									});
-							},
-							$author$project$Data$Message$default(mail.sender));
+					function (_v0) {
+						var personId = _v0.a;
+						var person = _v0.b;
+						return fun(
+							{person: person, personId: personId});
 					},
 					maybe));
 		},
@@ -7473,7 +7477,7 @@ var $author$project$Main$addMail = function (model) {
 			$elm$random$Random$map,
 			$elm$core$List$head,
 			$author$project$Maths$shuffle(
-				$elm$core$Dict$values(model.nextMessages))));
+				$elm$core$Dict$toList(model.persons))));
 };
 var $author$project$Data$Date$next = function (_v0) {
 	var y = _v0.a;
@@ -7936,6 +7940,16 @@ var $author$project$Main$showBetweenDays = function (model) {
 		model,
 		{showBetweenDays: true});
 };
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
 var $author$project$Data$ItemBag$size = function (bag) {
 	return $elm$core$List$sum(
 		A2(
@@ -8276,9 +8290,10 @@ var $author$project$Main$update = F2(
 			case 'SetSeed':
 				var seed = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{seed: seed}),
+					A2(
+						$author$project$Main$applyGenerator,
+						seed,
+						$author$project$Main$generateNextMonth(model)),
 					$elm$core$Platform$Cmd$none);
 			case 'LoadNextLevel':
 				return _Utils_Tuple2(
@@ -8338,7 +8353,7 @@ var $author$project$Main$update = F2(
 					function () {
 						var _v5 = A2($elm$core$Dict$get, i, model.messages);
 						if (_v5.$ === 'Just') {
-							var mail = _v5.a;
+							var message = _v5.a.message;
 							return A2(
 								$author$project$Main$applyGenerator,
 								model.seed,
@@ -8362,7 +8377,7 @@ var $author$project$Main$update = F2(
 																	$author$project$Screen$BetweenDays$ShowItemAdded(item)
 																]);
 														},
-														mail.present))
+														message.present))
 												])),
 										A2(
 											$elm$core$Maybe$withDefault,
@@ -8382,7 +8397,7 @@ var $author$project$Main$update = F2(
 																	A2($author$project$Data$ItemBag$remove, item, model.items)))
 														});
 												},
-												mail.request)))));
+												message.request)))));
 						} else {
 							return model;
 						}
@@ -8726,6 +8741,24 @@ var $author$project$Screen$Menu$calender = function (args) {
 					])))
 		]);
 };
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-content', value);
 };
@@ -8800,36 +8833,6 @@ var $Orasund$elm_html_style$Html$Style$gapPx = function (value) {
 			'px'));
 };
 var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
-var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$height(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
-var $author$project$Screen$Menu$personBubble = function (person) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart]),
-		$elm$core$List$singleton(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$heightPx(35),
-						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-						$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100),
-						$Orasund$elm_html_style$Html$Style$fontSizePx(20)
-					]),
-				$elm$core$List$singleton(
-					$elm$html$Html$text(person.symbol)))));
-};
 var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary-button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -8954,19 +8957,6 @@ var $author$project$Screen$Menu$market = function (args) {
 								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$Orasund$elm_html_style$Html$Style$displayFlex,
-										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-										$Orasund$elm_html_style$Html$Style$gapPx(8)
-									]),
-								_List_fromArray(
-									[
-										$author$project$Screen$Menu$personBubble(trade.trader),
-										$elm$html$Html$text(trade.trader.name)
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
 										$Orasund$elm_html_style$Html$Style$fontSizePx(75)
 									]),
 								$elm$core$List$singleton(
@@ -9021,7 +9011,7 @@ var $author$project$Screen$Menu$attachment = F2(
 								$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
 								$Orasund$elm_html_style$Html$Style$paddingPx(8)
 							]),
-						mail.accepted ? _List_fromArray(
+						args.answered ? _List_fromArray(
 							[
 								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white),
 								$Orasund$elm_html_style$Html$Style$borderWidthPx(1),
@@ -9038,13 +9028,13 @@ var $author$project$Screen$Menu$attachment = F2(
 							_List_fromArray(
 								[
 									$Orasund$elm_html_style$Html$Style$fontSizePx(
-									mail.accepted ? 20 : 40)
+									args.answered ? 20 : 40)
 								]),
 							$elm$core$List$singleton(
 								$elm$html$Html$text(
 									$author$project$Data$Block$toString(
 										$author$project$Data$Block$ItemBlock(item))))),
-							mail.accepted ? A2(
+							args.answered ? A2(
 							$elm$html$Html$div,
 							_List_Nil,
 							$elm$core$List$singleton(
@@ -9063,6 +9053,36 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
+var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$height(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
+};
+var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
+var $author$project$Screen$Menu$personBubble = function (person) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart]),
+		$elm$core$List$singleton(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+						$Orasund$elm_html_style$Html$Style$heightPx(35),
+						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+						$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100),
+						$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+					]),
+				$elm$core$List$singleton(
+					$elm$html$Html$text(person.symbol)))));
+};
 var $Orasund$elm_html_style$Html$Style$alignSelf = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-self', value);
 };
@@ -9086,7 +9106,7 @@ var $author$project$Screen$Menu$request = F2(
 								$Orasund$elm_html_style$Html$Style$alignSelfEnd,
 								$Orasund$elm_html_style$Html$Style$width('80%')
 							]),
-						mail.accepted ? _List_fromArray(
+						args.answered ? _List_fromArray(
 							[
 								$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white),
 								$Orasund$elm_html_style$Html$Style$borderWidthPx(1),
@@ -9103,13 +9123,13 @@ var $author$project$Screen$Menu$request = F2(
 							_List_fromArray(
 								[
 									$Orasund$elm_html_style$Html$Style$fontSizePx(
-									mail.accepted ? 20 : 40)
+									args.answered ? 20 : 40)
 								]),
 							$elm$core$List$singleton(
 								$elm$html$Html$text(
 									$author$project$Data$Block$toString(
 										$author$project$Data$Block$ItemBlock(item))))),
-							mail.accepted ? A2(
+							args.answered ? A2(
 							$elm$html$Html$div,
 							_List_Nil,
 							$elm$core$List$singleton(
@@ -9126,9 +9146,13 @@ var $author$project$Screen$Menu$request = F2(
 			},
 			mail.request);
 	});
-var $author$project$Screen$Menu$messages = function (args) {
-	var viewMessage = F2(
-		function (i, mail) {
+var $author$project$Screen$Menu$messages = F2(
+	function (args, list) {
+		var viewMessage = function (_v0) {
+			var date = _v0.date;
+			var person = _v0.person;
+			var mail = _v0.mail;
+			var answered = _v0.answered;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -9136,11 +9160,11 @@ var $author$project$Screen$Menu$messages = function (args) {
 						$Orasund$elm_html_style$Html$Style$displayFlex,
 						$Orasund$elm_html_style$Html$Style$flexDirectionRow,
 						$Orasund$elm_html_style$Html$Style$gapPx(8),
-						mail.accepted ? $Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white) : $Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white)
+						answered ? $Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white) : $Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$white)
 					]),
 				_List_fromArray(
 					[
-						$author$project$Screen$Menu$personBubble(mail.sender),
+						$author$project$Screen$Menu$personBubble(person),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -9179,12 +9203,12 @@ var $author$project$Screen$Menu$messages = function (args) {
 														_List_fromArray(
 															[$Orasund$elm_html_style$Html$Style$fontWeightBold]),
 														$elm$core$List$singleton(
-															$elm$html$Html$text(mail.sender.name))),
+															$elm$html$Html$text(person.name))),
 														A2(
 														$elm$html$Html$div,
 														_List_Nil,
 														$elm$core$List$singleton(
-															$elm$html$Html$text(mail.message)))
+															$elm$html$Html$text(mail.content)))
 													]),
 													A2(
 													$elm$core$Maybe$withDefault,
@@ -9195,8 +9219,9 @@ var $author$project$Screen$Menu$messages = function (args) {
 														A2(
 															$author$project$Screen$Menu$attachment,
 															{
+																answered: answered,
 																items: args.items,
-																onAccept: args.onAccept(i)
+																onAccept: args.onAccept(date)
 															},
 															mail)))
 												])))
@@ -9210,31 +9235,60 @@ var $author$project$Screen$Menu$messages = function (args) {
 										A2(
 											$author$project$Screen$Menu$request,
 											{
+												answered: answered,
 												items: args.items,
-												onAccept: args.onAccept(i)
+												onAccept: args.onAccept(date)
 											},
 											mail)))
 								])))
 					]));
-		});
-	return A2(
-		$elm$core$List$map,
-		function (_v0) {
-			var i = _v0.a;
-			var mail = _v0.b;
-			return A2(viewMessage, i, mail);
-		},
-		$elm$core$List$reverse(
-			$elm$core$Dict$toList(args.mails)));
-};
+		};
+		return A2(
+			$elm$core$List$map,
+			viewMessage,
+			$elm$core$List$reverse(list));
+	});
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
 	return _VirtualDom_node(
 		_VirtualDom_noScript(tag));
 };
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $author$project$Screen$Menu$people = function (list) {
+	return A2(
+		$elm$core$List$map,
+		function (person) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+						$Orasund$elm_html_style$Html$Style$gapPx(8)
+					]),
+				_List_fromArray(
+					[
+						$author$project$Screen$Menu$personBubble(person),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						$elm$core$List$singleton(
+							$elm$html$Html$text(person.name))),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						$elm$core$List$singleton(
+							$elm$html$Html$text(
+								$elm$core$String$concat(
+									A2($elm$core$List$repeat, person.friendship, '❤️')))))
+					]));
+		},
+		list);
+};
 var $author$project$View$Color$black = 'black';
 var $author$project$View$Color$gray800 = 'hsl(0 0% 50% / 1)';
+var $author$project$View$Color$red300 = 'rgb(255 184 149)';
+var $author$project$View$Color$red400 = 'rgb(255 169 127)';
 var $author$project$View$Color$red600 = 'hsl(20 100% 60% / 1)';
 var $author$project$View$Color$red700 = 'hsl(20 100% 55% / 1)';
 var $author$project$View$Color$red800 = 'hsl(20 100% 50% / 1)';
@@ -9243,7 +9297,7 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary-button {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n        border-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary-button:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n        border-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary-button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n        border-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary-button:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n        border-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red100 + (';\n        border-color: ' + ($author$project$View$Color$red100 + ';\n    }\n    '))))))))))))))))))))))))))))))))))))));
+		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    .button-base.blackWhiteEmoji {\n        font-family: sans-serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary-button {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n        border-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary-button:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n        border-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary-button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n        border-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary-button:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n        border-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red300 + (';\n    }\n\n    .button:active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red400 + (';\n        border-color: ' + ($author$project$View$Color$red400 + ';\n    }\n    '))))))))))))))))))))))))))))))))))))))));
 var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-image', value);
 };
@@ -9987,13 +10041,13 @@ var $author$project$Screen$Game$toHtml = function (args) {
 								$Orasund$elm_html_style$Html$Style$justifyContentFlexEnd
 							]),
 						$elm$core$List$singleton(
-							(args.showDot > 0) ? A2(
+							(args.unansweredMessages > 0) ? A2(
 								$author$project$View$Button$withDot,
 								_List_Nil,
-								{amount: args.showDot, label: 'Messages', onPress: args.onOpenMenu}) : A2(
+								{amount: args.unansweredMessages, label: '✉️ Messages', onPress: args.onOpenMenu}) : A2(
 								$author$project$View$Button$toHtml,
 								_List_Nil,
-								{label: 'Messages', onPress: args.onOpenMenu})))
+								{label: '✉️ Messages', onPress: args.onOpenMenu})))
 					])),
 				$author$project$View$Level$toHtml(
 				{game: args.level, items: args.items, onPointerDown: args.onPointerDown, onPointerEnd: args.onPointerEnd, onPointerUp: args.onPointerUp, zero: args.pointerZero}),
@@ -10039,18 +10093,28 @@ var $author$project$Screen$Game$toHtml = function (args) {
 };
 var $author$project$Screen$Menu$CalenderTab = {$: 'CalenderTab'};
 var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
-var $author$project$View$Button$fake = function (label) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('button-base'),
-				$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
-				$Orasund$elm_html_style$Html$Style$color('black')
-			]),
-		$elm$core$List$singleton(
-			$elm$html$Html$text(label)));
-};
+var $author$project$Screen$Menu$PeopleTab = {$: 'PeopleTab'};
+var $author$project$View$Button$asIcon = _List_fromArray(
+	[
+		$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+		$Orasund$elm_html_style$Html$Style$paddingPx(0),
+		$Orasund$elm_html_style$Html$Style$justifyContentCenter
+	]);
+var $author$project$View$Button$fake = F2(
+	function (attrs, label) {
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('button-base'),
+						$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
+						$Orasund$elm_html_style$Html$Style$color('black')
+					]),
+				attrs),
+			$elm$core$List$singleton(
+				$elm$html$Html$text(label)));
+	});
 var $Orasund$elm_html_style$Html$Style$overflowY = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'overflow-y', value);
 };
@@ -10093,36 +10157,46 @@ var $author$project$Screen$Menu$toHtml = F2(
 					_List_fromArray(
 						[
 							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$gapPx(8)
+							$Orasund$elm_html_style$Html$Style$gapPx(8),
+							$Orasund$elm_html_style$Html$Style$widthPx(300)
 						]),
 					A2(
 						$elm$core$List$map,
 						function (_v0) {
 							var tab = _v0.a;
-							var label = _v0.b;
+							var icon = _v0.b;
+							var label = _v0.c;
 							return _Utils_eq(
 								$elm$core$Maybe$Just(tab),
-								args.selected) ? $author$project$View$Button$fake(label) : A2(
+								args.selected) ? A2(
+								$author$project$View$Button$fake,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+										$Orasund$elm_html_style$Html$Style$flex('1')
+									]),
+								icon + (' ' + label)) : A2(
 								$author$project$View$Button$toHtml,
-								_List_Nil,
+								$author$project$View$Button$asIcon,
 								{
-									label: label,
+									label: icon,
 									onPress: args.onSelectTab(tab)
 								});
 						},
 						_List_fromArray(
 							[
-								_Utils_Tuple2($author$project$Screen$Menu$CalenderTab, 'Calender'),
-								_Utils_Tuple2($author$project$Screen$Menu$MarketTab, 'Market'),
-								_Utils_Tuple2($author$project$Screen$Menu$MailTab, 'Messages')
+								_Utils_Tuple3($author$project$Screen$Menu$CalenderTab, '📅', 'Calender'),
+								_Utils_Tuple3($author$project$Screen$Menu$MarketTab, '🪙', 'Market'),
+								_Utils_Tuple3($author$project$Screen$Menu$PeopleTab, '👤', 'People'),
+								_Utils_Tuple3($author$project$Screen$Menu$MailTab, '✉️', 'Messages')
 							]))),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
 							$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
-							$Orasund$elm_html_style$Html$Style$widthPx(360),
-							$Orasund$elm_html_style$Html$Style$heightPx(360),
+							$Orasund$elm_html_style$Html$Style$widthPx(350),
+							$Orasund$elm_html_style$Html$Style$heightPx(350),
 							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
 							$Orasund$elm_html_style$Html$Style$paddingPx(8),
 							$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
@@ -10420,34 +10494,51 @@ var $author$project$Main$view = function (model) {
 					onReset: $author$project$Main$Reset,
 					onUndo: $author$project$Main$Undo,
 					pointerZero: model.pointerZero,
-					showDot: $elm$core$List$length(
-						A2(
-							$elm$core$List$filter,
-							function (_v0) {
-								var mail = _v0.b;
-								return !mail.accepted;
-							},
-							$elm$core$Dict$toList(model.messages)))
+					unansweredMessages: $elm$core$Dict$size(model.messages) - $elm$core$Set$size(model.answeredMessages)
 				}),
 				A2(
 				$author$project$Screen$Menu$toHtml,
 				{onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, selected: model.menu, show: model.showMenu},
 				function () {
-					var _v1 = model.menu;
-					if (_v1.$ === 'Just') {
-						switch (_v1.a.$) {
+					var _v0 = model.menu;
+					if (_v0.$ === 'Just') {
+						switch (_v0.a.$) {
 							case 'CalenderTab':
-								var _v2 = _v1.a;
+								var _v1 = _v0.a;
 								return $author$project$Screen$Menu$calender(
 									{date: model.date, events: model.nextEvents});
 							case 'MarketTab':
-								var _v3 = _v1.a;
+								var _v2 = _v0.a;
 								return $author$project$Screen$Menu$market(
 									{items: model.items, onAcceptTrade: $author$project$Main$AcceptTrade, trades: model.trades});
+							case 'MailTab':
+								var _v3 = _v0.a;
+								return A2(
+									$author$project$Screen$Menu$messages,
+									{items: model.items, onAccept: $author$project$Main$AcceptMail},
+									A2(
+										$elm$core$List$filterMap,
+										function (_v4) {
+											var date = _v4.a;
+											var personId = _v4.b.personId;
+											var message = _v4.b.message;
+											return A2(
+												$elm$core$Maybe$map,
+												function (person) {
+													return {
+														answered: A2($elm$core$Set$member, date, model.answeredMessages),
+														date: date,
+														mail: message,
+														person: person
+													};
+												},
+												A2($elm$core$Dict$get, personId, model.persons));
+										},
+										$elm$core$Dict$toList(model.messages)));
 							default:
-								var _v4 = _v1.a;
-								return $author$project$Screen$Menu$messages(
-									{items: model.items, mails: model.messages, onAccept: $author$project$Main$AcceptMail});
+								var _v5 = _v0.a;
+								return $author$project$Screen$Menu$people(
+									$elm$core$Dict$values(model.persons));
 						}
 					} else {
 						return _List_Nil;

@@ -327,7 +327,11 @@ acceptMail date model =
                                         }
                             , persons =
                                 model.persons
-                                    |> Dict.insert personId (person |> Data.Person.setNextMessage nextMessage)
+                                    |> Dict.insert personId
+                                        (person
+                                            |> Data.Person.setNextMessage nextMessage
+                                            |> Data.Person.increaseFriendship
+                                        )
                             , answeredMessages =
                                 model.answeredMessages
                                     |> Set.insert date
@@ -460,6 +464,7 @@ init () =
                             , name = person.name
                             , job = person.job
                             , progress = progress
+                            , friendship = 0
                             , nextMessage =
                                 Data.Person.next
                                     { job = person.job
@@ -990,6 +995,10 @@ view model =
                                     )
                         )
                 )
+
+        Just PeopleTab ->
+            Screen.Menu.people
+                (model.persons |> Dict.values)
 
         Nothing ->
             []

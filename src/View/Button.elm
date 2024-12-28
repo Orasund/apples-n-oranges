@@ -12,6 +12,14 @@ primary =
     Html.Attributes.class "primary-button"
 
 
+asIcon : List (Attribute msg)
+asIcon =
+    [ Html.Style.aspectRatio "1"
+    , Html.Style.paddingPx 0
+    , Html.Style.justifyContentCenter
+    ]
+
+
 big : List (Attribute msg)
 big =
     [ Html.Style.fontSizePx 28
@@ -83,13 +91,15 @@ toHtml attrs args =
             )
 
 
-fake : String -> Html msg
-fake label =
+fake : List (Attribute msg) -> String -> Html msg
+fake attrs label =
     label
         |> Html.text
         |> List.singleton
         |> Html.div
-            [ Html.Attributes.class "button-base"
-            , Html.Style.backgroundColor "white"
-            , Html.Style.color "black"
-            ]
+            ([ Html.Attributes.class "button-base"
+             , Html.Style.backgroundColor "white"
+             , Html.Style.color "black"
+             ]
+                ++ attrs
+            )

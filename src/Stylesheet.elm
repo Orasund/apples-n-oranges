@@ -21,6 +21,10 @@ stylesheet =
         font-family: serif, "NotoEmoji";
     }
 
+    .button-base.blackWhiteEmoji {
+        font-family: sans-serif, "NotoEmoji";
+    }
+
     html, body {
         overscroll-behavior: contain;
     }
@@ -147,17 +151,20 @@ stylesheet =
         color: """
         ++ View.Color.black
         ++ """;
+        background-color: """
+        ++ View.Color.red300
+        ++ """;
     }
 
     .button:active {
         color: """
-        ++ View.Color.white
+        ++ View.Color.black
         ++ """;
         background-color: """
-        ++ View.Color.red100
+        ++ View.Color.red400
         ++ """;
         border-color: """
-        ++ View.Color.red100
+        ++ View.Color.red400
         ++ """;
     }
     """

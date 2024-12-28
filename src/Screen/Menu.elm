@@ -20,6 +20,7 @@ type MenuTab
     = CalenderTab
     | MarketTab
     | MailTab
+    | PeopleTab
 
 
 type alias Trade =
@@ -459,6 +460,30 @@ calender args =
     ]
 
 
+people :
+    List Person
+    -> List (Html msg)
+people list =
+    list
+        |> List.map
+            (\person ->
+                [ personBubble person
+                , Html.text person.name |> List.singleton |> Html.div []
+                , "❤️"
+                    |> List.repeat person.friendship
+                    |> String.concat
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div []
+                ]
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.alignItemsCenter
+                        , Html.Style.gapPx 8
+                        ]
+            )
+
+
 toHtml :
     { show : Bool
     , onClose : msg
@@ -468,30 +493,36 @@ toHtml :
     -> List (Html msg)
     -> Html msg
 toHtml args content =
-    [ [ ( CalenderTab, "Calender" )
-      , ( MarketTab, "Market" )
-      , ( MailTab, "Messages" )
+    [ [ ( CalenderTab, "📅", "Calender" )
+      , ( MarketTab, "🪙", "Market" )
+      , ( PeopleTab, "👤", "People" )
+      , ( MailTab, "✉️", "Messages" )
       ]
         |> List.map
-            (\( tab, label ) ->
+            (\( tab, icon, label ) ->
                 if Just tab == args.selected then
-                    View.Button.fake label
+                    View.Button.fake
+                        [ Html.Style.justifyContentCenter
+                        , Html.Style.flex "1"
+                        ]
+                        (icon ++ " " ++ label)
 
                 else
-                    View.Button.toHtml []
-                        { label = label
+                    View.Button.toHtml View.Button.asIcon
+                        { label = icon
                         , onPress = args.onSelectTab tab
                         }
             )
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.gapPx 8
+            , Html.Style.widthPx 300
             ]
     , content
         |> Html.div
             [ Html.Style.backgroundColor "white"
-            , Html.Style.widthPx 360
-            , Html.Style.heightPx 360
+            , Html.Style.widthPx 350
+            , Html.Style.heightPx 350
             , Html.Style.boxSizingBorderBox
             , Html.Style.paddingPx 8
             , Html.Style.borderRadiusPx 16

@@ -14,6 +14,7 @@ type alias Person =
     { symbol : String
     , name : String
     , job : Job
+    , friendship : Int
     , progress : Int
     , nextMessage : Message
     }
@@ -136,3 +137,8 @@ advanceProgress person =
 setNextMessage : Message -> Person -> Person
 setNextMessage mail person =
     { person | nextMessage = mail }
+
+
+increaseFriendship : Person -> Person
+increaseFriendship person =
+    { person | friendship = person.friendship + 1 }
