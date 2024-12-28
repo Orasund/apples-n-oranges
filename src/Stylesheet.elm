@@ -125,6 +125,18 @@ stylesheet =
         ++ """;
     }
 
+    .button.primary-button:disabled {
+        color: """
+        ++ View.Color.white
+        ++ """;
+        background-color: """
+        ++ View.Color.gray800
+        ++ """;
+        border-color: """
+        ++ View.Color.gray800
+        ++ """;
+    }
+
     .button {
         color: """
         ++ View.Color.red600

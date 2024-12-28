@@ -26,7 +26,7 @@ type MenuTab
 type alias Trade =
     { remove : List ( Item, Int )
     , add : Item
-    , trader : String
+    , trader : Person
     }
 
 
@@ -170,14 +170,11 @@ request args mail =
 
 
 messages :
-    { show : Bool
-    , mails : Dict Date Mail
-    , onClose : msg
+    { mails : Dict Date Mail
     , onAccept : Date -> msg
-    , onSelectTab : MenuTab -> msg
     , items : ItemBag
     }
-    -> Html msg
+    -> List (Html msg)
 messages args =
     let
         viewMessage i mail =
@@ -243,23 +240,14 @@ messages args =
         |> Dict.toList
         |> List.reverse
         |> List.map (\( i, mail ) -> viewMessage i mail)
-        |> toHtml
-            { show = args.show
-            , selected = MailTab
-            , onClose = args.onClose
-            , onSelectTab = args.onSelectTab
-            }
 
 
 market :
-    { show : Bool
-    , trades : List Trade
-    , onClose : msg
-    , onSelectTab : MenuTab -> msg
+    { trades : List Trade
     , onAcceptTrade : Trade -> msg
     , items : ItemBag
     }
-    -> Html msg
+    -> List (Html msg)
 market args =
     args.trades
         |> List.map
@@ -276,32 +264,38 @@ market args =
                                 )
                             |> String.concat
                 in
-                [ trade.trader
-                    |> Html.text
-                    |> List.singleton
-                    |> Html.div []
+                [ [ personBubble trade.trader
+                  , trade.trader.name
+                        |> Html.text
+                  ]
+                    |> Html.div
+                        [ Html.Style.displayFlex
+                        , Html.Style.alignItemsCenter
+                        , Html.Style.gapPx 8
+                        ]
                 , trade.add
                     |> ItemBlock
                     |> Data.Block.toString
                     |> Html.text
                     |> List.singleton
-                    |> Html.div [ Html.Style.fontSizePx 50 ]
+                    |> Html.div [ Html.Style.fontSizePx 75 ]
+                , "for "
+                    ++ cost
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div []
                 , if
                     trade.remove
                         |> List.all (\( item, n ) -> Data.ItemBag.contains n item args.items)
                   then
-                    View.Button.withIcons [ View.Button.primary ]
+                    View.Button.toHtml [ View.Button.primary ]
                         { label = "Trade"
                         , onPress = args.onAcceptTrade trade
                         }
-                        cost
 
                   else
-                    "for "
-                        ++ cost
-                        |> Html.text
-                        |> List.singleton
-                        |> Html.div []
+                    Html.div []
+                        [ Html.text "You don't have the items" ]
                 ]
                     |> Html.div
                         [ Html.Style.displayFlex
@@ -314,6 +308,9 @@ market args =
                         , Html.Style.boxSizingBorderBox
                         , Html.Style.borderRadiusPx 8
                         , Html.Style.paddingPx 8
+                        , Html.Style.borderWidthPx 1
+                        , Html.Style.borderStyleSolid
+                        , Html.Style.borderColor View.Color.gray100
                         ]
             )
         |> Html.div
@@ -327,22 +324,13 @@ market args =
             , Html.Style.alignContentCenter
             ]
         |> List.singleton
-        |> toHtml
-            { show = args.show
-            , selected = MarketTab
-            , onClose = args.onClose
-            , onSelectTab = args.onSelectTab
-            }
 
 
 calender :
-    { show : Bool
-    , date : Date
+    { date : Date
     , events : Dict Date Event
-    , onClose : msg
-    , onSelectTab : MenuTab -> msg
     }
-    -> Html msg
+    -> List (Html msg)
 calender args =
     [ [ (if Date.summer args.date then
             "Summer"
@@ -400,7 +388,9 @@ calender args =
                                     |> Html.div
                                         (if date == args.date then
                                             [ Html.Style.color "white"
-                                            , View.Block.white
+                                            , View.Block.monocolor
+
+                                            --, View.Block.white
                                             ]
 
                                          else
@@ -423,7 +413,8 @@ calender args =
                                                     []
                                                )
                                         )
-                                , (if event.mail then
+
+                                {--, (if event.mail then
                                     Html.div
                                         [ Html.Style.widthPx 10
                                         , Html.Style.aspectRatio "1"
@@ -445,7 +436,7 @@ calender args =
                                     Html.text ""
                                   )
                                     |> List.singleton
-                                    |> Html.div [ Html.Style.fontSizePx 8 ]
+                                    |> Html.div [ Html.Style.fontSizePx 8 ]--}
                                 ]
                             )
                         |> Maybe.withDefault []
@@ -466,31 +457,24 @@ calender args =
             , Html.Style.gridTemplateColumns "repeat(7,1fr)"
             ]
     ]
-        |> toHtml
-            { show = args.show
-            , selected = CalenderTab
-            , onClose = args.onClose
-            , onSelectTab = args.onSelectTab
-            }
 
 
 toHtml :
     { show : Bool
     , onClose : msg
-    , selected : MenuTab
+    , selected : Maybe MenuTab
     , onSelectTab : MenuTab -> msg
     }
     -> List (Html msg)
     -> Html msg
 toHtml args content =
     [ [ ( CalenderTab, "Calender" )
-
-      -- , ( MarketTab, "Market" )
+      , ( MarketTab, "Market" )
       , ( MailTab, "Messages" )
       ]
         |> List.map
             (\( tab, label ) ->
-                if tab == args.selected then
+                if Just tab == args.selected then
                     View.Button.fake label
 
                 else

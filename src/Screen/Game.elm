@@ -15,6 +15,7 @@ toHtml :
     , showDot : Int
     , pointerZero : ( Float, Float )
     , onUndo : msg
+    , onReset : msg
     , onOpenMenu : msg
     , onPointerDown : { pos : ( Float, Float ), offset : ( Float, Float ) } -> msg
     , onPointerUp : ( Float, Float ) -> msg
@@ -57,15 +58,26 @@ toHtml args =
         , onPointerEnd = args.onPointerEnd
         , zero = args.pointerZero
         }
-    , View.Button.toHtml
-        (View.Button.big
-            ++ [ View.Button.primary
-               ]
-        )
-        { label = "Undo"
-        , onPress = args.onUndo
-        }
-        |> List.singleton
+    , [ View.Button.toHtml []
+            { label = "Reset"
+            , onPress = args.onReset
+            }
+            |> List.singleton
+            |> Html.div
+                [ Html.Style.flex "1"
+                , Html.Style.displayFlex
+                , Html.Style.alignItemsCenter
+                ]
+      , View.Button.toHtml
+            (View.Button.big
+                ++ [ View.Button.primary
+                   ]
+            )
+            { label = "Undo"
+            , onPress = args.onUndo
+            }
+      , Html.div [ Html.Style.flex "1" ] []
+      ]
         |> Html.div
             [ Html.Style.flex "1"
             , Html.Style.displayFlex

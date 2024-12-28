@@ -1,6 +1,6 @@
 module View.CalenderDay exposing (..)
 
-import Data.Block
+import Data.Block exposing (Block(..))
 import Html exposing (Attribute, Html)
 import Html.Style
 import Puzzle.Setting exposing (Event)
@@ -10,8 +10,17 @@ import View.Color
 
 eventToString : Event -> Maybe String
 eventToString event =
-    event.setting.symbol
-        |> Maybe.map Data.Block.toString
+    if event.mail then
+        Just "✉️"
+
+    else if event.reward then
+        ItemBlock event.setting.reward
+            |> Data.Block.toString
+            |> Just
+
+    else
+        event.setting.symbol
+            |> Maybe.map Data.Block.toString
 
 
 calenderDay : { size : Float, day : Int } -> List (Attribute msg) -> Event -> Html msg

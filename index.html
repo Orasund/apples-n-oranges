@@ -5256,11 +5256,12 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Screen$Menu$MailTab = {$: 'MailTab'};
 var $author$project$Main$SetSeed = function (a) {
 	return {$: 'SetSeed', a: a};
 };
 var $author$project$Screen$BetweenDays$ShowNothing = {$: 'ShowNothing'};
+var $author$project$Data$Block$Stone = {$: 'Stone'};
+var $author$project$Data$Block$Wood = {$: 'Wood'};
 var $author$project$Data$Person$Ranger = {$: 'Ranger'};
 var $author$project$Data$Person$alice = {job: $author$project$Data$Person$Ranger, name: 'Alice', progress: 0, symbol: '👩🏻'};
 var $elm$random$Random$step = F2(
@@ -6733,9 +6734,7 @@ var $author$project$Data$Block$PastryBlock = function (a) {
 };
 var $author$project$Data$Block$Prezel = {$: 'Prezel'};
 var $author$project$Data$Block$Rose = {$: 'Rose'};
-var $author$project$Data$Block$Stone = {$: 'Stone'};
 var $author$project$Data$Block$Sunflower = {$: 'Sunflower'};
-var $author$project$Data$Block$Wood = {$: 'Wood'};
 var $author$project$Puzzle$Setting$withReward = F2(
 	function (item, setting) {
 		return _Utils_update(
@@ -7274,7 +7273,7 @@ var $author$project$Main$init = function (_v0) {
 		items: $author$project$Data$ItemBag$empty,
 		level: $author$project$Level$empty(
 			{columns: 5, rows: 5}),
-		menu: $author$project$Screen$Menu$MailTab,
+		menu: $elm$core$Maybe$Nothing,
 		messages: $elm$core$Dict$empty,
 		nextEvents: $elm$core$Dict$fromList(
 			_List_fromArray(
@@ -7299,10 +7298,27 @@ var $author$project$Main$init = function (_v0) {
 		pointer: $elm$core$Maybe$Nothing,
 		pointerZero: _Utils_Tuple2(0, 0),
 		seed: seed,
-		shop: false,
 		showBetweenDays: false,
 		showMenu: false,
-		trades: _List_Nil
+		trades: _List_fromArray(
+			[
+				{
+				add: $author$project$Data$Block$Stone,
+				remove: _List_fromArray(
+					[
+						_Utils_Tuple2($author$project$Data$Block$Wood, 2)
+					]),
+				trader: $author$project$Data$Person$alice
+			},
+				{
+				add: $author$project$Data$Block$Wood,
+				remove: _List_fromArray(
+					[
+						_Utils_Tuple2($author$project$Data$Block$Stone, 2)
+					]),
+				trader: $author$project$Data$Person$rick
+			}
+			])
 	};
 	return _Utils_Tuple2(
 		A2(
@@ -7313,6 +7329,7 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Screen$Menu$MailTab = {$: 'MailTab'};
 var $author$project$Main$NextActionBetweenDays = {$: 'NextActionBetweenDays'};
 var $author$project$Screen$BetweenDays$ShowEndscreen = {$: 'ShowEndscreen'};
 var $author$project$Screen$BetweenDays$ShowItemAdded = function (a) {
@@ -7908,11 +7925,6 @@ var $author$project$Main$closeCalender = function (model) {
 		model,
 		{showMenu: false});
 };
-var $author$project$Main$closeShop = function (model) {
-	return _Utils_update(
-		model,
-		{shop: false});
-};
 var $author$project$Screen$BetweenDays$AdvanceCalenderDay = {$: 'AdvanceCalenderDay'};
 var $author$project$Screen$BetweenDays$AdvanceYear = {$: 'AdvanceYear'};
 var $author$project$Screen$BetweenDays$ShowCalenderDay = {$: 'ShowCalenderDay'};
@@ -7974,11 +7986,6 @@ var $author$project$Main$increaseDifficulty = function (model) {
 	return _Utils_update(
 		model,
 		{difficutly: model.difficutly + (1 / $author$project$Data$Date$daysInAMonth)});
-};
-var $author$project$Main$openShop = function (model) {
-	return _Utils_update(
-		model,
-		{shop: true});
 };
 var $author$project$Main$setMenuTab = F2(
 	function (menuTab, model) {
@@ -8218,6 +8225,24 @@ var $author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
+			case 'Reset':
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+					A2(
+						$elm$core$Maybe$map,
+						function (level) {
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										history: _List_Nil,
+										level: A2($author$project$Level$setSelected, $elm$core$Maybe$Nothing, level)
+									}),
+								$elm$core$Platform$Cmd$none);
+						},
+						$elm$core$List$head(
+							$elm$core$List$reverse(model.history))));
 			case 'ShowCoins':
 				var list = msg.a;
 				return _Utils_Tuple2(
@@ -8240,7 +8265,10 @@ var $author$project$Main$update = F2(
 								betweenDaysLast: $author$project$Screen$BetweenDays$ShowEndscreen
 							})),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-					$author$project$Main$endDay(model),
+					A2(
+						$author$project$Main$setMenuTab,
+						$elm$core$Maybe$Nothing,
+						$author$project$Main$endDay(model)),
 					A2(
 						$elm$core$Task$perform,
 						$elm$core$Basics$identity,
@@ -8264,10 +8292,6 @@ var $author$project$Main$update = F2(
 					$author$project$Main$increaseDifficulty(
 						$author$project$Main$hideBetweenDays(model)),
 					$elm$core$Platform$Cmd$none);
-			case 'OpenShop':
-				return _Utils_Tuple2(
-					$author$project$Main$openShop(model),
-					$elm$core$Platform$Cmd$none);
 			case 'AcceptTrade':
 				var args = msg.a;
 				return _Utils_Tuple2(
@@ -8280,13 +8304,12 @@ var $author$project$Main$update = F2(
 						},
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 'CloseShop':
+			case 'OpenMessages':
 				return _Utils_Tuple2(
-					$author$project$Main$closeShop(model),
-					$elm$core$Platform$Cmd$none);
-			case 'OpenCalender':
-				return _Utils_Tuple2(
-					$author$project$Main$showCalender(model),
+					A2(
+						$author$project$Main$setMenuTab,
+						$elm$core$Maybe$Just($author$project$Screen$Menu$MailTab),
+						$author$project$Main$showCalender(model)),
 					$elm$core$Platform$Cmd$none);
 			case 'CloseCalender':
 				return _Utils_Tuple2(
@@ -8304,7 +8327,10 @@ var $author$project$Main$update = F2(
 			case 'SetMenuTab':
 				var menu = msg.a;
 				return _Utils_Tuple2(
-					A2($author$project$Main$setMenuTab, menu, model),
+					A2(
+						$author$project$Main$setMenuTab,
+						$elm$core$Maybe$Just(menu),
+						model),
 					$elm$core$Platform$Cmd$none);
 			case 'AcceptMail':
 				var i = msg.a;
@@ -8411,7 +8437,7 @@ var $author$project$Main$AcceptTrade = function (a) {
 	return {$: 'AcceptTrade', a: a};
 };
 var $author$project$Main$CloseCalender = {$: 'CloseCalender'};
-var $author$project$Main$OpenCalender = {$: 'OpenCalender'};
+var $author$project$Main$OpenMessages = {$: 'OpenMessages'};
 var $author$project$Main$PointerDown = function (a) {
 	return {$: 'PointerDown', a: a};
 };
@@ -8421,6 +8447,7 @@ var $author$project$Main$PointerEnd = function (a) {
 var $author$project$Main$PointerUp = function (a) {
 	return {$: 'PointerUp', a: a};
 };
+var $author$project$Main$Reset = {$: 'Reset'};
 var $author$project$Main$SetMenuTab = function (a) {
 	return {$: 'SetMenuTab', a: a};
 };
@@ -8439,7 +8466,6 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $author$project$Screen$Menu$CalenderTab = {$: 'CalenderTab'};
 var $Orasund$elm_html_style$Html$Style$aspectRatio = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'aspect-ratio', value);
 };
@@ -8454,17 +8480,10 @@ var $Orasund$elm_html_style$Html$Style$borderRadius = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-radius', value);
 };
 var $elm$core$String$append = _String_append;
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $Orasund$elm_html_style$Html$Style$borderRadiusPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderRadius(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
 var $Orasund$elm_html_style$Html$Style$borderTopLeftRadius = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border-top-left-radius', value);
 };
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $Orasund$elm_html_style$Html$Style$borderTopLeftRadiusPx = function (value) {
 	return $Orasund$elm_html_style$Html$Style$borderTopLeftRadius(
 		A2(
@@ -8492,7 +8511,9 @@ var $Orasund$elm_html_style$Html$Style$displayFlex = $Orasund$elm_html_style$Htm
 var $Orasund$elm_html_style$Html$Style$displayGrid = $Orasund$elm_html_style$Html$Style$display('grid');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $author$project$View$CalenderDay$eventToString = function (event) {
-	return A2($elm$core$Maybe$map, $author$project$Data$Block$toString, event.setting.symbol);
+	return event.mail ? $elm$core$Maybe$Just('✉️') : (event.reward ? $elm$core$Maybe$Just(
+		$author$project$Data$Block$toString(
+			$author$project$Data$Block$ItemBlock(event.setting.reward))) : A2($elm$core$Maybe$map, $author$project$Data$Block$toString, event.setting.symbol));
 };
 var $Orasund$elm_html_style$Html$Style$flexDirection = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex-direction', value);
@@ -8523,6 +8544,16 @@ var $Orasund$elm_html_style$Html$Style$justifyContent = function (value) {
 };
 var $Orasund$elm_html_style$Html$Style$justifyContentCenter = $Orasund$elm_html_style$Html$Style$justifyContent('center');
 var $Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween = $Orasund$elm_html_style$Html$Style$justifyContent('space-between');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $author$project$View$Block$monocolor = $elm$html$Html$Attributes$class('blackWhiteEmoji');
 var $Orasund$elm_html_style$Html$Style$paddingBottom = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'padding-bottom', value);
 };
@@ -8558,61 +8589,206 @@ var $Orasund$elm_html_style$Html$Style$textAlign = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'text-align', value);
 };
 var $Orasund$elm_html_style$Html$Style$textAlignCenter = $Orasund$elm_html_style$Html$Style$textAlign('center');
-var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$height(
+var $author$project$View$DayOfTheWeek$shortNames = $elm$core$Array$fromList(
+	_List_fromArray(
+		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']));
+var $author$project$View$DayOfTheWeek$toShortString = function (n) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		'',
+		A2(
+			$elm$core$Array$get,
+			A2($elm$core$Basics$modBy, 7, n),
+			$author$project$View$DayOfTheWeek$shortNames));
+};
+var $author$project$View$Color$yellow300 = '#f0f086';
+var $author$project$Screen$Menu$calender = function (args) {
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$height('100%'),
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+					$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+					$Orasund$elm_html_style$Html$Style$borderTopLeftRadiusPx(8),
+					$Orasund$elm_html_style$Html$Style$borderTopRightRadiusPx(8),
+					$Orasund$elm_html_style$Html$Style$backgroundColor(
+					$author$project$Data$Date$summer(args.date) ? $author$project$View$Color$yellow300 : $author$project$View$Color$blue300)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$fontSizePx(32)
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(
+							$author$project$Data$Date$summer(args.date) ? 'Summer' : 'Winter'))),
+					A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					$elm$core$List$singleton(
+						$elm$html$Html$text(
+							'Year ' + $elm$core$String$fromInt(
+								$author$project$Data$Date$year(args.date) + 1))))
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$displayGrid,
+					$Orasund$elm_html_style$Html$Style$gridTemplateColumns('repeat(7,1fr)')
+				]),
+			$elm$core$List$concat(
+				_List_fromArray(
+					[
+						A2(
+						$elm$core$List$map,
+						function (n) {
+							return A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$textAlignCenter,
+										$Orasund$elm_html_style$Html$Style$paddingBottomPx(8),
+										$Orasund$elm_html_style$Html$Style$borderBottom('1px solid black')
+									]),
+								$elm$core$List$singleton(
+									$elm$html$Html$text(
+										$author$project$View$DayOfTheWeek$toShortString(n))));
+						},
+						A2($elm$core$List$range, 1, 7)),
+						A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$positionRelative,
+										$Orasund$elm_html_style$Html$Style$displayFlex,
+										$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+										$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
+										$Orasund$elm_html_style$Html$Style$paddingPx(4),
+										$Orasund$elm_html_style$Html$Style$aspectRatio('1')
+									]),
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2(
+										$elm$core$Maybe$map,
+										function (event) {
+											return _List_fromArray(
+												[
+													A2(
+													$elm$html$Html$div,
+													_Utils_ap(
+														_List_fromArray(
+															[
+																$Orasund$elm_html_style$Html$Style$textAlignCenter,
+																$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+																$Orasund$elm_html_style$Html$Style$paddingPx(4),
+																$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+																$Orasund$elm_html_style$Html$Style$fontSizePx(18)
+															]),
+														_Utils_eq(date, args.date) ? _List_fromArray(
+															[
+																$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
+																$Orasund$elm_html_style$Html$Style$fontWeightBold
+															]) : _List_Nil),
+													$elm$core$List$singleton(
+														A2(
+															$elm$html$Html$div,
+															_Utils_eq(date, args.date) ? _List_fromArray(
+																[
+																	$Orasund$elm_html_style$Html$Style$color('white'),
+																	$author$project$View$Block$monocolor
+																]) : _List_Nil,
+															$elm$core$List$singleton(
+																$elm$html$Html$text(
+																	A2(
+																		$elm$core$Maybe$withDefault,
+																		$elm$core$String$fromInt(
+																			$author$project$Data$Date$day(date)),
+																		$author$project$View$CalenderDay$eventToString(event)))))))
+												]);
+										},
+										A2($elm$core$Dict$get, date, args.events))));
+						},
+						$author$project$Data$Date$listOfDaysInMonth(args.date))
+					])))
+		]);
+};
+var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'align-content', value);
+};
+var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
+var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-color', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderRadiusPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderRadius(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$width = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'width', value);
+var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-style', value);
 };
-var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$width(
+var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
+var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border-width', value);
+};
+var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$borderWidth(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
-};
-var $author$project$View$Button$big = _List_fromArray(
-	[
-		$Orasund$elm_html_style$Html$Style$fontSizePx(28),
-		$Orasund$elm_html_style$Html$Style$widthPx(100),
-		$Orasund$elm_html_style$Html$Style$heightPx(100),
-		$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-		$Orasund$elm_html_style$Html$Style$displayFlex,
-		$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-		$Orasund$elm_html_style$Html$Style$justifyContentCenter
-	]);
-var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'bottom', value);
 };
 var $Orasund$elm_html_style$Html$Style$boxSizing = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'box-sizing', value);
 };
 var $Orasund$elm_html_style$Html$Style$boxSizingBorderBox = $Orasund$elm_html_style$Html$Style$boxSizing('border-box');
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $author$project$View$Button$fake = function (label) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('button-base'),
-				$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
-				$Orasund$elm_html_style$Html$Style$color('black')
-			]),
-		$elm$core$List$singleton(
-			$elm$html$Html$text(label)));
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
 };
+var $author$project$Data$ItemBag$get = F2(
+	function (item, bag) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2(
+				$elm$core$Maybe$map,
+				$elm$core$Set$size,
+				A2(
+					$elm$core$Maybe$map,
+					$elm$core$Tuple$second,
+					A2(
+						$elm$core$Dict$get,
+						$author$project$Data$Block$toString(
+							$author$project$Data$Block$ItemBlock(item)),
+						bag))));
+	});
+var $author$project$Data$ItemBag$contains = F3(
+	function (n, item, bag) {
+		return _Utils_cmp(
+			A2($author$project$Data$ItemBag$get, item, bag),
+			n) > -1;
+	});
+var $Orasund$elm_html_style$Html$Style$flexDirectionRow = $Orasund$elm_html_style$Html$Style$flexDirection('row');
+var $Orasund$elm_html_style$Html$Style$flexWrap = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex-wrap', value);
+};
+var $Orasund$elm_html_style$Html$Style$flexWrapWrap = $Orasund$elm_html_style$Html$Style$flexWrap('wrap');
 var $Orasund$elm_html_style$Html$Style$gap = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'gap', value);
 };
@@ -8623,11 +8799,37 @@ var $Orasund$elm_html_style$Html$Style$gapPx = function (value) {
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$overflowY = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'overflow-y', value);
+var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
+var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$height(
+		A2(
+			$elm$core$String$append,
+			$elm$core$String$fromFloat(value),
+			'px'));
 };
-var $Orasund$elm_html_style$Html$Style$overflowYScroll = $Orasund$elm_html_style$Html$Style$overflowY('scroll');
-var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
+var $author$project$Screen$Menu$personBubble = function (person) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart]),
+		$elm$core$List$singleton(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_html_style$Html$Style$displayFlex,
+						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+						$Orasund$elm_html_style$Html$Style$heightPx(35),
+						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+						$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100),
+						$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+					]),
+				$elm$core$List$singleton(
+					$elm$html$Html$text(person.symbol)))));
+};
 var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary-button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -8687,451 +8889,120 @@ var $author$project$View$Button$toHtml = F2(
 			$elm$core$List$singleton(
 				$elm$html$Html$text(args.label)));
 	});
-var $Orasund$elm_html_style$Html$Style$transition = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'transition', value);
+var $Orasund$elm_html_style$Html$Style$width = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'width', value);
 };
-var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-image', value);
-};
-var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'background-size', value);
-};
-var $author$project$View$Color$brown100 = 'rgb(225 222 214)';
-var $author$project$View$Color$brown200 = 'rgb(214 209 194)';
-var $author$project$View$Background$toHtml = function (attrs) {
-	return $elm$html$Html$div(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$Orasund$elm_html_style$Html$Style$height('100%'),
-					$Orasund$elm_html_style$Html$Style$width('100%'),
-					$Orasund$elm_html_style$Html$Style$displayFlex,
-					$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-					$Orasund$elm_html_style$Html$Style$gapPx(16)
-				]),
-			attrs));
-};
-var $author$project$View$Background$wood = function (attrs) {
-	return $author$project$View$Background$toHtml(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, ' + ($author$project$View$Color$brown100 + (' 50%,' + ($author$project$View$Color$brown200 + ' 50%)')))),
-					$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px')
-				]),
-			attrs));
-};
-var $author$project$Screen$Menu$toHtml = F2(
-	function (args, content) {
-		return A2(
-			$author$project$View$Background$wood,
-			_List_fromArray(
-				[
-					$Orasund$elm_html_style$Html$Style$displayFlex,
-					$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-					$Orasund$elm_html_style$Html$Style$positionAbsolute,
-					$Orasund$elm_html_style$Html$Style$transition('bottom 1s'),
-					$Orasund$elm_html_style$Html$Style$bottom(
-					args.show ? '0vh' : '100vh'),
-					$Orasund$elm_html_style$Html$Style$width('100%'),
-					$Orasund$elm_html_style$Html$Style$height('100%')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$gapPx(8)
-						]),
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var tab = _v0.a;
-							var label = _v0.b;
-							return _Utils_eq(tab, args.selected) ? $author$project$View$Button$fake(label) : A2(
-								$author$project$View$Button$toHtml,
-								_List_Nil,
-								{
-									label: label,
-									onPress: args.onSelectTab(tab)
-								});
-						},
-						_List_fromArray(
-							[
-								_Utils_Tuple2($author$project$Screen$Menu$CalenderTab, 'Calender'),
-								_Utils_Tuple2($author$project$Screen$Menu$MailTab, 'Messages')
-							]))),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
-							$Orasund$elm_html_style$Html$Style$widthPx(360),
-							$Orasund$elm_html_style$Html$Style$heightPx(360),
-							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-							$Orasund$elm_html_style$Html$Style$paddingPx(8),
-							$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-							$Orasund$elm_html_style$Html$Style$gapPx(8),
-							$Orasund$elm_html_style$Html$Style$overflowYScroll
-						]),
-					content),
-					A2(
-					$author$project$View$Button$toHtml,
-					_Utils_ap(
-						$author$project$View$Button$big,
-						_List_fromArray(
-							[$author$project$View$Button$primary])),
-					{label: 'Close', onPress: args.onClose})
-				]));
-	});
-var $author$project$View$DayOfTheWeek$shortNames = $elm$core$Array$fromList(
-	_List_fromArray(
-		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']));
-var $author$project$View$DayOfTheWeek$toShortString = function (n) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		'',
-		A2(
-			$elm$core$Array$get,
-			A2($elm$core$Basics$modBy, 7, n),
-			$author$project$View$DayOfTheWeek$shortNames));
-};
-var $Orasund$elm_html_style$Html$Style$filter = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'filter', value);
-};
-var $author$project$View$Block$white = $Orasund$elm_html_style$Html$Style$filter('grayscale(1) brightness(3)');
-var $author$project$View$Color$yellow300 = '#f0f086';
-var $author$project$Screen$Menu$calender = function (args) {
-	return A2(
-		$author$project$Screen$Menu$toHtml,
-		{onClose: args.onClose, onSelectTab: args.onSelectTab, selected: $author$project$Screen$Menu$CalenderTab, show: args.show},
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$height('100%'),
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$borderTopLeftRadiusPx(8),
-						$Orasund$elm_html_style$Html$Style$borderTopRightRadiusPx(8),
-						$Orasund$elm_html_style$Html$Style$backgroundColor(
-						$author$project$Data$Date$summer(args.date) ? $author$project$View$Color$yellow300 : $author$project$View$Color$blue300)
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$fontSizePx(32)
-							]),
-						$elm$core$List$singleton(
-							$elm$html$Html$text(
-								$author$project$Data$Date$summer(args.date) ? 'Summer' : 'Winter'))),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						$elm$core$List$singleton(
-							$elm$html$Html$text(
-								'Year ' + $elm$core$String$fromInt(
-									$author$project$Data$Date$year(args.date) + 1))))
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayGrid,
-						$Orasund$elm_html_style$Html$Style$gridTemplateColumns('repeat(7,1fr)')
-					]),
-				$elm$core$List$concat(
-					_List_fromArray(
-						[
-							A2(
-							$elm$core$List$map,
-							function (n) {
-								return A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$textAlignCenter,
-											$Orasund$elm_html_style$Html$Style$paddingBottomPx(8),
-											$Orasund$elm_html_style$Html$Style$borderBottom('1px solid black')
-										]),
-									$elm$core$List$singleton(
-										$elm$html$Html$text(
-											$author$project$View$DayOfTheWeek$toShortString(n))));
-							},
-							A2($elm$core$List$range, 1, 7)),
-							A2(
-							$elm$core$List$map,
-							function (date) {
-								return A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$positionRelative,
-											$Orasund$elm_html_style$Html$Style$displayFlex,
-											$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-											$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-											$Orasund$elm_html_style$Html$Style$justifyContentSpaceBetween,
-											$Orasund$elm_html_style$Html$Style$paddingPx(4),
-											$Orasund$elm_html_style$Html$Style$aspectRatio('1')
-										]),
-									A2(
-										$elm$core$Maybe$withDefault,
-										_List_Nil,
-										A2(
-											$elm$core$Maybe$map,
-											function (event) {
-												return _List_fromArray(
-													[
-														A2(
-														$elm$html$Html$div,
-														_Utils_ap(
-															_List_fromArray(
-																[
-																	$Orasund$elm_html_style$Html$Style$textAlignCenter,
-																	$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-																	$Orasund$elm_html_style$Html$Style$paddingPx(4),
-																	$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-																	$Orasund$elm_html_style$Html$Style$fontSizePx(18)
-																]),
-															_Utils_eq(date, args.date) ? _List_fromArray(
-																[
-																	$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
-																	$Orasund$elm_html_style$Html$Style$fontWeightBold
-																]) : _List_Nil),
-														$elm$core$List$singleton(
-															A2(
-																$elm$html$Html$div,
-																_Utils_eq(date, args.date) ? _List_fromArray(
-																	[
-																		$Orasund$elm_html_style$Html$Style$color('white'),
-																		$author$project$View$Block$white
-																	]) : _List_Nil,
-																$elm$core$List$singleton(
-																	$elm$html$Html$text(
-																		A2(
-																			$elm$core$Maybe$withDefault,
-																			$elm$core$String$fromInt(
-																				$author$project$Data$Date$day(date)),
-																			$author$project$View$CalenderDay$eventToString(event))))))),
-														A2(
-														$elm$html$Html$div,
-														_List_fromArray(
-															[
-																$Orasund$elm_html_style$Html$Style$fontSizePx(8)
-															]),
-														$elm$core$List$singleton(
-															event.mail ? A2(
-																$elm$html$Html$div,
-																_List_fromArray(
-																	[
-																		$Orasund$elm_html_style$Html$Style$widthPx(10),
-																		$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-																		$Orasund$elm_html_style$Html$Style$borderRadiusPx(5),
-																		$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$blue300)
-																	]),
-																_List_Nil) : (event.reward ? A2(
-																$elm$html$Html$div,
-																_List_fromArray(
-																	[
-																		$Orasund$elm_html_style$Html$Style$widthPx(10),
-																		$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-																		$Orasund$elm_html_style$Html$Style$borderRadiusPx(5),
-																		$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$yellow300)
-																	]),
-																_List_Nil) : $elm$html$Html$text(''))))
-													]);
-											},
-											A2($elm$core$Dict$get, date, args.events))));
-							},
-							$author$project$Data$Date$listOfDaysInMonth(args.date))
-						])))
-			]));
-};
-var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
-var $Orasund$elm_html_style$Html$Style$alignContent = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'align-content', value);
-};
-var $Orasund$elm_html_style$Html$Style$alignContentCenter = $Orasund$elm_html_style$Html$Style$alignContent('center');
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
-var $author$project$Data$ItemBag$get = F2(
-	function (item, bag) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2(
-				$elm$core$Maybe$map,
-				$elm$core$Set$size,
-				A2(
-					$elm$core$Maybe$map,
-					$elm$core$Tuple$second,
-					A2(
-						$elm$core$Dict$get,
-						$author$project$Data$Block$toString(
-							$author$project$Data$Block$ItemBlock(item)),
-						bag))));
-	});
-var $author$project$Data$ItemBag$contains = F3(
-	function (n, item, bag) {
-		return _Utils_cmp(
-			A2($author$project$Data$ItemBag$get, item, bag),
-			n) > -1;
-	});
-var $Orasund$elm_html_style$Html$Style$flexDirectionRow = $Orasund$elm_html_style$Html$Style$flexDirection('row');
-var $Orasund$elm_html_style$Html$Style$flexWrap = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'flex-wrap', value);
-};
-var $Orasund$elm_html_style$Html$Style$flexWrapWrap = $Orasund$elm_html_style$Html$Style$flexWrap('wrap');
-var $author$project$View$Button$withIcons = F3(
-	function (attrs, args, content) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$Orasund$elm_layout$Layout$asButton(
-					{
-						label: args.label,
-						onPress: $elm$core$Maybe$Just(args.onPress)
-					}),
-				_Utils_ap(
-					attrs,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('button-base button')
-						]))),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
-						]),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(content))),
-					$elm$html$Html$text(args.label)
-				]));
-	});
-var $author$project$Screen$Menu$market = function (args) {
-	return A2(
-		$author$project$Screen$Menu$toHtml,
-		{onClose: args.onClose, onSelectTab: args.onSelectTab, selected: $author$project$Screen$Menu$MarketTab, show: args.show},
-		$elm$core$List$singleton(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionRow,
-						$Orasund$elm_html_style$Html$Style$flexWrapWrap,
-						$Orasund$elm_html_style$Html$Style$gapPx(16),
-						$Orasund$elm_html_style$Html$Style$height('100%'),
-						$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$alignContentCenter
-					]),
-				A2(
-					$elm$core$List$map,
-					function (trade) {
-						var cost = $elm$core$String$concat(
-							A2(
-								$elm$core$List$concatMap,
-								function (_v1) {
-									var items = _v1.a;
-									var n = _v1.b;
-									return A2(
-										$elm$core$List$repeat,
-										n,
-										$author$project$Data$Block$toString(
-											$author$project$Data$Block$ItemBlock(items)));
-								},
-								trade.remove));
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$Orasund$elm_html_style$Html$Style$displayFlex,
-									$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-									$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-									$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-									$Orasund$elm_html_style$Html$Style$gapPx(8),
-									$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-									$Orasund$elm_html_style$Html$Style$widthPx(150),
-									$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-									$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
-									$Orasund$elm_html_style$Html$Style$paddingPx(8)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									$elm$core$List$singleton(
-										$elm$html$Html$text(trade.trader))),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$fontSizePx(50)
-										]),
-									$elm$core$List$singleton(
-										$elm$html$Html$text(
-											$author$project$Data$Block$toString(
-												$author$project$Data$Block$ItemBlock(trade.add))))),
-									A2(
-									$elm$core$List$all,
-									function (_v0) {
-										var item = _v0.a;
-										var n = _v0.b;
-										return A3($author$project$Data$ItemBag$contains, n, item, args.items);
-									},
-									trade.remove) ? A3(
-									$author$project$View$Button$withIcons,
-									_List_fromArray(
-										[$author$project$View$Button$primary]),
-									{
-										label: 'Trade',
-										onPress: args.onAcceptTrade(trade)
-									},
-									cost) : A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									$elm$core$List$singleton(
-										$elm$html$Html$text('for ' + cost)))
-								]));
-					},
-					args.trades))));
-};
-var $Orasund$elm_html_style$Html$Style$borderColor = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-color', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyle = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-style', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderStyleSolid = $Orasund$elm_html_style$Html$Style$borderStyle('solid');
-var $Orasund$elm_html_style$Html$Style$borderWidth = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-width', value);
-};
-var $Orasund$elm_html_style$Html$Style$borderWidthPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderWidth(
+var $Orasund$elm_html_style$Html$Style$widthPx = function (value) {
+	return $Orasund$elm_html_style$Html$Style$width(
 		A2(
 			$elm$core$String$append,
 			$elm$core$String$fromFloat(value),
 			'px'));
 };
-var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
+var $author$project$Screen$Menu$market = function (args) {
+	return $elm$core$List$singleton(
+		A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$flexDirectionRow,
+					$Orasund$elm_html_style$Html$Style$flexWrapWrap,
+					$Orasund$elm_html_style$Html$Style$gapPx(16),
+					$Orasund$elm_html_style$Html$Style$height('100%'),
+					$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+					$Orasund$elm_html_style$Html$Style$alignContentCenter
+				]),
+			A2(
+				$elm$core$List$map,
+				function (trade) {
+					var cost = $elm$core$String$concat(
+						A2(
+							$elm$core$List$concatMap,
+							function (_v1) {
+								var items = _v1.a;
+								var n = _v1.b;
+								return A2(
+									$elm$core$List$repeat,
+									n,
+									$author$project$Data$Block$toString(
+										$author$project$Data$Block$ItemBlock(items)));
+							},
+							trade.remove));
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+								$Orasund$elm_html_style$Html$Style$gapPx(8),
+								$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+								$Orasund$elm_html_style$Html$Style$widthPx(150),
+								$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+								$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
+								$Orasund$elm_html_style$Html$Style$paddingPx(8),
+								$Orasund$elm_html_style$Html$Style$borderWidthPx(1),
+								$Orasund$elm_html_style$Html$Style$borderStyleSolid,
+								$Orasund$elm_html_style$Html$Style$borderColor($author$project$View$Color$gray100)
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$displayFlex,
+										$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+										$Orasund$elm_html_style$Html$Style$gapPx(8)
+									]),
+								_List_fromArray(
+									[
+										$author$project$Screen$Menu$personBubble(trade.trader),
+										$elm$html$Html$text(trade.trader.name)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$fontSizePx(75)
+									]),
+								$elm$core$List$singleton(
+									$elm$html$Html$text(
+										$author$project$Data$Block$toString(
+											$author$project$Data$Block$ItemBlock(trade.add))))),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								$elm$core$List$singleton(
+									$elm$html$Html$text('for ' + cost))),
+								A2(
+								$elm$core$List$all,
+								function (_v0) {
+									var item = _v0.a;
+									var n = _v0.b;
+									return A3($author$project$Data$ItemBag$contains, n, item, args.items);
+								},
+								trade.remove) ? A2(
+								$author$project$View$Button$toHtml,
+								_List_fromArray(
+									[$author$project$View$Button$primary]),
+								{
+									label: 'Trade',
+									onPress: args.onAcceptTrade(trade)
+								}) : A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('You don\'t have the items')
+									]))
+							]));
+				},
+				args.trades)));
+};
 var $author$project$View$Color$green100 = 'rgb(203 224 196)';
 var $author$project$View$Color$white = 'white';
 var $author$project$Screen$Menu$attachment = F2(
@@ -9192,29 +9063,6 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
-var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
-var $author$project$Screen$Menu$personBubble = function (person) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart]),
-		$elm$core$List$singleton(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$heightPx(35),
-						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-						$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100),
-						$Orasund$elm_html_style$Html$Style$fontSizePx(20)
-					]),
-				$elm$core$List$singleton(
-					$elm$html$Html$text(person.symbol)))));
-};
 var $Orasund$elm_html_style$Html$Style$alignSelf = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-self', value);
 };
@@ -9370,17 +9218,14 @@ var $author$project$Screen$Menu$messages = function (args) {
 					]));
 		});
 	return A2(
-		$author$project$Screen$Menu$toHtml,
-		{onClose: args.onClose, onSelectTab: args.onSelectTab, selected: $author$project$Screen$Menu$MailTab, show: args.show},
-		A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var i = _v0.a;
-				var mail = _v0.b;
-				return A2(viewMessage, i, mail);
-			},
-			$elm$core$List$reverse(
-				$elm$core$Dict$toList(args.mails))));
+		$elm$core$List$map,
+		function (_v0) {
+			var i = _v0.a;
+			var mail = _v0.b;
+			return A2(viewMessage, i, mail);
+		},
+		$elm$core$List$reverse(
+			$elm$core$Dict$toList(args.mails)));
 };
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
@@ -9389,6 +9234,7 @@ var $elm$virtual_dom$VirtualDom$node = function (tag) {
 };
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $author$project$View$Color$black = 'black';
+var $author$project$View$Color$gray800 = 'hsl(0 0% 50% / 1)';
 var $author$project$View$Color$red600 = 'hsl(20 100% 60% / 1)';
 var $author$project$View$Color$red700 = 'hsl(20 100% 55% / 1)';
 var $author$project$View$Color$red800 = 'hsl(20 100% 50% / 1)';
@@ -9397,7 +9243,10 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary-button {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n        border-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary-button:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n        border-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary-button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n        border-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red100 + (';\n        border-color: ' + ($author$project$View$Color$red100 + ';\n    }\n    '))))))))))))))))))))))))))))))));
+		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary-button {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n        border-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary-button:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n        border-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary-button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n        border-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary-button:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n        border-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red100 + (';\n        border-color: ' + ($author$project$View$Color$red100 + ';\n    }\n    '))))))))))))))))))))))))))))))))))))));
+var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-image', value);
+};
 var $author$project$View$Color$green200 = '#b8d7ac';
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
@@ -9406,6 +9255,19 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
+var $author$project$View$Background$toHtml = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$height('100%'),
+					$Orasund$elm_html_style$Html$Style$width('100%'),
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+					$Orasund$elm_html_style$Html$Style$gapPx(16)
+				]),
+			attrs));
+};
 var $author$project$View$Background$urlEncode = A2($elm$core$String$replace, '#', '%23');
 var $author$project$View$Background$summerGrass = function (attrs) {
 	return $author$project$View$Background$toHtml(
@@ -9418,6 +9280,9 @@ var $author$project$View$Background$summerGrass = function (attrs) {
 					'',
 					'url(\'data:image/svg+xml,<svg height="200" width="200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" x="0" y="0" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green100) + ('\n            " /><path d="M0 100 L100 0 L 200 0 L0 200 Z" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green200) + ('\n            " /><path d="M100 200 L200 100 L200 200 Z" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green200) + '" /></svg>\')'))))))),
 			attrs));
+};
+var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'bottom', value);
 };
 var $Orasund$elm_html_style$Html$Style$left = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'left', value);
@@ -9433,6 +9298,10 @@ var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'overflow', value);
 };
 var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
+var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $Orasund$elm_html_style$Html$Style$transition = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'transition', value);
+};
 var $author$project$Screen$BetweenDays$toHtml = F2(
 	function (args, content) {
 		return A2(
@@ -9454,6 +9323,16 @@ var $author$project$Screen$BetweenDays$toHtml = F2(
 			content);
 	});
 var $Orasund$elm_html_style$Html$Style$alignItemsEnd = $Orasund$elm_html_style$Html$Style$alignItems('end');
+var $author$project$View$Button$big = _List_fromArray(
+	[
+		$Orasund$elm_html_style$Html$Style$fontSizePx(28),
+		$Orasund$elm_html_style$Html$Style$widthPx(100),
+		$Orasund$elm_html_style$Html$Style$heightPx(100),
+		$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+		$Orasund$elm_html_style$Html$Style$displayFlex,
+		$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+		$Orasund$elm_html_style$Html$Style$justifyContentCenter
+	]);
 var $Orasund$elm_html_style$Html$Style$flex = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'flex', value);
 };
@@ -10126,61 +10005,87 @@ var $author$project$Screen$Game$toHtml = function (args) {
 						$Orasund$elm_html_style$Html$Style$displayFlex,
 						$Orasund$elm_html_style$Html$Style$justifyContentCenter
 					]),
-				$elm$core$List$singleton(
-					A2(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$flex('1'),
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter
+							]),
+						$elm$core$List$singleton(
+							A2(
+								$author$project$View$Button$toHtml,
+								_List_Nil,
+								{label: 'Reset', onPress: args.onReset}))),
+						A2(
 						$author$project$View$Button$toHtml,
 						_Utils_ap(
 							$author$project$View$Button$big,
 							_List_fromArray(
 								[$author$project$View$Button$primary])),
-						{label: 'Undo', onPress: args.onUndo})))
+						{label: 'Undo', onPress: args.onUndo}),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$flex('1')
+							]),
+						_List_Nil)
+					]))
 			]));
 };
-var $Orasund$elm_html_style$Html$Style$bottomPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$bottom(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
+var $author$project$Screen$Menu$CalenderTab = {$: 'CalenderTab'};
+var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
+var $author$project$View$Button$fake = function (label) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('button-base'),
+				$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
+				$Orasund$elm_html_style$Html$Style$color('black')
+			]),
+		$elm$core$List$singleton(
+			$elm$html$Html$text(label)));
 };
-var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-bottom-left-radius', value);
+var $Orasund$elm_html_style$Html$Style$overflowY = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'overflow-y', value);
 };
-var $Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderBottomLeftRadius(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
+var $Orasund$elm_html_style$Html$Style$overflowYScroll = $Orasund$elm_html_style$Html$Style$overflowY('scroll');
+var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'background-size', value);
 };
-var $Orasund$elm_html_style$Html$Style$borderBottomRightRadius = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'border-bottom-right-radius', value);
+var $author$project$View$Color$brown100 = 'rgb(225 222 214)';
+var $author$project$View$Color$brown200 = 'rgb(214 209 194)';
+var $author$project$View$Background$wood = function (attrs) {
+	return $author$project$View$Background$toHtml(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, ' + ($author$project$View$Color$brown100 + (' 50%,' + ($author$project$View$Color$brown200 + ' 50%)')))),
+					$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px')
+				]),
+			attrs));
 };
-var $Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$borderBottomRightRadius(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$View$CalenderDay$calenderDay = F3(
-	function (args, attrs, event) {
+var $author$project$Screen$Menu$toHtml = F2(
+	function (args, content) {
 		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-						$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.5),
-						$Orasund$elm_html_style$Html$Style$backgroundColor('#fff'),
-						$Orasund$elm_html_style$Html$Style$borderRadiusPx(args.size * 0.1),
-						$Orasund$elm_html_style$Html$Style$overflowHidden,
-						$Orasund$elm_html_style$Html$Style$heightPx(args.size),
-						$Orasund$elm_html_style$Html$Style$widthPx(args.size)
-					]),
-				attrs),
+			$author$project$View$Background$wood,
+			_List_fromArray(
+				[
+					$Orasund$elm_html_style$Html$Style$displayFlex,
+					$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+					$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+					$Orasund$elm_html_style$Html$Style$positionAbsolute,
+					$Orasund$elm_html_style$Html$Style$transition('bottom 1s'),
+					$Orasund$elm_html_style$Html$Style$bottom(
+					args.show ? '0vh' : '100vh'),
+					$Orasund$elm_html_style$Html$Style$width('100%'),
+					$Orasund$elm_html_style$Html$Style$height('100%')
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -10188,41 +10093,52 @@ var $author$project$View$CalenderDay$calenderDay = F3(
 					_List_fromArray(
 						[
 							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
-							$Orasund$elm_html_style$Html$Style$heightPx(args.size / 4),
-							$Orasund$elm_html_style$Html$Style$fontSizePx(args.size * 0.1)
+							$Orasund$elm_html_style$Html$Style$gapPx(8)
 						]),
-					$elm$core$List$singleton(
-						A2(
-							$elm$html$Html$span,
-							_List_fromArray(
-								[$author$project$View$Block$white]),
-							$elm$core$List$singleton(
-								$elm$html$Html$text(
-									A2(
-										$elm$core$String$join,
-										' ',
-										A2($elm$core$List$repeat, event.setting.difficulty, '⭐'))))))),
+					A2(
+						$elm$core$List$map,
+						function (_v0) {
+							var tab = _v0.a;
+							var label = _v0.b;
+							return _Utils_eq(
+								$elm$core$Maybe$Just(tab),
+								args.selected) ? $author$project$View$Button$fake(label) : A2(
+								$author$project$View$Button$toHtml,
+								_List_Nil,
+								{
+									label: label,
+									onPress: args.onSelectTab(tab)
+								});
+						},
+						_List_fromArray(
+							[
+								_Utils_Tuple2($author$project$Screen$Menu$CalenderTab, 'Calender'),
+								_Utils_Tuple2($author$project$Screen$Menu$MarketTab, 'Market'),
+								_Utils_Tuple2($author$project$Screen$Menu$MailTab, 'Messages')
+							]))),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-							$Orasund$elm_html_style$Html$Style$height('100%'),
+							$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
+							$Orasund$elm_html_style$Html$Style$widthPx(360),
+							$Orasund$elm_html_style$Html$Style$heightPx(360),
 							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-							$Orasund$elm_html_style$Html$Style$borderBottomLeftRadiusPx(args.size * 0.1),
-							$Orasund$elm_html_style$Html$Style$borderBottomRightRadiusPx(args.size * 0.1)
+							$Orasund$elm_html_style$Html$Style$paddingPx(8),
+							$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
+							$Orasund$elm_html_style$Html$Style$displayFlex,
+							$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+							$Orasund$elm_html_style$Html$Style$gapPx(8),
+							$Orasund$elm_html_style$Html$Style$overflowYScroll
 						]),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(
-							A2(
-								$elm$core$Maybe$withDefault,
-								$elm$core$String$fromInt(args.day),
-								$author$project$View$CalenderDay$eventToString(event)))))
+					content),
+					A2(
+					$author$project$View$Button$toHtml,
+					_Utils_ap(
+						$author$project$View$Button$big,
+						_List_fromArray(
+							[$author$project$View$Button$primary])),
+					{label: 'Close', onPress: args.onClose})
 				]));
 	});
 var $author$project$View$Color$blue100 = 'rgb(203 214 255)';
@@ -10276,8 +10192,7 @@ var $author$project$View$DayOfTheWeek$toLongString = function (n) {
 			A2($elm$core$Basics$modBy, 7, n),
 			$author$project$View$DayOfTheWeek$longNames));
 };
-var $author$project$Screen$BetweenDays$showCalenderDay = function (args) {
-	var calenderSize = 300;
+var $author$project$Screen$BetweenDays$showCalender = function (args) {
 	return A2(
 		$author$project$Screen$BetweenDays$default,
 		_List_Nil,
@@ -10295,63 +10210,23 @@ var $author$project$Screen$BetweenDays$showCalenderDay = function (args) {
 						$author$project$View$DayOfTheWeek$toLongString(
 							$author$project$Data$Date$day(args.date)))
 					])),
-				A3(
-				$elm$html$Html$Keyed$node,
-				'div',
+				A2(
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
+						$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
+						$Orasund$elm_html_style$Html$Style$widthPx(360),
+						$Orasund$elm_html_style$Html$Style$heightPx(360),
+						$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+						$Orasund$elm_html_style$Html$Style$paddingPx(8),
+						$Orasund$elm_html_style$Html$Style$borderRadiusPx(16),
 						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$widthPx(calenderSize),
-						$Orasund$elm_html_style$Html$Style$heightPx(calenderSize),
-						$Orasund$elm_html_style$Html$Style$overflowHidden,
-						$Orasund$elm_html_style$Html$Style$positionRelative
+						$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+						$Orasund$elm_html_style$Html$Style$gapPx(8),
+						$Orasund$elm_html_style$Html$Style$overflowYScroll
 					]),
-				A2(
-					$elm$core$List$sortBy,
-					$elm$core$Tuple$first,
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var i = _v0.a;
-							var event = _v0.b;
-							return _Utils_Tuple2(
-								$elm$core$String$fromInt(i),
-								A3(
-									$author$project$View$CalenderDay$calenderDay,
-									{day: i, size: calenderSize},
-									_List_fromArray(
-										[
-											$Orasund$elm_html_style$Html$Style$positionAbsolute,
-											$Orasund$elm_html_style$Html$Style$bottomPx(
-											0 - ((i - $author$project$Data$Date$day(args.date)) * (calenderSize + 64))),
-											$Orasund$elm_html_style$Html$Style$transition('bottom 1s')
-										]),
-									event));
-						},
-						$elm$core$List$concat(
-							A2(
-								$elm$core$List$map,
-								function (date) {
-									return A2(
-										$elm$core$Maybe$withDefault,
-										_List_Nil,
-										A2(
-											$elm$core$Maybe$map,
-											$elm$core$List$singleton,
-											A2(
-												$elm$core$Maybe$map,
-												function (event) {
-													return _Utils_Tuple2(
-														$author$project$Data$Date$day(date),
-														event);
-												},
-												A2($elm$core$Dict$get, date, args.nextEvents))));
-								},
-								_List_fromArray(
-									[
-										args.date,
-										$author$project$Data$Date$next(args.date)
-									]))))))
+				$author$project$Screen$Menu$calender(
+					{date: args.date, events: args.events}))
 			]));
 };
 var $author$project$Screen$BetweenDays$showEndscreen = A2(
@@ -10488,11 +10363,11 @@ var $author$project$Main$viewBetweenDays = F2(
 	function (action, model) {
 		switch (action.$) {
 			case 'ShowCalenderDay':
-				return $author$project$Screen$BetweenDays$showCalenderDay(
-					{date: model.date, nextEvents: model.nextEvents});
+				return $author$project$Screen$BetweenDays$showCalender(
+					{date: model.date, events: model.nextEvents});
 			case 'AdvanceCalenderDay':
-				return $author$project$Screen$BetweenDays$showCalenderDay(
-					{date: model.date, nextEvents: model.nextEvents});
+				return $author$project$Screen$BetweenDays$showCalender(
+					{date: model.date, events: model.nextEvents});
 			case 'ShowItemAdded':
 				var item = action.a;
 				return $author$project$Screen$BetweenDays$showItemAdded(
@@ -10538,10 +10413,11 @@ var $author$project$Main$view = function (model) {
 				{
 					items: model.items,
 					level: model.level,
-					onOpenMenu: $author$project$Main$OpenCalender,
+					onOpenMenu: $author$project$Main$OpenMessages,
 					onPointerDown: $author$project$Main$PointerDown,
 					onPointerEnd: $author$project$Main$PointerEnd,
 					onPointerUp: $author$project$Main$PointerUp,
+					onReset: $author$project$Main$Reset,
 					onUndo: $author$project$Main$Undo,
 					pointerZero: model.pointerZero,
 					showDot: $elm$core$List$length(
@@ -10553,20 +10429,30 @@ var $author$project$Main$view = function (model) {
 							},
 							$elm$core$Dict$toList(model.messages)))
 				}),
+				A2(
+				$author$project$Screen$Menu$toHtml,
+				{onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, selected: model.menu, show: model.showMenu},
 				function () {
-				var _v1 = model.menu;
-				switch (_v1.$) {
-					case 'CalenderTab':
-						return $author$project$Screen$Menu$calender(
-							{date: model.date, events: model.nextEvents, onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, show: model.showMenu});
-					case 'MarketTab':
-						return $author$project$Screen$Menu$market(
-							{items: model.items, onAcceptTrade: $author$project$Main$AcceptTrade, onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, show: model.showMenu, trades: model.trades});
-					default:
-						return $author$project$Screen$Menu$messages(
-							{items: model.items, mails: model.messages, onAccept: $author$project$Main$AcceptMail, onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, show: model.showMenu});
-				}
-			}(),
+					var _v1 = model.menu;
+					if (_v1.$ === 'Just') {
+						switch (_v1.a.$) {
+							case 'CalenderTab':
+								var _v2 = _v1.a;
+								return $author$project$Screen$Menu$calender(
+									{date: model.date, events: model.nextEvents});
+							case 'MarketTab':
+								var _v3 = _v1.a;
+								return $author$project$Screen$Menu$market(
+									{items: model.items, onAcceptTrade: $author$project$Main$AcceptTrade, trades: model.trades});
+							default:
+								var _v4 = _v1.a;
+								return $author$project$Screen$Menu$messages(
+									{items: model.items, mails: model.messages, onAccept: $author$project$Main$AcceptMail});
+						}
+					} else {
+						return _List_Nil;
+					}
+				}()),
 				A2(
 				$author$project$Screen$BetweenDays$toHtml,
 				{show: model.showBetweenDays},

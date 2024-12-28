@@ -39,12 +39,11 @@ type alias Model =
     , betweenDaysLast : BetweenDaysAction
     , betweenDays : List BetweenDaysAction
     , showBetweenDays : Bool
-    , menu : MenuTab
+    , menu : Maybe MenuTab
     , trades : List Trade
     , messages : Dict Date Mail
     , nextMessages : Dict String Mail
     , showMenu : Bool
-    , shop : Bool
     , items : ItemBag
     , peoples : Dict Int Person
     , pointerZero : ( Float, Float )
@@ -58,15 +57,14 @@ type Msg
     | PointerEnd ( Float, Float )
     | ShowCoins (List CoinId)
     | Undo
+    | Reset
     | EndDay
     | SetSeed Seed
     | LoadNextLevel
     | SetBetweenDays BetweenDaysAction
     | StartDay
-    | OpenShop
     | AcceptTrade Trade
-    | CloseShop
-    | OpenCalender
+    | OpenMessages
     | CloseCalender
     | DoNothing
     | SetMenuTab MenuTab
@@ -87,18 +85,6 @@ showBetweenDays model =
 hideBetweenDays : Model -> Model
 hideBetweenDays model =
     { model | showBetweenDays = False }
-
-
-openShop : Model -> Model
-openShop model =
-    { model
-        | shop = True
-    }
-
-
-closeShop : Model -> Model
-closeShop model =
-    { model | shop = False }
 
 
 nextDay : Model -> Model
@@ -302,7 +288,7 @@ tradeItems args model =
         |> .out
 
 
-setMenuTab : MenuTab -> Model -> Model
+setMenuTab : Maybe MenuTab -> Model -> Model
 setMenuTab menuTab model =
     { model | menu = menuTab }
 
@@ -405,7 +391,7 @@ init () =
             , betweenDaysLast = ShowNothing
             , betweenDays = []
             , showBetweenDays = False
-            , menu = MailTab
+            , menu = Nothing
             , messages = Dict.empty
             , nextMessages =
                 people
@@ -416,8 +402,16 @@ init () =
                         )
                     |> Dict.fromList
             , showMenu = False
-            , shop = False
-            , trades = []
+            , trades =
+                [ { trader = Data.Person.alice
+                  , add = Stone
+                  , remove = [ ( Wood, 2 ) ]
+                  }
+                , { trader = Data.Person.rick
+                  , add = Wood
+                  , remove = [ ( Stone, 2 ) ]
+                  }
+                ]
             , items = Data.ItemBag.empty
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
@@ -705,6 +699,21 @@ update msg model =
                 [] ->
                     ( model, Cmd.none )
 
+        Reset ->
+            model.history
+                |> List.reverse
+                |> List.head
+                |> Maybe.map
+                    (\level ->
+                        ( { model
+                            | level = level |> Level.setSelected Nothing
+                            , history = []
+                          }
+                        , Cmd.none
+                        )
+                    )
+                |> Maybe.withDefault ( model, Cmd.none )
+
         ShowCoins list ->
             ( { model
                 | level =
@@ -725,7 +734,9 @@ update msg model =
                 )
 
             else
-                ( model |> endDay
+                ( model
+                    |> endDay
+                    |> setMenuTab Nothing
                 , NextActionBetweenDays
                     |> Task.succeed
                     |> Task.perform identity
@@ -748,12 +759,6 @@ update msg model =
             , Cmd.none
             )
 
-        OpenShop ->
-            ( model
-                |> openShop
-            , Cmd.none
-            )
-
         AcceptTrade args ->
             ( model
                 |> tradeItems
@@ -763,13 +768,12 @@ update msg model =
             , Cmd.none
             )
 
-        CloseShop ->
-            ( model |> closeShop
+        OpenMessages ->
+            ( model
+                |> showCalender
+                |> setMenuTab (Just MailTab)
             , Cmd.none
             )
-
-        OpenCalender ->
-            ( model |> showCalender, Cmd.none )
 
         CloseCalender ->
             ( model |> closeCalender, Cmd.none )
@@ -778,7 +782,7 @@ update msg model =
             ( model |> addBetweenDaysActions [ action ], Cmd.none )
 
         SetMenuTab menu ->
-            ( model |> setMenuTab menu, Cmd.none )
+            ( model |> setMenuTab (Just menu), Cmd.none )
 
         AcceptMail i ->
             ( case Dict.get i model.messages of
@@ -844,15 +848,15 @@ viewBetweenDays : BetweenDaysAction -> Model -> Html Msg
 viewBetweenDays action model =
     case action of
         ShowCalenderDay ->
-            Screen.BetweenDays.showCalenderDay
-                { nextEvents = model.nextEvents
-                , date = model.date
+            Screen.BetweenDays.showCalender
+                { date = model.date
+                , events = model.nextEvents
                 }
 
         AdvanceCalenderDay ->
-            Screen.BetweenDays.showCalenderDay
-                { nextEvents = model.nextEvents
-                , date = model.date
+            Screen.BetweenDays.showCalender
+                { date = model.date
+                , events = model.nextEvents
                 }
 
         ShowItemAdded item ->
@@ -894,41 +898,43 @@ view model =
                 |> List.filter (\( _, mail ) -> not mail.accepted)
                 |> List.length
         , pointerZero = model.pointerZero
-        , onOpenMenu = OpenCalender
+        , onOpenMenu = OpenMessages
         , onPointerDown = PointerDown
         , onPointerEnd = PointerEnd
         , onPointerUp = PointerUp
         , onUndo = Undo
+        , onReset = Reset
         }
-    , case model.menu of
-        CalenderTab ->
+    , (case model.menu of
+        Just CalenderTab ->
             Screen.Menu.calender
-                { show = model.showMenu
-                , date = model.date
+                { date = model.date
                 , events = model.nextEvents
-                , onSelectTab = SetMenuTab
-                , onClose = CloseCalender
                 }
 
-        MarketTab ->
+        Just MarketTab ->
             Screen.Menu.market
-                { show = model.showMenu
-                , trades = model.trades
+                { trades = model.trades
                 , items = model.items
                 , onAcceptTrade = AcceptTrade
-                , onSelectTab = SetMenuTab
-                , onClose = CloseCalender
                 }
 
-        MailTab ->
+        Just MailTab ->
             Screen.Menu.messages
-                { show = model.showMenu
-                , mails = model.messages
+                { mails = model.messages
                 , items = model.items
                 , onAccept = AcceptMail
-                , onSelectTab = SetMenuTab
-                , onClose = CloseCalender
                 }
+
+        Nothing ->
+            []
+      )
+        |> Screen.Menu.toHtml
+            { show = model.showMenu
+            , selected = model.menu
+            , onClose = CloseCalender
+            , onSelectTab = SetMenuTab
+            }
     , viewBetweenDays
         (model.betweenDays
             |> List.head

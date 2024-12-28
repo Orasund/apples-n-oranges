@@ -7,6 +7,7 @@ import Html exposing (Attribute, Html)
 import Html.Keyed
 import Html.Style
 import Puzzle.Setting exposing (Event)
+import Screen.Menu
 import View.Background
 import View.CalenderDay
 import View.DayOfTheWeek
@@ -145,6 +146,33 @@ showCalenderDay args =
             , Html.Style.heightPx calenderSize
             , Html.Style.overflowHidden
             , Html.Style.positionRelative
+            ]
+    ]
+        |> default []
+
+
+showCalender :
+    { events : Dict Date Event
+    , date : Date
+    }
+    -> Html msg
+showCalender args =
+    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Date.day args.date)) ]
+    , Screen.Menu.calender
+        { date = args.date
+        , events = args.events
+        }
+        |> Html.div
+            [ Html.Style.backgroundColor "white"
+            , Html.Style.widthPx 360
+            , Html.Style.heightPx 360
+            , Html.Style.boxSizingBorderBox
+            , Html.Style.paddingPx 8
+            , Html.Style.borderRadiusPx 16
+            , Html.Style.displayFlex
+            , Html.Style.flexDirectionColumn
+            , Html.Style.gapPx 8
+            , Html.Style.overflowYScroll
             ]
     ]
         |> default []
