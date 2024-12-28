@@ -3,7 +3,7 @@ module Screen.Menu exposing (..)
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Person exposing (Mail, Person)
+import Data.Person exposing (Message, Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
@@ -52,7 +52,7 @@ personBubble person =
             ]
 
 
-attachment : { onAccept : msg, items : ItemBag, answered : Bool } -> Mail -> Maybe (Html msg)
+attachment : { onAccept : msg, items : ItemBag, answered : Bool } -> Message -> Maybe (Html msg)
 attachment args mail =
     mail.present
         |> Maybe.map
@@ -109,7 +109,7 @@ attachment args mail =
             )
 
 
-request : { onAccept : msg, items : ItemBag, answered : Bool } -> Mail -> Maybe (Html msg)
+request : { onAccept : msg, items : ItemBag, answered : Bool } -> Message -> Maybe (Html msg)
 request args mail =
     mail.request
         |> Maybe.map
@@ -171,7 +171,7 @@ messages :
     { onAccept : Date -> msg
     , items : ItemBag
     }
-    -> List { date : Date, person : Person, mail : Mail, answered : Bool }
+    -> List { date : Date, person : Person, mail : Message, answered : Bool }
     -> List (Html msg)
 messages args list =
     let
@@ -181,7 +181,7 @@ messages args list =
                         |> Html.text
                         |> List.singleton
                         |> Html.div [ Html.Style.fontWeightBold ]
-                    , mail.message
+                    , mail.content
                         |> Html.text
                         |> List.singleton
                         |> Html.div []

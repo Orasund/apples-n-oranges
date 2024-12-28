@@ -15,7 +15,7 @@ type alias Person =
     , name : String
     , job : Job
     , progress : Int
-    , nextMessage : Mail
+    , nextMessage : Message
     }
 
 
@@ -49,14 +49,14 @@ type alias Random a =
     Generator a
 
 
-type alias Mail =
-    { message : String
+type alias Message =
+    { content : String
     , request : Maybe Item
     , present : Maybe Item
     }
 
 
-ranger : Array Mail
+ranger : Array Message
 ranger =
     {--[ { sender = person
       , message = "Good Morning Neighbor, I'm " ++ person.name ++ ", the hunter of our community. Would you have some spare to help the reforestation of our land?"
@@ -82,7 +82,7 @@ ranger =
         |> Array.fromList
 
 
-major : Array Mail
+major : Array Message
 major =
     {--[ { sender = person
       , message = "Hello, my name is " ++ person.name ++ ". Im the mayor of this little community. Take this as a little welcome gift."
@@ -101,7 +101,7 @@ major =
         |> Array.fromList
 
 
-next : { job : Job, progress : Int } -> Maybe Mail
+next : { job : Job, progress : Int } -> Maybe Message
 next args =
     (case args.job of
         Ranger ->
@@ -113,14 +113,15 @@ next args =
         |> Array.get args.progress
 
 
+defaultRequest : Item -> Message
 defaultRequest item =
-    { message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+    { content = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
     , request = Just item
     , present = Nothing
     }
 
 
-default : Random Mail
+default : Random Message
 default =
     Random.uniform (defaultRequest Data.Block.Stone)
         [ defaultRequest Data.Block.Wood
@@ -132,6 +133,6 @@ advanceProgress person =
     { person | progress = person.progress + 1 }
 
 
-setNextMessage : Mail -> Person -> Person
+setNextMessage : Message -> Person -> Person
 setNextMessage mail person =
     { person | nextMessage = mail }

@@ -4,7 +4,7 @@ import Browser
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Person exposing (Mail, Person)
+import Data.Person exposing (Message, Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -55,7 +55,7 @@ type alias Model =
         Dict
             MessageId
             { personId : PersonId
-            , mail : Mail
+            , message : Message
             }
     , peoples :
         Dict
@@ -312,7 +312,7 @@ setMenuTab menuTab model =
 acceptMail : Date -> Model -> Random Model
 acceptMail date model =
     let
-        fun : { personId : Int, person : Person, mail : Mail } -> Random Model
+        fun : { personId : Int, person : Person, mail : Message } -> Random Model
         fun { personId, person, mail } =
             Data.Person.next
                 { job = person.job
@@ -326,7 +326,7 @@ acceptMail date model =
                             | messages =
                                 model.messages
                                     |> Dict.insert date
-                                        { mail = mail
+                                        { message = mail
                                         , personId = personId
                                         }
                             , peoples =
@@ -346,7 +346,7 @@ acceptMail date model =
     model.messages
         |> Dict.get date
         |> Maybe.andThen
-            (\{ personId, mail } ->
+            (\{ personId, message } ->
                 model.peoples
                     |> Dict.get personId
                     |> Maybe.map
@@ -354,7 +354,7 @@ acceptMail date model =
                             fun
                                 { personId = personId
                                 , person = Data.Person.advanceProgress person
-                                , mail = mail
+                                , mail = message
                                 }
                         )
             )
@@ -373,7 +373,7 @@ addMail model =
                             | messages =
                                 Dict.insert model.date
                                     { personId = args.personId
-                                    , mail = args.person.nextMessage
+                                    , message = args.person.nextMessage
                                     }
                                     model.messages
                             , peoples =
@@ -852,8 +852,8 @@ update msg model =
 
         AcceptMail i ->
             ( case Dict.get i model.messages of
-                Just { mail } ->
-                    mail.request
+                Just { message } ->
+                    message.request
                         |> Maybe.map
                             (\item ->
                                 { model
@@ -866,7 +866,7 @@ update msg model =
                             )
                         |> Maybe.withDefault model
                         |> addBetweenDaysActions
-                            ([ mail.present
+                            ([ message.present
                                 |> Maybe.map
                                     (\item ->
                                         [ ShowNothing
@@ -989,14 +989,14 @@ view model =
                 (model.messages
                     |> Dict.toList
                     |> List.filterMap
-                        (\( date, { personId, mail } ) ->
+                        (\( date, { personId, message } ) ->
                             model.peoples
                                 |> Dict.get personId
                                 |> Maybe.map
                                     (\person ->
                                         { person = person.person
                                         , date = date
-                                        , mail = mail
+                                        , mail = message
                                         , answered = Set.member date model.answeredMessages
                                         }
                                     )
