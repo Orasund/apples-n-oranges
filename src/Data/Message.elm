@@ -2,7 +2,7 @@ module Data.Message exposing (..)
 
 import Array exposing (Array)
 import Data.Block exposing (Block(..), Item(..))
-import Data.Person exposing (Job(..), Person)
+import Data.Person exposing (Job(..))
 import Random exposing (Generator)
 
 
@@ -11,16 +11,14 @@ type alias Random a =
 
 
 type alias Mail =
-    { sender : Person
-    , message : String
+    { message : String
     , request : Maybe Item
     , present : Maybe Item
-    , accepted : Bool
     }
 
 
-ranger : Person -> Array Mail
-ranger person =
+ranger : Array Mail
+ranger =
     {--[ { sender = person
       , message = "Good Morning Neighbor, I'm " ++ person.name ++ ", the hunter of our community. Would you have some spare to help the reforestation of our land?"
       , request = Just Coin
@@ -41,12 +39,12 @@ ranger person =
       , accepted = False
       }
     ]--}
-    [ defaultRequest Data.Block.Wood person ]
+    [ defaultRequest Data.Block.Wood ]
         |> Array.fromList
 
 
-major : Person -> Array Mail
-major person =
+major : Array Mail
+major =
     {--[ { sender = person
       , message = "Hello, my name is " ++ person.name ++ ". Im the mayor of this little community. Take this as a little welcome gift."
       , request = Nothing
@@ -60,36 +58,31 @@ major person =
       , accepted = False
       }
     ]--}
-    [ defaultRequest Data.Block.Stone person ]
+    [ defaultRequest Data.Block.Stone ]
         |> Array.fromList
 
 
-next : Person -> Maybe Mail
-next person =
-    person
-        |> (case person.job of
-                Ranger ->
-                    ranger
+next : { job : Job, progress : Int } -> Maybe Mail
+next args =
+    (case args.job of
+        Ranger ->
+            ranger
 
-                Major ->
-                    major
-           )
-        |> Array.get person.progress
+        Major ->
+            major
+    )
+        |> Array.get args.progress
 
 
-defaultRequest item person =
-    { sender = person
-    , message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
+defaultRequest item =
+    { message = "Hi, do you have some " ++ Data.Block.toString (ItemBlock item) ++ "?"
     , request = Just item
     , present = Nothing
-    , accepted = False
     }
 
 
-default : Person -> Random Mail
-default person =
-    Random.uniform (defaultRequest Data.Block.Stone person)
-        [ defaultRequest Data.Block.Wood person
-
-        --, defaultRequest Data.Block.Wood
+default : Random Mail
+default =
+    Random.uniform (defaultRequest Data.Block.Stone)
+        [ defaultRequest Data.Block.Wood
         ]

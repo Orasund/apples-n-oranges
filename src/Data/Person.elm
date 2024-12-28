@@ -10,7 +10,6 @@ type alias Person =
     { symbol : String
     , name : String
     , job : Job
-    , progress : Int
     }
 
 
@@ -19,7 +18,6 @@ alice =
     { symbol = "👩🏻"
     , name = "Alice"
     , job = Ranger
-    , progress = 0
     }
 
 
@@ -28,7 +26,6 @@ rick =
     { symbol = "👨🏼"
     , name = "Rick"
     , job = Major
-    , progress = 0
     }
 
 

@@ -54,7 +54,7 @@ personBubble person =
             ]
 
 
-attachment : { onAccept : msg, items : ItemBag } -> Mail -> Maybe (Html msg)
+attachment : { onAccept : msg, items : ItemBag, answered : Bool } -> Mail -> Maybe (Html msg)
 attachment args mail =
     mail.present
         |> Maybe.map
@@ -64,14 +64,14 @@ attachment args mail =
                     |> List.singleton
                     |> Html.div
                         [ Html.Style.fontSizePx
-                            (if mail.accepted then
+                            (if args.answered then
                                 20
 
                              else
                                 40
                             )
                         ]
-                , if mail.accepted then
+                , if args.answered then
                     Html.text "Accepted"
                         |> List.singleton
                         |> Html.div []
@@ -96,7 +96,7 @@ attachment args mail =
                          , Html.Style.borderRadiusPx 8
                          , Html.Style.paddingPx 8
                          ]
-                            ++ (if mail.accepted then
+                            ++ (if args.answered then
                                     [ Html.Style.backgroundColor View.Color.white
                                     , Html.Style.borderWidthPx 1
                                     , Html.Style.borderStyleSolid
@@ -111,7 +111,7 @@ attachment args mail =
             )
 
 
-request : { onAccept : msg, items : ItemBag } -> Mail -> Maybe (Html msg)
+request : { onAccept : msg, items : ItemBag, answered : Bool } -> Mail -> Maybe (Html msg)
 request args mail =
     mail.request
         |> Maybe.map
@@ -121,14 +121,14 @@ request args mail =
                     |> List.singleton
                     |> Html.div
                         [ Html.Style.fontSizePx
-                            (if mail.accepted then
+                            (if args.answered then
                                 20
 
                              else
                                 40
                             )
                         ]
-                , if mail.accepted then
+                , if args.answered then
                     Html.text "Sent"
                         |> List.singleton
                         |> Html.div []
@@ -155,7 +155,7 @@ request args mail =
                          , Html.Style.alignSelfEnd
                          , Html.Style.width "80%"
                          ]
-                            ++ (if mail.accepted then
+                            ++ (if args.answered then
                                     [ Html.Style.backgroundColor View.Color.white
                                     , Html.Style.borderWidthPx 1
                                     , Html.Style.borderStyleSolid
@@ -170,16 +170,16 @@ request args mail =
 
 
 messages :
-    { mails : Dict Date Mail
-    , onAccept : Date -> msg
+    { onAccept : Date -> msg
     , items : ItemBag
     }
+    -> List { date : Date, person : Person, mail : Mail, answered : Bool }
     -> List (Html msg)
-messages args =
+messages args list =
     let
-        viewMessage i mail =
-            [ personBubble mail.sender
-            , [ [ [ [ mail.sender.name
+        viewMessage { date, person, mail, answered } =
+            [ personBubble person
+            , [ [ [ [ person.name
                         |> Html.text
                         |> List.singleton
                         |> Html.div [ Html.Style.fontWeightBold ]
@@ -189,8 +189,9 @@ messages args =
                         |> Html.div []
                     ]
                   , attachment
-                        { onAccept = args.onAccept i
+                        { onAccept = args.onAccept date
                         , items = args.items
+                        , answered = answered
                         }
                         mail
                         |> Maybe.map List.singleton
@@ -210,8 +211,9 @@ messages args =
                         ]
                 ]
               , request
-                    { onAccept = args.onAccept i
+                    { onAccept = args.onAccept date
                     , items = args.items
+                    , answered = answered
                     }
                     mail
                     |> Maybe.map List.singleton
@@ -229,17 +231,16 @@ messages args =
                     [ Html.Style.displayFlex
                     , Html.Style.flexDirectionRow
                     , Html.Style.gapPx 8
-                    , if mail.accepted then
+                    , if answered then
                         Html.Style.backgroundColor View.Color.white
 
                       else
                         Html.Style.backgroundColor View.Color.white
                     ]
     in
-    args.mails
-        |> Dict.toList
+    list
         |> List.reverse
-        |> List.map (\( i, mail ) -> viewMessage i mail)
+        |> List.map viewMessage
 
 
 market :

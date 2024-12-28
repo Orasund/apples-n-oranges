@@ -19,7 +19,7 @@ import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
 import Screen.Game
 import Screen.Menu exposing (MenuTab(..), Trade)
-import Set
+import Set exposing (Set)
 import Stylesheet
 import Task
 import View.Background
@@ -27,6 +27,10 @@ import View.Background
 
 type alias Random a =
     Generator a
+
+
+type alias PersonId =
+    Int
 
 
 type alias Model =
@@ -41,11 +45,22 @@ type alias Model =
     , showBetweenDays : Bool
     , menu : Maybe MenuTab
     , trades : List Trade
-    , messages : Dict Date Mail
-    , nextMessages : Dict String Mail
     , showMenu : Bool
     , items : ItemBag
-    , peoples : Dict Int Person
+    , answeredMessages : Set Date
+    , messages :
+        Dict
+            Date
+            { personId : PersonId
+            , mail : Mail
+            }
+    , peoples :
+        Dict
+            PersonId
+            { person : Person
+            , progress : Int
+            , nextMessage : Mail
+            }
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -294,30 +309,52 @@ setMenuTab menuTab model =
 
 
 acceptMail : Date -> Model -> Random Model
-acceptMail n model =
+acceptMail date model =
+    let
+        fun : { personId : Int, person : Person, mail : Mail, progress : Int } -> Random Model
+        fun { personId, person, mail, progress } =
+            Data.Message.next
+                { job = person.job
+                , progress = progress
+                }
+                |> Maybe.map Random.constant
+                |> Maybe.withDefault Data.Message.default
+                |> Random.map
+                    (\nextMessage ->
+                        { model
+                            | messages =
+                                model.messages
+                                    |> Dict.insert date
+                                        { mail = mail
+                                        , personId = personId
+                                        }
+                            , peoples =
+                                model.peoples
+                                    |> Dict.insert personId
+                                        { person = person
+                                        , progress = progress
+                                        , nextMessage = nextMessage
+                                        }
+                            , answeredMessages =
+                                model.answeredMessages
+                                    |> Set.insert date
+                        }
+                    )
+    in
     model.messages
-        |> Dict.get n
-        |> Maybe.map
-            (\mail ->
-                let
-                    sender =
-                        mail.sender |> (\s -> { s | progress = s.progress + 1 })
-                in
-                Data.Message.next sender
-                    |> Maybe.map Random.constant
-                    |> Maybe.withDefault (Data.Message.default sender)
-                    |> Random.map
-                        (\nextMessage ->
-                            { model
-                                | messages =
-                                    model.messages
-                                        |> Dict.insert n
-                                            { mail | accepted = True }
-                                , nextMessages =
-                                    model.nextMessages
-                                        |> Dict.insert (Data.Person.jobToString mail.sender.job)
-                                            nextMessage
-                            }
+        |> Dict.get date
+        |> Maybe.andThen
+            (\{ personId, mail } ->
+                model.peoples
+                    |> Dict.get personId
+                    |> Maybe.map
+                        (\{ person, progress } ->
+                            fun
+                                { personId = personId
+                                , person = person
+                                , mail = mail
+                                , progress = progress + 1
+                                }
                         )
             )
         |> Maybe.withDefault (Random.constant model)
@@ -325,26 +362,44 @@ acceptMail n model =
 
 addMail : Model -> Generator Model
 addMail model =
-    model.nextMessages
-        |> Dict.values
+    let
+        fun : { personId : PersonId, person : Person, progress : Int, nextMessage : Mail } -> Random Model
+        fun args =
+            Data.Message.default
+                |> Random.map
+                    (\newMessage ->
+                        { model
+                            | messages =
+                                Dict.insert model.date
+                                    { personId = args.personId
+                                    , mail = args.nextMessage
+                                    }
+                                    model.messages
+                            , peoples =
+                                model.peoples
+                                    |> Dict.insert args.personId
+                                        { person = args.person
+                                        , progress = args.progress
+                                        , nextMessage = newMessage
+                                        }
+                        }
+                    )
+    in
+    model.peoples
+        |> Dict.toList
         |> Maths.shuffle
         |> Random.map List.head
         |> Random.andThen
             (\maybe ->
                 maybe
                     |> Maybe.map
-                        (\mail ->
-                            Data.Message.default mail.sender
-                                |> Random.map
-                                    (\nextMessage ->
-                                        { model
-                                            | messages = Dict.insert model.date mail model.messages
-                                            , nextMessages =
-                                                model.nextMessages
-                                                    |> Dict.insert (Data.Person.jobToString mail.sender.job)
-                                                        nextMessage
-                                        }
-                                    )
+                        (\( personId, { nextMessage, progress, person } ) ->
+                            fun
+                                { personId = personId
+                                , person = person
+                                , progress = progress
+                                , nextMessage = nextMessage
+                                }
                         )
                     |> Maybe.withDefault (Random.constant model)
             )
@@ -392,15 +447,8 @@ init () =
             , betweenDays = []
             , showBetweenDays = False
             , menu = Nothing
+            , answeredMessages = Set.empty
             , messages = Dict.empty
-            , nextMessages =
-                people
-                    |> List.filterMap
-                        (\person ->
-                            Data.Message.next person
-                                |> Maybe.map (Tuple.pair (Data.Person.jobToString person.job))
-                        )
-                    |> Dict.fromList
             , showMenu = False
             , trades =
                 [ { trader = Data.Person.alice
@@ -417,6 +465,22 @@ init () =
             , pointer = Nothing
             , peoples =
                 people
+                    |> List.map
+                        (\person ->
+                            let
+                                progress =
+                                    0
+                            in
+                            { person = person
+                            , progress = progress
+                            , nextMessage =
+                                Data.Message.next
+                                    { job = person.job
+                                    , progress = progress
+                                    }
+                                    |> Maybe.withDefault (Data.Message.defaultRequest Coin)
+                            }
+                        )
                     |> List.indexedMap Tuple.pair
                     |> Dict.fromList
             }
@@ -789,7 +853,7 @@ update msg model =
 
         AcceptMail i ->
             ( case Dict.get i model.messages of
-                Just mail ->
+                Just { mail } ->
                     mail.request
                         |> Maybe.map
                             (\item ->
@@ -895,11 +959,7 @@ view model =
     [ Screen.Game.toHtml
         { items = model.items
         , level = model.level
-        , showDot =
-            model.messages
-                |> Dict.toList
-                |> List.filter (\( _, mail ) -> not mail.accepted)
-                |> List.length
+        , unansweredMessages = Dict.size model.messages - Set.size model.answeredMessages
         , pointerZero = model.pointerZero
         , onOpenMenu = OpenMessages
         , onPointerDown = PointerDown
@@ -924,10 +984,25 @@ view model =
 
         Just MailTab ->
             Screen.Menu.messages
-                { mails = model.messages
-                , items = model.items
+                { items = model.items
                 , onAccept = AcceptMail
                 }
+                (model.messages
+                    |> Dict.toList
+                    |> List.filterMap
+                        (\( date, { personId, mail } ) ->
+                            model.peoples
+                                |> Dict.get personId
+                                |> Maybe.map
+                                    (\person ->
+                                        { person = person.person
+                                        , date = date
+                                        , mail = mail
+                                        , answered = Set.member date model.answeredMessages
+                                        }
+                                    )
+                        )
+                )
 
         Nothing ->
             []

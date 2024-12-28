@@ -12,7 +12,7 @@ import View.Level
 toHtml :
     { level : Level
     , items : ItemBag
-    , showDot : Int
+    , unansweredMessages : Int
     , pointerZero : ( Float, Float )
     , onUndo : msg
     , onReset : msg
@@ -30,11 +30,11 @@ toHtml args =
         , Html.Style.gapPx 4
         , Html.Style.width "100%"
         ]
-        [ (if args.showDot > 0 then
+        [ (if args.unansweredMessages > 0 then
             View.Button.withDot []
                 { label = "Messages"
                 , onPress = args.onOpenMenu
-                , amount = args.showDot
+                , amount = args.unansweredMessages
                 }
 
            else
