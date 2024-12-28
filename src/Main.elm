@@ -57,11 +57,7 @@ type alias Model =
             { personId : PersonId
             , message : Message
             }
-    , peoples :
-        Dict
-            PersonId
-            { person : Person
-            }
+    , peoples : Dict PersonId Person
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -331,12 +327,7 @@ acceptMail date model =
                                         }
                             , peoples =
                                 model.peoples
-                                    |> Dict.insert personId
-                                        { person =
-                                            { person
-                                                | nextMessage = nextMessage
-                                            }
-                                        }
+                                    |> Dict.insert personId (person |> Data.Person.setNextMessage nextMessage)
                             , answeredMessages =
                                 model.answeredMessages
                                     |> Set.insert date
@@ -350,7 +341,7 @@ acceptMail date model =
                 model.peoples
                     |> Dict.get personId
                     |> Maybe.map
-                        (\{ person } ->
+                        (\person ->
                             fun
                                 { personId = personId
                                 , person = Data.Person.advanceProgress person
@@ -379,8 +370,7 @@ addMail model =
                             , peoples =
                                 model.peoples
                                     |> Dict.insert args.personId
-                                        { person = Data.Person.setNextMessage newMessage args.person
-                                        }
+                                        (Data.Person.setNextMessage newMessage args.person)
                         }
                     )
     in
@@ -392,7 +382,7 @@ addMail model =
             (\maybe ->
                 maybe
                     |> Maybe.map
-                        (\( personId, { person } ) ->
+                        (\( personId, person ) ->
                             fun
                                 { personId = personId
                                 , person = person
@@ -466,18 +456,16 @@ init () =
                                 progress =
                                     0
                             in
-                            { person =
-                                { symbol = person.symbol
-                                , name = person.name
-                                , job = person.job
-                                , progress = progress
-                                , nextMessage =
-                                    Data.Person.next
-                                        { job = person.job
-                                        , progress = progress
-                                        }
-                                        |> Maybe.withDefault (Data.Person.defaultRequest Coin)
-                                }
+                            { symbol = person.symbol
+                            , name = person.name
+                            , job = person.job
+                            , progress = progress
+                            , nextMessage =
+                                Data.Person.next
+                                    { job = person.job
+                                    , progress = progress
+                                    }
+                                    |> Maybe.withDefault (Data.Person.defaultRequest Coin)
                             }
                         )
                     |> List.indexedMap Tuple.pair
@@ -994,7 +982,7 @@ view model =
                                 |> Dict.get personId
                                 |> Maybe.map
                                     (\person ->
-                                        { person = person.person
+                                        { person = person
                                         , date = date
                                         , mail = message
                                         , answered = Set.member date model.answeredMessages
