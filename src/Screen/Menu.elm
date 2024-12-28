@@ -3,8 +3,7 @@ module Screen.Menu exposing (..)
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Message exposing (Mail)
-import Data.Person exposing (Person)
+import Data.Person exposing (Mail, Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
@@ -26,7 +25,6 @@ type MenuTab
 type alias Trade =
     { remove : List ( Item, Int )
     , add : Item
-    , trader : Person
     }
 
 
@@ -265,7 +263,7 @@ market args =
                                 )
                             |> String.concat
                 in
-                [ [ personBubble trade.trader
+                [ {--[ personBubble trade.trader
                   , trade.trader.name
                         |> Html.text
                   ]
@@ -274,7 +272,8 @@ market args =
                         , Html.Style.alignItemsCenter
                         , Html.Style.gapPx 8
                         ]
-                , trade.add
+                ,--}
+                  trade.add
                     |> ItemBlock
                     |> Data.Block.toString
                     |> Html.text

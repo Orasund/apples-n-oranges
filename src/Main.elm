@@ -4,8 +4,7 @@ import Browser
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Message exposing (Mail)
-import Data.Person exposing (Person)
+import Data.Person exposing (Mail, Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -33,6 +32,10 @@ type alias PersonId =
     Int
 
 
+type alias MessageId =
+    Date
+
+
 type alias Model =
     { level : Level
     , difficutly : Float
@@ -47,10 +50,10 @@ type alias Model =
     , trades : List Trade
     , showMenu : Bool
     , items : ItemBag
-    , answeredMessages : Set Date
+    , answeredMessages : Set MessageId
     , messages :
         Dict
-            Date
+            MessageId
             { personId : PersonId
             , mail : Mail
             }
@@ -58,8 +61,6 @@ type alias Model =
         Dict
             PersonId
             { person : Person
-            , progress : Int
-            , nextMessage : Mail
             }
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
@@ -311,14 +312,14 @@ setMenuTab menuTab model =
 acceptMail : Date -> Model -> Random Model
 acceptMail date model =
     let
-        fun : { personId : Int, person : Person, mail : Mail, progress : Int } -> Random Model
-        fun { personId, person, mail, progress } =
-            Data.Message.next
+        fun : { personId : Int, person : Person, mail : Mail } -> Random Model
+        fun { personId, person, mail } =
+            Data.Person.next
                 { job = person.job
-                , progress = progress
+                , progress = person.progress
                 }
                 |> Maybe.map Random.constant
-                |> Maybe.withDefault Data.Message.default
+                |> Maybe.withDefault Data.Person.default
                 |> Random.map
                     (\nextMessage ->
                         { model
@@ -331,9 +332,10 @@ acceptMail date model =
                             , peoples =
                                 model.peoples
                                     |> Dict.insert personId
-                                        { person = person
-                                        , progress = progress
-                                        , nextMessage = nextMessage
+                                        { person =
+                                            { person
+                                                | nextMessage = nextMessage
+                                            }
                                         }
                             , answeredMessages =
                                 model.answeredMessages
@@ -348,12 +350,11 @@ acceptMail date model =
                 model.peoples
                     |> Dict.get personId
                     |> Maybe.map
-                        (\{ person, progress } ->
+                        (\{ person } ->
                             fun
                                 { personId = personId
-                                , person = person
+                                , person = Data.Person.advanceProgress person
                                 , mail = mail
-                                , progress = progress + 1
                                 }
                         )
             )
@@ -363,24 +364,22 @@ acceptMail date model =
 addMail : Model -> Generator Model
 addMail model =
     let
-        fun : { personId : PersonId, person : Person, progress : Int, nextMessage : Mail } -> Random Model
+        fun : { personId : PersonId, person : Person } -> Random Model
         fun args =
-            Data.Message.default
+            Data.Person.default
                 |> Random.map
                     (\newMessage ->
                         { model
                             | messages =
                                 Dict.insert model.date
                                     { personId = args.personId
-                                    , mail = args.nextMessage
+                                    , mail = args.person.nextMessage
                                     }
                                     model.messages
                             , peoples =
                                 model.peoples
                                     |> Dict.insert args.personId
-                                        { person = args.person
-                                        , progress = args.progress
-                                        , nextMessage = newMessage
+                                        { person = Data.Person.setNextMessage newMessage args.person
                                         }
                         }
                     )
@@ -393,12 +392,10 @@ addMail model =
             (\maybe ->
                 maybe
                     |> Maybe.map
-                        (\( personId, { nextMessage, progress, person } ) ->
+                        (\( personId, { person } ) ->
                             fun
                                 { personId = personId
                                 , person = person
-                                , progress = progress
-                                , nextMessage = nextMessage
                                 }
                         )
                     |> Maybe.withDefault (Random.constant model)
@@ -451,12 +448,10 @@ init () =
             , messages = Dict.empty
             , showMenu = False
             , trades =
-                [ { trader = Data.Person.alice
-                  , add = Stone
+                [ { add = Stone
                   , remove = [ ( Wood, 2 ) ]
                   }
-                , { trader = Data.Person.rick
-                  , add = Wood
+                , { add = Wood
                   , remove = [ ( Stone, 2 ) ]
                   }
                 ]
@@ -471,14 +466,18 @@ init () =
                                 progress =
                                     0
                             in
-                            { person = person
-                            , progress = progress
-                            , nextMessage =
-                                Data.Message.next
-                                    { job = person.job
-                                    , progress = progress
-                                    }
-                                    |> Maybe.withDefault (Data.Message.defaultRequest Coin)
+                            { person =
+                                { symbol = person.symbol
+                                , name = person.name
+                                , job = person.job
+                                , progress = progress
+                                , nextMessage =
+                                    Data.Person.next
+                                        { job = person.job
+                                        , progress = progress
+                                        }
+                                        |> Maybe.withDefault (Data.Person.defaultRequest Coin)
+                                }
                             }
                         )
                     |> List.indexedMap Tuple.pair
