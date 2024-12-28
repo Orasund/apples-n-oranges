@@ -57,7 +57,7 @@ type alias Model =
             { personId : PersonId
             , message : Message
             }
-    , peoples : Dict PersonId Person
+    , persons : Dict PersonId Person
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -325,8 +325,8 @@ acceptMail date model =
                                         { message = mail
                                         , personId = personId
                                         }
-                            , peoples =
-                                model.peoples
+                            , persons =
+                                model.persons
                                     |> Dict.insert personId (person |> Data.Person.setNextMessage nextMessage)
                             , answeredMessages =
                                 model.answeredMessages
@@ -338,7 +338,7 @@ acceptMail date model =
         |> Dict.get date
         |> Maybe.andThen
             (\{ personId, message } ->
-                model.peoples
+                model.persons
                     |> Dict.get personId
                     |> Maybe.map
                         (\person ->
@@ -367,14 +367,14 @@ addMail model =
                                     , message = args.person.nextMessage
                                     }
                                     model.messages
-                            , peoples =
-                                model.peoples
+                            , persons =
+                                model.persons
                                     |> Dict.insert args.personId
                                         (Data.Person.setNextMessage newMessage args.person)
                         }
                     )
     in
-    model.peoples
+    model.persons
         |> Dict.toList
         |> Maths.shuffle
         |> Random.map List.head
@@ -448,7 +448,7 @@ init () =
             , items = Data.ItemBag.empty
             , pointerZero = ( 0, 0 )
             , pointer = Nothing
-            , peoples =
+            , persons =
                 people
                     |> List.map
                         (\person ->
@@ -978,7 +978,7 @@ view model =
                     |> Dict.toList
                     |> List.filterMap
                         (\( date, { personId, message } ) ->
-                            model.peoples
+                            model.persons
                                 |> Dict.get personId
                                 |> Maybe.map
                                     (\person ->
