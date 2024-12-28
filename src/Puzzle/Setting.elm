@@ -1,6 +1,7 @@
-module Puzzle.Setting exposing (Event, Setting, pick, settings, specialSettings, startingLevel, toList)
+module Puzzle.Setting exposing (Event, Setting, generateMonth, startingLevel, toList)
 
 import Data.Block exposing (Block(..), Flower(..), Item(..), Organic(..), Pastries(..))
+import Data.Date exposing (Date)
 import Puzzle.Builder exposing (Group(..))
 import Random
 
@@ -139,3 +140,42 @@ pick args fun =
 toList : Setting -> List ( Block, Block )
 toList setting =
     setting.pairs
+
+
+generateMonth : { date : Date, difficutly : Float } -> Random (List ( Date, { setting : Setting, reward : Bool, mail : Bool } ))
+generateMonth args =
+    Data.Date.listOfDaysInMonth args.date
+        |> List.foldl
+            (\date ->
+                let
+                    i =
+                        Data.Date.day date
+
+                    difficulty =
+                        args.difficutly + toFloat i / Data.Date.daysInAMonth
+                in
+                Random.andThen
+                    (\l ->
+                        pick
+                            { difficulty = difficulty
+                            , summer = Data.Date.summer date
+                            }
+                            (if modBy 7 i == 0 then
+                                specialSettings
+
+                             else
+                                settings
+                            )
+                            |> Random.map
+                                (\setting ->
+                                    ( date
+                                    , { setting = setting
+                                      , reward = modBy 7 i == 0
+                                      , mail = modBy 7 (i - -1) == 0
+                                      }
+                                    )
+                                )
+                            |> Random.map (\s -> s :: l)
+                    )
+            )
+            (Random.constant [])

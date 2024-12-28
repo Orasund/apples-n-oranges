@@ -179,54 +179,19 @@ applyGenerator seed generator =
 
 generateNextMonth : Model -> Random Model
 generateNextMonth model =
-    let
-        randomSettingsGenerator =
-            Date.listOfDaysInMonth model.date
-                |> List.foldl
-                    (\date ->
-                        let
-                            i =
-                                Date.day date
-
-                            difficulty =
-                                model.difficutly + toFloat i / Date.daysInAMonth
-                        in
-                        Random.andThen
-                            (\l ->
-                                Puzzle.Setting.pick
-                                    { difficulty = difficulty
-                                    , summer = Date.summer date
-                                    }
-                                    (if modBy 7 i == 0 then
-                                        Puzzle.Setting.specialSettings
-
-                                     else
-                                        Puzzle.Setting.settings
-                                    )
-                                    |> Random.map
-                                        (\setting ->
-                                            ( date
-                                            , { setting = setting
-                                              , reward = modBy 7 i == 0
-                                              , mail = modBy 6 (i - -1) == 0
-                                              }
-                                            )
-                                        )
-                                    |> Random.map (\s -> s :: l)
-                            )
-                    )
-                    (Random.constant [])
-    in
-    Random.map
-        (\randomSettings ->
-            { model
-                | nextEvents =
-                    randomSettings
-                        |> List.reverse
-                        |> Dict.fromList
-            }
-        )
-        randomSettingsGenerator
+    Puzzle.Setting.generateMonth
+        { date = model.date
+        , difficutly = model.difficutly
+        }
+        |> Random.map
+            (\randomSettings ->
+                { model
+                    | nextEvents =
+                        randomSettings
+                            |> List.reverse
+                            |> Dict.fromList
+                }
+            )
 
 
 showCalender : Model -> Model
