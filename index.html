@@ -6832,12 +6832,12 @@ var $author$project$Data$Date$summer = function (_v0) {
 	var i = _v0.b;
 	return !i;
 };
-var $author$project$Main$generateNextMonth = function (model) {
-	var randomSettingsGenerator = A3(
+var $author$project$Puzzle$Setting$generateMonth = function (args) {
+	return A3(
 		$elm$core$List$foldl,
 		function (date) {
 			var i = $author$project$Data$Date$day(date);
-			var difficulty = model.difficutly + (i / $author$project$Data$Date$daysInAMonth);
+			var difficulty = args.difficutly + (i / $author$project$Data$Date$daysInAMonth);
 			return $elm$random$Random$andThen(
 				function (l) {
 					return A2(
@@ -6851,7 +6851,7 @@ var $author$project$Main$generateNextMonth = function (model) {
 								return _Utils_Tuple2(
 									date,
 									{
-										mail: !A2($elm$core$Basics$modBy, 6, i - (-1)),
+										mail: !A2($elm$core$Basics$modBy, 7, i - (-1)),
 										reward: !A2($elm$core$Basics$modBy, 7, i),
 										setting: setting
 									});
@@ -6866,7 +6866,9 @@ var $author$project$Main$generateNextMonth = function (model) {
 				});
 		},
 		$elm$random$Random$constant(_List_Nil),
-		$author$project$Data$Date$listOfDaysInMonth(model.date));
+		$author$project$Data$Date$listOfDaysInMonth(args.date));
+};
+var $author$project$Main$generateNextMonth = function (model) {
 	return A2(
 		$elm$random$Random$map,
 		function (randomSettings) {
@@ -6877,7 +6879,8 @@ var $author$project$Main$generateNextMonth = function (model) {
 						$elm$core$List$reverse(randomSettings))
 				});
 		},
-		randomSettingsGenerator);
+		$author$project$Puzzle$Setting$generateMonth(
+			{date: model.date, difficutly: model.difficutly}));
 };
 var $author$project$Level$newEntity = function (_v0) {
 	var x = _v0.a;
