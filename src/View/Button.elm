@@ -51,14 +51,14 @@ withIcons attrs args content =
 withDot : List (Attribute msg) -> { label : String, onPress : msg, amount : Int } -> Html msg
 withDot attrs args =
     [ Html.div
-        [ Html.Style.heightPx 16
+        [ Html.Style.heightPx 24
         , Html.Style.aspectRatio "1"
-        , Html.Style.borderRadiusPx 8
+        , Html.Style.borderRadiusPx 12
         , Html.Style.backgroundColor View.Color.red900
         , Html.Style.positionAbsolute
-        , Html.Style.rightPx -4
-        , Html.Style.topPx -4
-        , Html.Style.fontSizePx 10
+        , Html.Style.rightPx -6
+        , Html.Style.topPx -6
+        , Html.Style.fontSizePx 14
         , Html.Style.color View.Color.white
         , Html.Style.boxSizingBorderBox
         , Html.Style.displayFlex

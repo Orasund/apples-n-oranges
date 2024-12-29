@@ -73,9 +73,9 @@ wood attrs =
     toHtml
         ([ Html.Style.backgroundImage
             ("linear-gradient(0deg, "
-                ++ View.Color.brown100
+                ++ View.Color.red100
                 ++ " 50%,"
-                ++ View.Color.brown200
+                ++ View.Color.red200
                 ++ " 50%)"
             )
          , Html.Style.backgroundSize "100px 100px"

@@ -30,18 +30,21 @@ type alias Trade =
 
 personBubble : Person -> Html msg
 personBubble person =
-    [ (if Data.Person.isInLove person then
+    [ (if person.friendship >= Data.Person.friendshipForLove then
         "❤️"
-            |> Html.text
-            |> List.singleton
+
+       else if person.friendship >= Data.Person.friendshipForLove // 2 then
+        "🧡"
 
        else
-        []
+        ""
       )
+        |> Html.text
+        |> List.singleton
         |> Html.div
             [ Html.Style.positionAbsolute
             , Html.Style.bottom "-0.5em"
-            , Html.Style.fontSizePx 10
+            , Html.Style.fontSizePx 9
             ]
     , person.symbol
         |> Html.text
@@ -55,9 +58,15 @@ personBubble person =
              , Html.Style.borderRadius "100%"
              , Html.Style.fontSizePx 20
              ]
-                ++ (if Data.Person.isInLove person then
+                ++ (if person.friendship >= Data.Person.friendshipForLove then
                         [ Html.Style.backgroundColor View.Color.red100
                         , Html.Style.border ("2px solid " ++ View.Color.red900)
+                        , Html.Style.boxSizingBorderBox
+                        ]
+
+                    else if person.friendship >= Data.Person.friendshipForLove // 2 then
+                        [ Html.Style.backgroundColor View.Color.yellow100
+                        , Html.Style.border ("2px solid " ++ View.Color.yellow900)
                         , Html.Style.boxSizingBorderBox
                         ]
 

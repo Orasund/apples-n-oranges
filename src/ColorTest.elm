@@ -17,25 +17,15 @@ main =
       , View.Color.red800
       , View.Color.red900
       ]
-    , [ View.Color.gray100
-      , View.Color.brown200
-      , View.Color.brown300
-      , View.Color.gray400
-      , View.Color.gray500
-      , View.Color.gray600
-      , View.Color.gray700
-      , View.Color.gray800
-      , View.Color.gray900
-      ]
-    , [ View.Color.gray100
-      , View.Color.gray200
+    , [ View.Color.yellow100
+      , View.Color.yellow200
       , View.Color.yellow300
-      , View.Color.gray400
-      , View.Color.gray500
-      , View.Color.gray600
-      , View.Color.gray700
-      , View.Color.gray800
-      , View.Color.gray900
+      , View.Color.yellow400
+      , View.Color.yellow500
+      , View.Color.yellow600
+      , View.Color.yellow700
+      , View.Color.yellow800
+      , View.Color.yellow900
       ]
     , [ View.Color.green100
       , View.Color.green200

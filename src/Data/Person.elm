@@ -24,6 +24,11 @@ type alias Person =
     }
 
 
+friendshipForLove : Int
+friendshipForLove =
+    8
+
+
 alice : { symbol : String, name : String, job : Job }
 alice =
     { symbol = "👩🏻"
@@ -146,8 +151,3 @@ setNextMessage mail person =
 increaseFriendship : Person -> Person
 increaseFriendship person =
     { person | friendship = person.friendship + 1 }
-
-
-isInLove : Person -> Bool
-isInLove person =
-    person.friendship >= 9

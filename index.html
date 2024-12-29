@@ -6851,7 +6851,7 @@ var $author$project$Puzzle$Setting$generateMonth = function (args) {
 								return _Utils_Tuple2(
 									date,
 									{
-										mail: !A2($elm$core$Basics$modBy, 7, i - (-1)),
+										mail: !A2($elm$core$Basics$modBy, 9, i - 4),
 										reward: !A2($elm$core$Basics$modBy, 7, i),
 										setting: setting
 									});
@@ -7241,6 +7241,7 @@ var $author$project$Main$init = function (_v0) {
 		betweenDaysLast: $author$project$Screen$BetweenDays$ShowNothing,
 		date: $author$project$Data$Date$first,
 		difficutly: 0,
+		filterMessages: $elm$core$Maybe$Nothing,
 		history: _List_Nil,
 		items: $author$project$Data$ItemBag$empty,
 		level: $author$project$Level$empty(
@@ -8331,7 +8332,10 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'CloseCalender':
 				return _Utils_Tuple2(
-					$author$project$Main$closeCalender(model),
+					$author$project$Main$closeCalender(
+						_Utils_update(
+							model,
+							{filterMessages: $elm$core$Maybe$Nothing})),
 					$elm$core$Platform$Cmd$none);
 			case 'SetBetweenDays':
 				var action = msg.a;
@@ -8408,7 +8412,7 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'DoNothing':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'NextActionBetweenDays':
 				var _v6 = model.betweenDays;
 				if (_v6.b) {
 					if (!_v6.b.b) {
@@ -8446,6 +8450,13 @@ var $author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
+			default:
+				var person = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{filterMessages: person}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$AcceptMail = function (a) {
@@ -8466,6 +8477,9 @@ var $author$project$Main$PointerUp = function (a) {
 	return {$: 'PointerUp', a: a};
 };
 var $author$project$Main$Reset = {$: 'Reset'};
+var $author$project$Main$SetFilterMessages = function (a) {
+	return {$: 'SetFilterMessages', a: a};
+};
 var $author$project$Main$SetMenuTab = function (a) {
 	return {$: 'SetMenuTab', a: a};
 };
@@ -8619,7 +8633,7 @@ var $author$project$View$DayOfTheWeek$toShortString = function (n) {
 			A2($elm$core$Basics$modBy, 7, n),
 			$author$project$View$DayOfTheWeek$shortNames));
 };
-var $author$project$View$Color$yellow300 = '#f0f086';
+var $author$project$View$Color$yellow300 = 'rgb(222 222 132)';
 var $author$project$Screen$Menu$calender = function (args) {
 	return _List_fromArray(
 		[
@@ -9056,6 +9070,16 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
+var $Orasund$elm_html_style$Html$Style$flex = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex', value);
+};
+var $Orasund$elm_html_style$Html$Style$border = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'border', value);
+};
+var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'bottom', value);
+};
+var $author$project$Data$Person$friendshipForLove = 8;
 var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
 	return $Orasund$elm_html_style$Html$Style$height(
 		A2(
@@ -9064,33 +9088,63 @@ var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
 			'px'));
 };
 var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
+var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
+var $author$project$View$Color$red100 = 'rgb(255 216 196)';
+var $author$project$View$Color$yellow100 = 'rgb(232 232 180)';
+var $author$project$View$Color$yellow900 = 'rgb(159 159 1)';
 var $author$project$Screen$Menu$personBubble = function (person) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
-			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart]),
-		$elm$core$List$singleton(
-			A2(
+			[$Orasund$elm_html_style$Html$Style$displayFlex, $Orasund$elm_html_style$Html$Style$flexDirectionColumn, $Orasund$elm_html_style$Html$Style$alignItemsCenter, $Orasund$elm_html_style$Html$Style$justifyContentStart, $Orasund$elm_html_style$Html$Style$positionRelative]),
+		_List_fromArray(
+			[
+				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$heightPx(35),
-						$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-						$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
-						$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100),
-						$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						$Orasund$elm_html_style$Html$Style$positionAbsolute,
+						$Orasund$elm_html_style$Html$Style$bottom('-0.5em'),
+						$Orasund$elm_html_style$Html$Style$fontSizePx(9)
 					]),
 				$elm$core$List$singleton(
-					$elm$html$Html$text(person.symbol)))));
+					$elm$html$Html$text(
+						(_Utils_cmp(person.friendship, $author$project$Data$Person$friendshipForLove) > -1) ? '❤️' : ((_Utils_cmp(person.friendship, ($author$project$Data$Person$friendshipForLove / 2) | 0) > -1) ? '🧡' : '')))),
+				A2(
+				$elm$html$Html$div,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$displayFlex,
+							$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+							$Orasund$elm_html_style$Html$Style$heightPx(35),
+							$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+							$Orasund$elm_html_style$Html$Style$borderRadius('100%'),
+							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						]),
+					(_Utils_cmp(person.friendship, $author$project$Data$Person$friendshipForLove) > -1) ? _List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red100),
+							$Orasund$elm_html_style$Html$Style$border('2px solid ' + $author$project$View$Color$red900),
+							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox
+						]) : ((_Utils_cmp(person.friendship, ($author$project$Data$Person$friendshipForLove / 2) | 0) > -1) ? _List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$yellow100),
+							$Orasund$elm_html_style$Html$Style$border('2px solid ' + $author$project$View$Color$yellow900),
+							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox
+						]) : _List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$gray100)
+						]))),
+				$elm$core$List$singleton(
+					$elm$html$Html$text(person.symbol)))
+			]));
 };
 var $Orasund$elm_html_style$Html$Style$alignSelf = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'align-self', value);
 };
 var $Orasund$elm_html_style$Html$Style$alignSelfEnd = $Orasund$elm_html_style$Html$Style$alignSelf('end');
-var $author$project$View$Color$red100 = 'rgb(255 216 196)';
 var $author$project$Screen$Menu$request = F2(
 	function (args, mail) {
 		return A2(
@@ -9149,13 +9203,42 @@ var $author$project$Screen$Menu$request = F2(
 			},
 			mail.request);
 	});
+var $author$project$View$Button$withIcons = F3(
+	function (attrs, args, content) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				$Orasund$elm_layout$Layout$asButton(
+					{
+						label: args.label,
+						onPress: $elm$core$Maybe$Just(args.onPress)
+					}),
+				_Utils_ap(
+					attrs,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('button-base button')
+						]))),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(content))),
+					$elm$html$Html$text(args.label)
+				]));
+	});
 var $author$project$Screen$Menu$messages = F2(
 	function (args, list) {
-		var viewMessage = function (_v0) {
-			var date = _v0.date;
-			var person = _v0.person;
-			var mail = _v0.mail;
-			var answered = _v0.answered;
+		var viewMessage = function (_v3) {
+			var date = _v3.date;
+			var person = _v3.person;
+			var mail = _v3.mail;
+			var answered = _v3.answered;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -9167,7 +9250,11 @@ var $author$project$Screen$Menu$messages = F2(
 					]),
 				_List_fromArray(
 					[
-						$author$project$Screen$Menu$personBubble(person),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						$elm$core$List$singleton(
+							$author$project$Screen$Menu$personBubble(person))),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -9247,9 +9334,117 @@ var $author$project$Screen$Menu$messages = F2(
 					]));
 		};
 		return A2(
-			$elm$core$List$map,
-			viewMessage,
-			$elm$core$List$reverse(list));
+			$elm$core$List$cons,
+			function () {
+				var _v0 = args.filter;
+				if (_v0.$ === 'Just') {
+					var person = _v0.a;
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$gapPx(8)
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$Orasund$elm_html_style$Html$Style$displayFlex,
+										$Orasund$elm_html_style$Html$Style$width('100%'),
+										$Orasund$elm_html_style$Html$Style$alignItemsCenter
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$flex('1')
+											]),
+										$elm$core$List$singleton(
+											A2(
+												$author$project$View$Button$toHtml,
+												_List_Nil,
+												{
+													label: 'Back',
+													onPress: args.onFilter($elm$core$Maybe$Nothing)
+												}))),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$fontWeightBold,
+												$Orasund$elm_html_style$Html$Style$displayFlex,
+												$Orasund$elm_html_style$Html$Style$flexDirectionRow,
+												$Orasund$elm_html_style$Html$Style$gapPx(8),
+												$Orasund$elm_html_style$Html$Style$alignItemsCenter
+											]),
+										_List_fromArray(
+											[
+												$author$project$Screen$Menu$personBubble(person),
+												$elm$html$Html$text(person.name)
+											])),
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$Orasund$elm_html_style$Html$Style$flex('1')
+											]),
+										$elm$core$List$singleton(
+											$elm$html$Html$text(
+												$elm$core$String$concat(
+													A2($elm$core$List$repeat, (person.friendship / 3) | 0, '❤️')))))
+									]))
+							]));
+				} else {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$Orasund$elm_html_style$Html$Style$displayFlex,
+								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+								$Orasund$elm_html_style$Html$Style$gapPx(8)
+							]),
+						A2(
+							$elm$core$List$map,
+							function (person) {
+								return A3(
+									$author$project$View$Button$withIcons,
+									_List_Nil,
+									{
+										label: person.name,
+										onPress: args.onFilter(
+											$elm$core$Maybe$Just(person))
+									},
+									person.symbol);
+							},
+							args.people));
+				}
+			}(),
+			A2(
+				$elm$core$List$map,
+				viewMessage,
+				$elm$core$List$reverse(
+					function () {
+						var _v1 = args.filter;
+						if (_v1.$ === 'Just') {
+							var filter = _v1.a;
+							return A2(
+								$elm$core$List$filter,
+								function (_v2) {
+									var person = _v2.person;
+									return _Utils_eq(filter.job, person.job);
+								},
+								list);
+						} else {
+							return list;
+						}
+					}())));
 	});
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
@@ -9257,37 +9452,6 @@ var $elm$virtual_dom$VirtualDom$node = function (tag) {
 		_VirtualDom_noScript(tag));
 };
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$Screen$Menu$people = function (list) {
-	return A2(
-		$elm$core$List$map,
-		function (person) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-						$Orasund$elm_html_style$Html$Style$gapPx(8)
-					]),
-				_List_fromArray(
-					[
-						$author$project$Screen$Menu$personBubble(person),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						$elm$core$List$singleton(
-							$elm$html$Html$text(person.name))),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						$elm$core$List$singleton(
-							$elm$html$Html$text(
-								$elm$core$String$concat(
-									A2($elm$core$List$repeat, person.friendship, '❤️')))))
-					]));
-		},
-		list);
-};
 var $author$project$View$Color$black = 'black';
 var $author$project$View$Color$gray800 = 'hsl(0 0% 50% / 1)';
 var $author$project$View$Color$red300 = 'rgb(255 184 149)';
@@ -9338,9 +9502,6 @@ var $author$project$View$Background$summerGrass = function (attrs) {
 					'url(\'data:image/svg+xml,<svg height="200" width="200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" x="0" y="0" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green100) + ('\n            " /><path d="M0 100 L100 0 L 200 0 L0 200 Z" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green200) + ('\n            " /><path d="M100 200 L200 100 L200 200 Z" fill="\n            ' + ($author$project$View$Background$urlEncode($author$project$View$Color$green200) + '" /></svg>\')'))))))),
 			attrs));
 };
-var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'bottom', value);
-};
 var $Orasund$elm_html_style$Html$Style$left = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'left', value);
 };
@@ -9355,7 +9516,6 @@ var $Orasund$elm_html_style$Html$Style$overflow = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'overflow', value);
 };
 var $Orasund$elm_html_style$Html$Style$overflowHidden = $Orasund$elm_html_style$Html$Style$overflow('hidden');
-var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
 var $Orasund$elm_html_style$Html$Style$transition = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'transition', value);
 };
@@ -9390,9 +9550,6 @@ var $author$project$View$Button$big = _List_fromArray(
 		$Orasund$elm_html_style$Html$Style$alignItemsCenter,
 		$Orasund$elm_html_style$Html$Style$justifyContentCenter
 	]);
-var $Orasund$elm_html_style$Html$Style$flex = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'flex', value);
-};
 var $Orasund$elm_html_style$Html$Style$justifyContentFlexEnd = $Orasund$elm_html_style$Html$Style$justifyContent('flex-end');
 var $author$project$View$Field$size = 70;
 var $Orasund$elm_html_style$Html$Style$scale = function (value) {
@@ -9988,14 +10145,14 @@ var $author$project$View$Button$withDot = F2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$Orasund$elm_html_style$Html$Style$heightPx(16),
+							$Orasund$elm_html_style$Html$Style$heightPx(24),
 							$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-							$Orasund$elm_html_style$Html$Style$borderRadiusPx(8),
+							$Orasund$elm_html_style$Html$Style$borderRadiusPx(12),
 							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
 							$Orasund$elm_html_style$Html$Style$positionAbsolute,
-							$Orasund$elm_html_style$Html$Style$rightPx(-4),
-							$Orasund$elm_html_style$Html$Style$topPx(-4),
-							$Orasund$elm_html_style$Html$Style$fontSizePx(10),
+							$Orasund$elm_html_style$Html$Style$rightPx(-6),
+							$Orasund$elm_html_style$Html$Style$topPx(-6),
+							$Orasund$elm_html_style$Html$Style$fontSizePx(14),
 							$Orasund$elm_html_style$Html$Style$color($author$project$View$Color$white),
 							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
 							$Orasund$elm_html_style$Html$Style$displayFlex,
@@ -10096,7 +10253,6 @@ var $author$project$Screen$Game$toHtml = function (args) {
 };
 var $author$project$Screen$Menu$CalenderTab = {$: 'CalenderTab'};
 var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
-var $author$project$Screen$Menu$PeopleTab = {$: 'PeopleTab'};
 var $author$project$View$Button$asIcon = _List_fromArray(
 	[
 		$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
@@ -10125,14 +10281,13 @@ var $Orasund$elm_html_style$Html$Style$overflowYScroll = $Orasund$elm_html_style
 var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-size', value);
 };
-var $author$project$View$Color$brown100 = 'rgb(225 222 214)';
-var $author$project$View$Color$brown200 = 'rgb(214 209 194)';
+var $author$project$View$Color$red200 = 'rgb(255 203 177)';
 var $author$project$View$Background$wood = function (attrs) {
 	return $author$project$View$Background$toHtml(
 		_Utils_ap(
 			_List_fromArray(
 				[
-					$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, ' + ($author$project$View$Color$brown100 + (' 50%,' + ($author$project$View$Color$brown200 + ' 50%)')))),
+					$Orasund$elm_html_style$Html$Style$backgroundImage('linear-gradient(0deg, ' + ($author$project$View$Color$red100 + (' 50%,' + ($author$project$View$Color$red200 + ' 50%)')))),
 					$Orasund$elm_html_style$Html$Style$backgroundSize('100px 100px')
 				]),
 			attrs));
@@ -10190,7 +10345,6 @@ var $author$project$Screen$Menu$toHtml = F2(
 							[
 								_Utils_Tuple3($author$project$Screen$Menu$CalenderTab, '📅', 'Calender'),
 								_Utils_Tuple3($author$project$Screen$Menu$MarketTab, '🪙', 'Market'),
-								_Utils_Tuple3($author$project$Screen$Menu$PeopleTab, '👤', 'People'),
 								_Utils_Tuple3($author$project$Screen$Menu$MailTab, '✉️', 'Messages')
 							]))),
 					A2(
@@ -10514,11 +10668,17 @@ var $author$project$Main$view = function (model) {
 								var _v2 = _v0.a;
 								return $author$project$Screen$Menu$market(
 									{items: model.items, onAcceptTrade: $author$project$Main$AcceptTrade, trades: model.trades});
-							case 'MailTab':
+							default:
 								var _v3 = _v0.a;
 								return A2(
 									$author$project$Screen$Menu$messages,
-									{items: model.items, onAccept: $author$project$Main$AcceptMail},
+									{
+										filter: model.filterMessages,
+										items: model.items,
+										onAccept: $author$project$Main$AcceptMail,
+										onFilter: $author$project$Main$SetFilterMessages,
+										people: $elm$core$Dict$values(model.persons)
+									},
 									A2(
 										$elm$core$List$filterMap,
 										function (_v4) {
@@ -10538,10 +10698,6 @@ var $author$project$Main$view = function (model) {
 												A2($elm$core$Dict$get, personId, model.persons));
 										},
 										$elm$core$Dict$toList(model.messages)));
-							default:
-								var _v5 = _v0.a;
-								return $author$project$Screen$Menu$people(
-									$elm$core$Dict$values(model.persons));
 						}
 					} else {
 						return _List_Nil;
