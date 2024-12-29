@@ -20,7 +20,6 @@ type MenuTab
     = CalenderTab
     | MarketTab
     | MailTab
-    | PeopleTab
 
 
 type alias Trade =
@@ -31,25 +30,49 @@ type alias Trade =
 
 personBubble : Person -> Html msg
 personBubble person =
-    person.symbol
+    [ (if Data.Person.isInLove person then
+        "❤️"
+            |> Html.text
+            |> List.singleton
+
+       else
+        []
+      )
+        |> Html.div
+            [ Html.Style.positionAbsolute
+            , Html.Style.bottom "-0.5em"
+            , Html.Style.fontSizePx 10
+            ]
+    , person.symbol
         |> Html.text
         |> List.singleton
         |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.alignItemsCenter
-            , Html.Style.justifyContentCenter
-            , Html.Style.heightPx 35
-            , Html.Style.aspectRatio "1"
-            , Html.Style.borderRadius "100%"
-            , Html.Style.backgroundColor View.Color.gray100
-            , Html.Style.fontSizePx 20
-            ]
-        |> List.singleton
+            ([ Html.Style.displayFlex
+             , Html.Style.alignItemsCenter
+             , Html.Style.justifyContentCenter
+             , Html.Style.heightPx 35
+             , Html.Style.aspectRatio "1"
+             , Html.Style.borderRadius "100%"
+             , Html.Style.fontSizePx 20
+             ]
+                ++ (if Data.Person.isInLove person then
+                        [ Html.Style.backgroundColor View.Color.red100
+                        , Html.Style.border ("2px solid " ++ View.Color.red900)
+                        , Html.Style.boxSizingBorderBox
+                        ]
+
+                    else
+                        [ Html.Style.backgroundColor View.Color.gray100
+                        ]
+                   )
+            )
+    ]
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.flexDirectionColumn
             , Html.Style.alignItemsCenter
             , Html.Style.justifyContentStart
+            , Html.Style.positionRelative
             ]
 
 
@@ -170,7 +193,10 @@ request args mail =
 
 messages :
     { onAccept : Date -> msg
+    , onFilter : Maybe Person -> msg
     , items : ItemBag
+    , filter : Maybe Person
+    , people : List Person
     }
     -> List { date : Date, person : Person, mail : Message, answered : Bool }
     -> List (Html msg)
@@ -178,6 +204,8 @@ messages args list =
     let
         viewMessage { date, person, mail, answered } =
             [ personBubble person
+                |> List.singleton
+                |> Html.div []
             , [ [ [ [ person.name
                         |> Html.text
                         |> List.singleton
@@ -237,9 +265,71 @@ messages args list =
                         Html.Style.backgroundColor View.Color.white
                     ]
     in
-    list
-        |> List.reverse
-        |> List.map viewMessage
+    (case args.filter of
+        Just person ->
+            [ [ View.Button.toHtml []
+                    { label = "Back"
+                    , onPress = args.onFilter Nothing
+                    }
+                    |> List.singleton
+                    |> Html.div [ Html.Style.flex "1" ]
+              , [ personBubble person
+                , Html.text person.name
+                ]
+                    |> Html.div
+                        [ Html.Style.fontWeightBold
+                        , Html.Style.displayFlex
+                        , Html.Style.flexDirectionRow
+                        , Html.Style.gapPx 8
+                        , Html.Style.alignItemsCenter
+                        ]
+              , "❤️"
+                    |> List.repeat (person.friendship // 3)
+                    |> String.concat
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.div [ Html.Style.flex "1" ]
+              ]
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.width "100%"
+                    , Html.Style.alignItemsCenter
+                    ]
+            ]
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.flexDirectionColumn
+                    , Html.Style.alignItemsCenter
+                    , Html.Style.gapPx 8
+                    ]
+
+        Nothing ->
+            args.people
+                |> List.map
+                    (\person ->
+                        View.Button.withIcons []
+                            { label = person.name
+                            , onPress = args.onFilter (Just person)
+                            }
+                            person.symbol
+                    )
+                |> Html.div
+                    [ Html.Style.displayFlex
+                    , Html.Style.alignItemsCenter
+                    , Html.Style.gapPx 8
+                    ]
+    )
+        :: ((case args.filter of
+                Just filter ->
+                    list
+                        |> List.filter (\{ person } -> filter.job == person.job)
+
+                Nothing ->
+                    list
+            )
+                |> List.reverse
+                |> List.map viewMessage
+           )
 
 
 market :
@@ -460,30 +550,6 @@ calender args =
     ]
 
 
-people :
-    List Person
-    -> List (Html msg)
-people list =
-    list
-        |> List.map
-            (\person ->
-                [ personBubble person
-                , Html.text person.name |> List.singleton |> Html.div []
-                , "❤️"
-                    |> List.repeat person.friendship
-                    |> String.concat
-                    |> Html.text
-                    |> List.singleton
-                    |> Html.div []
-                ]
-                    |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.alignItemsCenter
-                        , Html.Style.gapPx 8
-                        ]
-            )
-
-
 toHtml :
     { show : Bool
     , onClose : msg
@@ -495,7 +561,6 @@ toHtml :
 toHtml args content =
     [ [ ( CalenderTab, "📅", "Calender" )
       , ( MarketTab, "🪙", "Market" )
-      , ( PeopleTab, "👤", "People" )
       , ( MailTab, "✉️", "Messages" )
       ]
         |> List.map

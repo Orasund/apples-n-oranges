@@ -4,7 +4,7 @@ import Browser
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Person exposing (Message, Person)
+import Data.Person exposing (Message, Person, PersonId)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -26,10 +26,6 @@ import View.Background
 
 type alias Random a =
     Generator a
-
-
-type alias PersonId =
-    Int
 
 
 type alias MessageId =
@@ -58,6 +54,7 @@ type alias Model =
             , message : Message
             }
     , persons : Dict PersonId Person
+    , filterMessages : Maybe Person
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -82,6 +79,7 @@ type Msg
     | SetMenuTab MenuTab
     | AcceptMail Date
     | NextActionBetweenDays
+    | SetFilterMessages (Maybe Person)
 
 
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
@@ -405,6 +403,7 @@ init () =
             , menu = Nothing
             , answeredMessages = Set.empty
             , messages = Dict.empty
+            , filterMessages = Nothing
             , showMenu = False
             , trades =
                 [ { add = Stone
@@ -795,12 +794,14 @@ update msg model =
         OpenMessages ->
             ( model
                 |> showCalender
-                |> setMenuTab (Just MailTab)
+                |> setMenuTab (MailTab |> Just)
             , Cmd.none
             )
 
         CloseCalender ->
-            ( model |> closeCalender, Cmd.none )
+            ( { model | filterMessages = Nothing } |> closeCalender
+            , Cmd.none
+            )
 
         SetBetweenDays action ->
             ( model |> addBetweenDaysActions [ action ], Cmd.none )
@@ -866,6 +867,9 @@ update msg model =
 
                 [] ->
                     ( model, Cmd.none )
+
+        SetFilterMessages person ->
+            ( { model | filterMessages = person }, Cmd.none )
 
 
 viewBetweenDays : BetweenDaysAction -> Model -> Html Msg
@@ -943,6 +947,9 @@ view model =
             Screen.Menu.messages
                 { items = model.items
                 , onAccept = AcceptMail
+                , people = model.persons |> Dict.values
+                , filter = model.filterMessages
+                , onFilter = SetFilterMessages
                 }
                 (model.messages
                     |> Dict.toList
@@ -960,10 +967,6 @@ view model =
                                     )
                         )
                 )
-
-        Just PeopleTab ->
-            Screen.Menu.people
-                (model.persons |> Dict.values)
 
         Nothing ->
             []

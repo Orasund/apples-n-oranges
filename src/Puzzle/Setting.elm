@@ -171,7 +171,7 @@ generateMonth args =
                                     ( date
                                     , { setting = setting
                                       , reward = modBy 7 i == 0
-                                      , mail = modBy 7 (i - -1) == 0
+                                      , mail = modBy 9 (i - 4) == 0
                                       }
                                     )
                                 )

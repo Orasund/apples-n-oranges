@@ -5,6 +5,10 @@ import Data.Block exposing (Block(..), Item(..))
 import Random exposing (Generator)
 
 
+type alias PersonId =
+    Int
+
+
 type Job
     = Major
     | Ranger
@@ -142,3 +146,8 @@ setNextMessage mail person =
 increaseFriendship : Person -> Person
 increaseFriendship person =
     { person | friendship = person.friendship + 1 }
+
+
+isInLove : Person -> Bool
+isInLove person =
+    person.friendship >= 9
