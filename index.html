@@ -5347,8 +5347,14 @@ var $author$project$Data$Block$toString = function (block) {
 			}
 		case 'Snow':
 			return '❄️';
-		default:
+		case 'Ice':
 			return '🧊';
+		case 'Tree1':
+			return '🌲';
+		case 'Tree2':
+			return '🌳';
+		default:
+			return '🪓';
 	}
 };
 var $author$project$Data$Person$defaultRequest = function (item) {
@@ -6798,21 +6804,26 @@ var $author$project$Puzzle$Setting$withReward = F2(
 			{reward: item});
 	});
 var $author$project$Puzzle$Setting$specialSettings = function (args) {
-	return args.summer ? _List_fromArray(
-		[
-			A2(
-			$author$project$Puzzle$Setting$withReward,
-			$author$project$Data$Block$Wood,
-			A3(
+	return args.summer ? A2(
+		$elm$core$List$map,
+		function (fun) {
+			return A2(
+				$author$project$Puzzle$Setting$withReward,
+				$author$project$Data$Block$Wood,
+				fun(
+					{difficulty: args.difficulty + 1}));
+		},
+		_List_fromArray(
+			[
+				A2(
 				$author$project$Puzzle$Setting$template,
 				_Utils_Tuple2(
 					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Hyacinth),
 					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Sunflower)),
 				_Utils_Tuple2(
 					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Hyacinth),
-					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Rose)),
-				{difficulty: args.difficulty + 1}))
-		]) : _List_fromArray(
+					$author$project$Data$Block$FlowerBlock($author$project$Data$Block$Rose)))
+			])) : _List_fromArray(
 		[
 			A2(
 			$author$project$Puzzle$Setting$withReward,
@@ -7627,6 +7638,9 @@ var $author$project$Level$getBlockAt = F2(
 			},
 			A2($elm$core$Dict$get, pos, game.fields));
 	});
+var $author$project$Data$Block$Axe = {$: 'Axe'};
+var $author$project$Data$Block$Tree1 = {$: 'Tree1'};
+var $author$project$Data$Block$Tree2 = {$: 'Tree2'};
 var $author$project$Data$Block$isValidBlock = F2(
 	function (p1, p2) {
 		var _v0 = _Utils_Tuple2(p1, p2);
@@ -7673,7 +7687,9 @@ var $author$project$Data$Block$isValidBlock = F2(
 			_List_fromArray(
 				[
 					_Utils_Tuple2($author$project$Data$Block$Fish2, $author$project$Data$Block$Fish1),
-					_Utils_Tuple2($author$project$Data$Block$Snow, $author$project$Data$Block$Ice)
+					_Utils_Tuple2($author$project$Data$Block$Snow, $author$project$Data$Block$Ice),
+					_Utils_Tuple2($author$project$Data$Block$Axe, $author$project$Data$Block$Tree1),
+					_Utils_Tuple2($author$project$Data$Block$Axe, $author$project$Data$Block$Tree2)
 				]));
 	});
 var $elm$core$Maybe$map2 = F3(
