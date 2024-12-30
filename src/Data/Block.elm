@@ -24,16 +24,8 @@ type Pastries
 
 type Item
     = Coin
-      --| BagOfCoins
-      --| Diamand
-      --| Chick
     | Wood
     | Stone
-
-
-
---| Shrimps
---| Berries
 
 
 type Block
@@ -45,6 +37,9 @@ type Block
     | Fish2
     | Snow
     | Ice
+    | Tree1
+    | Tree2
+    | Axe
 
 
 toString : Block -> String
@@ -71,20 +66,9 @@ toString block =
         ItemBlock Coin ->
             "🪙"
 
-        --ItemBlock BagOfCoins ->
-        --    "💰"
-        --ItemBlock Diamand ->
-        --    "💎"
-        --ItemBlock Chick ->
-        --    "🐥"
         ItemBlock Wood ->
             "🪵"
 
-        --ItemBlock Shrimps ->
-        --    "🦐"
-        --ItemBlock Berries ->
-        --    "🍇"
-        --Rock ->
         ItemBlock Stone ->
             "🪨"
 
@@ -118,6 +102,15 @@ toString block =
         Ice ->
             "🧊"
 
+        Tree1 ->
+            "🌲"
+
+        Tree2 ->
+            "🌳"
+
+        Axe ->
+            "🪓"
+
 
 isValidBlock : Block -> Block -> Bool
 isValidBlock p1 p2 =
@@ -137,6 +130,8 @@ isValidBlock p1 p2 =
         _ ->
             [ ( Fish2, Fish1 )
             , ( Snow, Ice )
+            , ( Axe, Tree1 )
+            , ( Axe, Tree2 )
             ]
                 |> List.any
                     (\pair ->

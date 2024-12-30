@@ -98,9 +98,16 @@ specialSettings args =
         [ template
             ( FlowerBlock Hyacinth, FlowerBlock Sunflower )
             ( FlowerBlock Hyacinth, FlowerBlock Rose )
-            { difficulty = args.difficulty + 1 }
-            |> withReward Wood
+
+        {--, template
+            ( Axe, Tree1 )
+            ( Axe, Tree2 )--}
         ]
+            |> List.map
+                (\fun ->
+                    fun { difficulty = args.difficulty + 1 }
+                        |> withReward Wood
+                )
 
     else
         [ template
