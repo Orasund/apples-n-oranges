@@ -274,7 +274,7 @@ messages args list =
                         Html.Style.backgroundColor View.Color.white
                     ]
     in
-    (case args.filter of
+    {--(case args.filter of
         Just person ->
             [ [ View.Button.toHtml []
                     { label = "Back"
@@ -328,17 +328,16 @@ messages args list =
                     , Html.Style.gapPx 8
                     ]
     )
-        :: ((case args.filter of
-                Just filter ->
-                    list
-                        |> List.filter (\{ person } -> filter.job == person.job)
+        :: --}
+    (case args.filter of
+        Just filter ->
+            List.filter (\{ person } -> filter.job == person.job) list
 
-                Nothing ->
-                    list
-            )
-                |> List.reverse
-                |> List.map viewMessage
-           )
+        Nothing ->
+            list
+    )
+        |> List.reverse
+        |> List.map viewMessage
 
 
 market :
@@ -363,17 +362,7 @@ market args =
                                 )
                             |> String.concat
                 in
-                [ {--[ personBubble trade.trader
-                  , trade.trader.name
-                        |> Html.text
-                  ]
-                    |> Html.div
-                        [ Html.Style.displayFlex
-                        , Html.Style.alignItemsCenter
-                        , Html.Style.gapPx 8
-                        ]
-                ,--}
-                  trade.add
+                [ trade.add
                     |> ItemBlock
                     |> Data.Block.toString
                     |> Html.text
@@ -489,8 +478,6 @@ calender args =
                                         (if date == args.date then
                                             [ Html.Style.color "white"
                                             , View.Block.monocolor
-
-                                            --, View.Block.white
                                             ]
 
                                          else
@@ -513,30 +500,6 @@ calender args =
                                                     []
                                                )
                                         )
-
-                                {--, (if event.mail then
-                                    Html.div
-                                        [ Html.Style.widthPx 10
-                                        , Html.Style.aspectRatio "1"
-                                        , Html.Style.borderRadiusPx 5
-                                        , Html.Style.backgroundColor View.Color.blue300
-                                        ]
-                                        []
-
-                                   else if event.reward then
-                                    Html.div
-                                        [ Html.Style.widthPx 10
-                                        , Html.Style.aspectRatio "1"
-                                        , Html.Style.borderRadiusPx 5
-                                        , Html.Style.backgroundColor View.Color.yellow300
-                                        ]
-                                        []
-
-                                   else
-                                    Html.text ""
-                                  )
-                                    |> List.singleton
-                                    |> Html.div [ Html.Style.fontSizePx 8 ]--}
                                 ]
                             )
                         |> Maybe.withDefault []
