@@ -12,6 +12,11 @@ primary =
     Html.Attributes.class "primary-button"
 
 
+active : Attribute msg
+active =
+    Html.Attributes.class "active"
+
+
 asIcon : List (Attribute msg)
 asIcon =
     [ Html.Style.aspectRatio "1"
@@ -91,15 +96,35 @@ toHtml attrs args =
             )
 
 
-fake : List (Attribute msg) -> String -> Html msg
-fake attrs label =
-    label
+withIconAndContent : List (Attribute msg) -> { label : String, onPress : msg, icon : String } -> Html msg -> Html msg
+withIconAndContent attrs args content =
+    [ args.icon
         |> Html.text
         |> List.singleton
-        |> Html.div
-            ([ Html.Attributes.class "button-base"
-             , Html.Style.backgroundColor "white"
-             , Html.Style.color "black"
-             ]
+        |> Html.div [ Html.Style.fontSizePx 20 ]
+    , Html.text args.label
+    , content
+    ]
+        |> Html.button
+            (Layout.asButton
+                { onPress = Just args.onPress, label = args.label }
                 ++ attrs
+                ++ [ Html.Attributes.class "button-base button"
+                   , Html.Style.positionRelative
+                   ]
+            )
+
+
+withContent : List (Attribute msg) -> { label : String, onPress : msg } -> Html msg -> Html msg
+withContent attrs args content =
+    [ Html.text args.label
+    , content
+    ]
+        |> Html.button
+            (Layout.asButton
+                { onPress = Just args.onPress, label = args.label }
+                ++ attrs
+                ++ [ Html.Attributes.class "button-base button"
+                   , Html.Style.positionRelative
+                   ]
             )

@@ -1,4 +1,4 @@
-module Screen.Menu exposing (..)
+module Screen.Menu exposing (MenuTab(..), Trade, asTabs, calender, market, messages, toHtml)
 
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
@@ -522,39 +522,77 @@ calender args =
     ]
 
 
+asTabs :
+    { selected : Maybe MenuTab
+    , onSelectTab : MenuTab -> msg
+    , unansweredMessages : Int
+    }
+    -> Html msg
+asTabs args =
+    [ View.Button.withIcons
+        (if Just MarketTab == args.selected then
+            [ View.Button.active ]
+
+         else
+            []
+        )
+        { label = "Market"
+        , onPress = args.onSelectTab MarketTab
+        }
+        "🪙"
+    , View.Button.withIconAndContent
+        (if Just MailTab == args.selected then
+            [ View.Button.active ]
+
+         else
+            []
+        )
+        { label = "Messages"
+        , onPress = args.onSelectTab MailTab
+        , icon = "✉️"
+        }
+        (if args.unansweredMessages > 0 then
+            Html.div
+                [ Html.Style.heightPx 24
+                , Html.Style.aspectRatio "1"
+                , Html.Style.borderRadiusPx 12
+                , Html.Style.backgroundColor View.Color.red900
+                , Html.Style.fontSizePx 14
+                , Html.Style.color View.Color.white
+                , Html.Style.boxSizingBorderBox
+                , Html.Style.displayFlex
+                , Html.Style.justifyContentCenter
+                , Html.Style.alignItemsCenter
+                ]
+                [ Html.text (String.fromInt args.unansweredMessages) ]
+
+         else
+            Html.text ""
+        )
+    ]
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.gapPx 8
+            , Html.Style.widthPx 350
+            , Html.Style.justifyContentCenter
+            ]
+
+
 toHtml :
     { show : Bool
     , onClose : msg
     , selected : Maybe MenuTab
     , onSelectTab : MenuTab -> msg
+    , unansweredMessages : Int
     }
     -> List (Html msg)
     -> Html msg
 toHtml args content =
-    [ [ ( CalenderTab, "📅", "Calender" )
-      , ( MarketTab, "🪙", "Market" )
-      , ( MailTab, "✉️", "Messages" )
-      ]
-        |> List.map
-            (\( tab, icon, label ) ->
-                if Just tab == args.selected then
-                    View.Button.fake
-                        [ Html.Style.justifyContentCenter
-                        , Html.Style.flex "1"
-                        ]
-                        (icon ++ " " ++ label)
-
-                else
-                    View.Button.toHtml View.Button.asIcon
-                        { label = icon
-                        , onPress = args.onSelectTab tab
-                        }
-            )
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.gapPx 8
-            , Html.Style.widthPx 300
-            ]
+    [ asTabs
+        { selected = args.selected
+        , onSelectTab = args.onSelectTab
+        , unansweredMessages = args.unansweredMessages
+        }
     , content
         |> Html.div
             [ Html.Style.backgroundColor "white"

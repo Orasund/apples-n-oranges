@@ -31,7 +31,8 @@ showEndscreen =
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 30 ]
-    , "Year 3"
+    , "Year "
+        ++ String.fromInt Date.maxYears
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 100 ]

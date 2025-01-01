@@ -117,7 +117,7 @@ stylesheet =
         ++ """;
     }
 
-    .button.primary-button:active {
+    .button.primary-button:active,.button.primary-button.active {
         color: """
         ++ View.Color.white
         ++ """;
@@ -156,7 +156,7 @@ stylesheet =
         ++ """;
     }
 
-    .button:active {
+    .button:active, .button.active {
         color: """
         ++ View.Color.black
         ++ """;

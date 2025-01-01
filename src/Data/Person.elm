@@ -26,7 +26,7 @@ type alias Person =
 
 friendshipForLove : Int
 friendshipForLove =
-    8
+    6
 
 
 alice : { symbol : String, name : String, job : Job }

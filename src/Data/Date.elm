@@ -9,6 +9,10 @@ daysInAMonth =
     28
 
 
+maxYears =
+    2
+
+
 first : Date
 first =
     ( 0, 0, 1 )

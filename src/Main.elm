@@ -73,7 +73,7 @@ type Msg
     | SetBetweenDays BetweenDaysAction
     | StartDay
     | AcceptTrade Trade
-    | OpenMessages
+    | OpenMenu MenuTab
     | CloseCalender
     | DoNothing
     | SetMenuTab MenuTab
@@ -744,7 +744,7 @@ update msg model =
             )
 
         EndDay ->
-            if Date.year model.date == 2 && not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
+            if Date.year model.date + 1 == Date.maxYears && not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
                 ( { model
                     | betweenDays = [ ShowEndscreen ]
                     , betweenDaysLast = ShowEndscreen
@@ -791,10 +791,10 @@ update msg model =
             , Cmd.none
             )
 
-        OpenMessages ->
+        OpenMenu tab ->
             ( model
                 |> showCalender
-                |> setMenuTab (MailTab |> Just)
+                |> setMenuTab (tab |> Just)
             , Cmd.none
             )
 
@@ -922,12 +922,12 @@ view model =
         , level = model.level
         , unansweredMessages = Dict.size model.messages - Set.size model.answeredMessages
         , pointerZero = model.pointerZero
-        , onOpenMenu = OpenMessages
         , onPointerDown = PointerDown
         , onPointerEnd = PointerEnd
         , onPointerUp = PointerUp
         , onUndo = Undo
         , onReset = Reset
+        , onSelectTab = OpenMenu
         }
     , (case model.menu of
         Just CalenderTab ->
@@ -976,6 +976,7 @@ view model =
             , selected = model.menu
             , onClose = CloseCalender
             , onSelectTab = SetMenuTab
+            , unansweredMessages = Dict.size model.messages - Set.size model.answeredMessages
             }
     , viewBetweenDays
         (model.betweenDays
