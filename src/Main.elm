@@ -17,7 +17,7 @@ import Puzzle.Setting exposing (Event)
 import Random exposing (Generator, Seed)
 import Screen.BetweenDays exposing (BetweenDaysAction(..))
 import Screen.Game
-import Screen.Menu exposing (MenuTab(..), Trade)
+import Screen.Menu exposing (Filter, MenuTab(..), Trade)
 import Set exposing (Set)
 import Stylesheet
 import Task
@@ -54,7 +54,7 @@ type alias Model =
             , message : Message
             }
     , persons : Dict PersonId Person
-    , filterMessages : Maybe Person
+    , filterMessages : Maybe Filter
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
     }
@@ -79,7 +79,7 @@ type Msg
     | SetMenuTab MenuTab
     | AcceptMail Date
     | NextActionBetweenDays
-    | SetFilterMessages (Maybe Person)
+    | SetFilterMessages (Maybe Filter)
 
 
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model

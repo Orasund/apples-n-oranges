@@ -9,7 +9,12 @@ import View.Color
 
 primary : Attribute msg
 primary =
-    Html.Attributes.class "primary-button"
+    Html.Attributes.class "primary"
+
+
+chip : Attribute msg
+chip =
+    Html.Attributes.class "chip"
 
 
 active : Attribute msg

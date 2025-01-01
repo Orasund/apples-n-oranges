@@ -7320,7 +7320,6 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Screen$Menu$MailTab = {$: 'MailTab'};
 var $author$project$Main$NextActionBetweenDays = {$: 'NextActionBetweenDays'};
 var $author$project$Screen$BetweenDays$ShowEndscreen = {$: 'ShowEndscreen'};
 var $author$project$Screen$BetweenDays$ShowItemAdded = function (a) {
@@ -8021,6 +8020,7 @@ var $author$project$Main$increaseDifficulty = function (model) {
 		model,
 		{difficutly: model.difficutly + (1 / $author$project$Data$Date$daysInAMonth)});
 };
+var $author$project$Data$Date$maxYears = 2;
 var $author$project$Main$setMenuTab = F2(
 	function (menuTab, model) {
 		return _Utils_update(
@@ -8287,7 +8287,9 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'EndDay':
-				return (($author$project$Data$Date$year(model.date) === 2) && ((!$author$project$Data$Date$summer(model.date)) && _Utils_eq(
+				return (_Utils_eq(
+					$author$project$Data$Date$year(model.date) + 1,
+					$author$project$Data$Date$maxYears) && ((!$author$project$Data$Date$summer(model.date)) && _Utils_eq(
 					$author$project$Data$Date$day(model.date),
 					$author$project$Data$Date$daysInAMonth))) ? _Utils_Tuple2(
 					$author$project$Main$showBetweenDays(
@@ -8339,11 +8341,12 @@ var $author$project$Main$update = F2(
 						},
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 'OpenMessages':
+			case 'OpenMenu':
+				var tab = msg.a;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$setMenuTab,
-						$elm$core$Maybe$Just($author$project$Screen$Menu$MailTab),
+						$elm$core$Maybe$Just(tab),
 						$author$project$Main$showCalender(model)),
 					$elm$core$Platform$Cmd$none);
 			case 'CloseCalender':
@@ -8482,7 +8485,9 @@ var $author$project$Main$AcceptTrade = function (a) {
 	return {$: 'AcceptTrade', a: a};
 };
 var $author$project$Main$CloseCalender = {$: 'CloseCalender'};
-var $author$project$Main$OpenMessages = {$: 'OpenMessages'};
+var $author$project$Main$OpenMenu = function (a) {
+	return {$: 'OpenMenu', a: a};
+};
 var $author$project$Main$PointerDown = function (a) {
 	return {$: 'PointerDown', a: a};
 };
@@ -8866,7 +8871,7 @@ var $Orasund$elm_html_style$Html$Style$gapPx = function (value) {
 			'px'));
 };
 var $author$project$View$Color$gray100 = 'hsl(0 0% 85% / 1)';
-var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary-button');
+var $author$project$View$Button$primary = $elm$html$Html$Attributes$class('primary');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -9086,8 +9091,81 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
-var $Orasund$elm_html_style$Html$Style$flex = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'flex', value);
+var $author$project$Screen$Menu$PersonFilter = function (a) {
+	return {$: 'PersonFilter', a: a};
+};
+var $author$project$View$Button$active = $elm$html$Html$Attributes$class('active');
+var $author$project$View$Button$chip = $elm$html$Html$Attributes$class('chip');
+var $author$project$View$Button$withIcons = F3(
+	function (attrs, args, content) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				$Orasund$elm_layout$Layout$asButton(
+					{
+						label: args.label,
+						onPress: $elm$core$Maybe$Just(args.onPress)
+					}),
+				_Utils_ap(
+					attrs,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('button-base button')
+						]))),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(content))),
+					$elm$html$Html$text(args.label)
+				]));
+	});
+var $author$project$Screen$Menu$filter = function (args) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
+				$Orasund$elm_html_style$Html$Style$gapPx(8)
+			]),
+		A2(
+			$elm$core$List$map,
+			function (person) {
+				return function () {
+					var _v0 = args.filter;
+					if ((_v0.$ === 'Just') && (_v0.a.$ === 'PersonFilter')) {
+						var job = _v0.a.a;
+						return _Utils_eq(person.job, job);
+					} else {
+						return false;
+					}
+				}() ? A3(
+					$author$project$View$Button$withIcons,
+					_List_fromArray(
+						[$author$project$View$Button$active, $author$project$View$Button$chip]),
+					{
+						label: person.name,
+						onPress: args.onFilter($elm$core$Maybe$Nothing)
+					},
+					person.symbol) : A3(
+					$author$project$View$Button$withIcons,
+					_List_fromArray(
+						[$author$project$View$Button$chip]),
+					{
+						label: person.name,
+						onPress: args.onFilter(
+							$elm$core$Maybe$Just(
+								$author$project$Screen$Menu$PersonFilter(person.job)))
+					},
+					person.symbol);
+			},
+			args.people));
 };
 var $Orasund$elm_html_style$Html$Style$border = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border', value);
@@ -9095,7 +9173,7 @@ var $Orasund$elm_html_style$Html$Style$border = function (value) {
 var $Orasund$elm_html_style$Html$Style$bottom = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'bottom', value);
 };
-var $author$project$Data$Person$friendshipForLove = 8;
+var $author$project$Data$Person$friendshipForLove = 6;
 var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
 	return $Orasund$elm_html_style$Html$Style$height(
 		A2(
@@ -9219,42 +9297,13 @@ var $author$project$Screen$Menu$request = F2(
 			},
 			mail.request);
 	});
-var $author$project$View$Button$withIcons = F3(
-	function (attrs, args, content) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$Orasund$elm_layout$Layout$asButton(
-					{
-						label: args.label,
-						onPress: $elm$core$Maybe$Just(args.onPress)
-					}),
-				_Utils_ap(
-					attrs,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('button-base button')
-						]))),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
-						]),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(content))),
-					$elm$html$Html$text(args.label)
-				]));
-	});
 var $author$project$Screen$Menu$messages = F2(
 	function (args, list) {
-		var viewMessage = function (_v3) {
-			var date = _v3.date;
-			var person = _v3.person;
-			var mail = _v3.mail;
-			var answered = _v3.answered;
+		var viewMessage = function (_v1) {
+			var date = _v1.date;
+			var person = _v1.person;
+			var mail = _v1.mail;
+			var answered = _v1.answered;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -9351,112 +9400,36 @@ var $author$project$Screen$Menu$messages = F2(
 		};
 		return A2(
 			$elm$core$List$cons,
-			function () {
-				var _v0 = args.filter;
-				if (_v0.$ === 'Just') {
-					var person = _v0.a;
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$flexDirectionColumn,
-								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-								$Orasund$elm_html_style$Html$Style$gapPx(8)
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$displayFlex,
-										$Orasund$elm_html_style$Html$Style$width('100%'),
-										$Orasund$elm_html_style$Html$Style$alignItemsCenter
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$flex('1')
-											]),
-										$elm$core$List$singleton(
-											A2(
-												$author$project$View$Button$toHtml,
-												_List_Nil,
-												{
-													label: 'Back',
-													onPress: args.onFilter($elm$core$Maybe$Nothing)
-												}))),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$fontWeightBold,
-												$Orasund$elm_html_style$Html$Style$displayFlex,
-												$Orasund$elm_html_style$Html$Style$flexDirectionRow,
-												$Orasund$elm_html_style$Html$Style$gapPx(8),
-												$Orasund$elm_html_style$Html$Style$alignItemsCenter
-											]),
-										_List_fromArray(
-											[
-												$author$project$Screen$Menu$personBubble(person),
-												$elm$html$Html$text(person.name)
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$Orasund$elm_html_style$Html$Style$flex('1')
-											]),
-										$elm$core$List$singleton(
-											$elm$html$Html$text(
-												$elm$core$String$concat(
-													A2($elm$core$List$repeat, (person.friendship / 3) | 0, '❤️')))))
-									]))
-							]));
-				} else {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-								$Orasund$elm_html_style$Html$Style$gapPx(8)
-							]),
-						A2(
-							$elm$core$List$map,
-							function (person) {
-								return A3(
-									$author$project$View$Button$withIcons,
-									_List_Nil,
-									{
-										label: person.name,
-										onPress: args.onFilter(
-											$elm$core$Maybe$Just(person))
-									},
-									person.symbol);
-							},
-							args.people));
-				}
-			}(),
+			$author$project$Screen$Menu$filter(
+				{filter: args.filter, onFilter: args.onFilter, people: args.people}),
 			A2(
 				$elm$core$List$map,
 				viewMessage,
 				$elm$core$List$reverse(
 					function () {
-						var _v1 = args.filter;
-						if (_v1.$ === 'Just') {
-							var filter = _v1.a;
-							return A2(
-								$elm$core$List$filter,
-								function (_v2) {
-									var person = _v2.person;
-									return _Utils_eq(filter.job, person.job);
-								},
-								list);
+						var _v0 = args.filter;
+						if (_v0.$ === 'Just') {
+							if (_v0.a.$ === 'PersonFilter') {
+								var job = _v0.a.a;
+								return A2(
+									$elm$core$List$filter,
+									function (message) {
+										return _Utils_eq(job, message.person.job);
+									},
+									list);
+							} else {
+								var item = _v0.a.a;
+								return A2(
+									$elm$core$List$filter,
+									function (message) {
+										return _Utils_eq(
+											$elm$core$Maybe$Just(item),
+											message.mail.present) || _Utils_eq(
+											$elm$core$Maybe$Just(item),
+											message.mail.request);
+									},
+									list);
+							}
 						} else {
 							return list;
 						}
@@ -9470,7 +9443,7 @@ var $elm$virtual_dom$VirtualDom$node = function (tag) {
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $author$project$View$Color$black = 'black';
 var $author$project$View$Color$gray800 = 'hsl(0 0% 50% / 1)';
-var $author$project$View$Color$red300 = 'rgb(255 184 149)';
+var $author$project$View$Color$red200 = 'rgb(255 203 177)';
 var $author$project$View$Color$red400 = 'rgb(255 169 127)';
 var $author$project$View$Color$red600 = 'hsl(20 100% 60% / 1)';
 var $author$project$View$Color$red700 = 'hsl(20 100% 55% / 1)';
@@ -9480,7 +9453,7 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    .button-base.blackWhiteEmoji {\n        font-family: sans-serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary-button {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n        border-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary-button:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n        border-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary-button:active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n        border-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary-button:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n        border-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red300 + (';\n    }\n\n    .button:active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red400 + (';\n        border-color: ' + ($author$project$View$Color$red400 + ';\n    }\n    '))))))))))))))))))))))))))))))))))))))));
+		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    .button-base.blackWhiteEmoji {\n        font-family: sans-serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary:active,.button.primary.active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active, .button.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red400 + (';\n    }\n\n    .button.chip {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$gray100 + (';\n        padding: 4px 8px;\n        height: 30px;\n        font-weight: normal;\n    }\n\n    .button.chip.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red200 + ';\n        padding: 4px 8px;\n    }\n    '))))))))))))))))))))))))))))))))))));
 var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-image', value);
 };
@@ -9555,7 +9528,95 @@ var $author$project$Screen$BetweenDays$toHtml = F2(
 				]),
 			content);
 	});
-var $Orasund$elm_html_style$Html$Style$alignItemsEnd = $Orasund$elm_html_style$Html$Style$alignItems('end');
+var $author$project$Screen$Menu$MailTab = {$: 'MailTab'};
+var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
+var $author$project$View$Button$withIconAndContent = F3(
+	function (attrs, args, content) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				$Orasund$elm_layout$Layout$asButton(
+					{
+						label: args.label,
+						onPress: $elm$core$Maybe$Just(args.onPress)
+					}),
+				_Utils_ap(
+					attrs,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('button-base button'),
+							$Orasund$elm_html_style$Html$Style$positionRelative
+						]))),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(args.icon))),
+					$elm$html$Html$text(args.label),
+					content
+				]));
+	});
+var $author$project$Screen$Menu$asTabs = function (args) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$Orasund$elm_html_style$Html$Style$displayFlex,
+				$Orasund$elm_html_style$Html$Style$gapPx(8),
+				$Orasund$elm_html_style$Html$Style$widthPx(350),
+				$Orasund$elm_html_style$Html$Style$justifyContentCenter
+			]),
+		_List_fromArray(
+			[
+				A3(
+				$author$project$View$Button$withIcons,
+				_Utils_eq(
+					$elm$core$Maybe$Just($author$project$Screen$Menu$MarketTab),
+					args.selected) ? _List_fromArray(
+					[$author$project$View$Button$active]) : _List_Nil,
+				{
+					label: 'Market',
+					onPress: args.onSelectTab($author$project$Screen$Menu$MarketTab)
+				},
+				'🪙'),
+				A3(
+				$author$project$View$Button$withIconAndContent,
+				_Utils_eq(
+					$elm$core$Maybe$Just($author$project$Screen$Menu$MailTab),
+					args.selected) ? _List_fromArray(
+					[$author$project$View$Button$active]) : _List_Nil,
+				{
+					icon: '✉️',
+					label: 'Messages',
+					onPress: args.onSelectTab($author$project$Screen$Menu$MailTab)
+				},
+				(args.unansweredMessages > 0) ? A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$heightPx(24),
+							$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
+							$Orasund$elm_html_style$Html$Style$borderRadiusPx(12),
+							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
+							$Orasund$elm_html_style$Html$Style$fontSizePx(14),
+							$Orasund$elm_html_style$Html$Style$color($author$project$View$Color$white),
+							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
+							$Orasund$elm_html_style$Html$Style$displayFlex,
+							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
+							$Orasund$elm_html_style$Html$Style$alignItemsCenter
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(args.unansweredMessages))
+						])) : $elm$html$Html$text(''))
+			]));
+};
 var $author$project$View$Button$big = _List_fromArray(
 	[
 		$Orasund$elm_html_style$Html$Style$fontSizePx(28),
@@ -9566,7 +9627,9 @@ var $author$project$View$Button$big = _List_fromArray(
 		$Orasund$elm_html_style$Html$Style$alignItemsCenter,
 		$Orasund$elm_html_style$Html$Style$justifyContentCenter
 	]);
-var $Orasund$elm_html_style$Html$Style$justifyContentFlexEnd = $Orasund$elm_html_style$Html$Style$justifyContent('flex-end');
+var $Orasund$elm_html_style$Html$Style$flex = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'flex', value);
+};
 var $author$project$View$Field$size = 70;
 var $Orasund$elm_html_style$Html$Style$scale = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'scale', value);
@@ -10128,61 +10191,6 @@ var $author$project$View$Level$toHtml = function (args) {
 					])
 				])));
 };
-var $Orasund$elm_html_style$Html$Style$right = function (value) {
-	return A2($elm$html$Html$Attributes$style, 'right', value);
-};
-var $Orasund$elm_html_style$Html$Style$rightPx = function (value) {
-	return $Orasund$elm_html_style$Html$Style$right(
-		A2(
-			$elm$core$String$append,
-			$elm$core$String$fromFloat(value),
-			'px'));
-};
-var $author$project$View$Button$withDot = F2(
-	function (attrs, args) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$Orasund$elm_layout$Layout$asButton(
-					{
-						label: args.label,
-						onPress: $elm$core$Maybe$Just(args.onPress)
-					}),
-				_Utils_ap(
-					attrs,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('button-base button'),
-							$Orasund$elm_html_style$Html$Style$positionRelative
-						]))),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$heightPx(24),
-							$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-							$Orasund$elm_html_style$Html$Style$borderRadiusPx(12),
-							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$red900),
-							$Orasund$elm_html_style$Html$Style$positionAbsolute,
-							$Orasund$elm_html_style$Html$Style$rightPx(-6),
-							$Orasund$elm_html_style$Html$Style$topPx(-6),
-							$Orasund$elm_html_style$Html$Style$fontSizePx(14),
-							$Orasund$elm_html_style$Html$Style$color($author$project$View$Color$white),
-							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox,
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-							$Orasund$elm_html_style$Html$Style$alignItemsCenter
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							$elm$core$String$fromInt(args.amount))
-						])),
-					$elm$html$Html$text(args.label)
-				]));
-	});
 var $author$project$Screen$Game$toHtml = function (args) {
 	return A2(
 		$elm$html$Html$div,
@@ -10196,35 +10204,8 @@ var $author$project$Screen$Game$toHtml = function (args) {
 			]),
 		_List_fromArray(
 			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$Orasund$elm_html_style$Html$Style$displayFlex,
-						$Orasund$elm_html_style$Html$Style$alignItemsEnd,
-						$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-						$Orasund$elm_html_style$Html$Style$gapPx(4),
-						$Orasund$elm_html_style$Html$Style$width('100%')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$Orasund$elm_html_style$Html$Style$flex('1'),
-								$Orasund$elm_html_style$Html$Style$displayFlex,
-								$Orasund$elm_html_style$Html$Style$justifyContentFlexEnd
-							]),
-						$elm$core$List$singleton(
-							(args.unansweredMessages > 0) ? A2(
-								$author$project$View$Button$withDot,
-								_List_Nil,
-								{amount: args.unansweredMessages, label: '✉️ Messages', onPress: args.onOpenMenu}) : A2(
-								$author$project$View$Button$toHtml,
-								_List_Nil,
-								{label: '✉️ Messages', onPress: args.onOpenMenu})))
-					])),
+				$author$project$Screen$Menu$asTabs(
+				{onSelectTab: args.onSelectTab, selected: $elm$core$Maybe$Nothing, unansweredMessages: args.unansweredMessages}),
 				$author$project$View$Level$toHtml(
 				{game: args.level, items: args.items, onPointerDown: args.onPointerDown, onPointerEnd: args.onPointerEnd, onPointerUp: args.onPointerUp, zero: args.pointerZero}),
 				A2(
@@ -10267,29 +10248,6 @@ var $author$project$Screen$Game$toHtml = function (args) {
 					]))
 			]));
 };
-var $author$project$Screen$Menu$CalenderTab = {$: 'CalenderTab'};
-var $author$project$Screen$Menu$MarketTab = {$: 'MarketTab'};
-var $author$project$View$Button$asIcon = _List_fromArray(
-	[
-		$Orasund$elm_html_style$Html$Style$aspectRatio('1'),
-		$Orasund$elm_html_style$Html$Style$paddingPx(0),
-		$Orasund$elm_html_style$Html$Style$justifyContentCenter
-	]);
-var $author$project$View$Button$fake = F2(
-	function (attrs, label) {
-		return A2(
-			$elm$html$Html$div,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('button-base'),
-						$Orasund$elm_html_style$Html$Style$backgroundColor('white'),
-						$Orasund$elm_html_style$Html$Style$color('black')
-					]),
-				attrs),
-			$elm$core$List$singleton(
-				$elm$html$Html$text(label)));
-	});
 var $Orasund$elm_html_style$Html$Style$overflowY = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'overflow-y', value);
 };
@@ -10297,7 +10255,6 @@ var $Orasund$elm_html_style$Html$Style$overflowYScroll = $Orasund$elm_html_style
 var $Orasund$elm_html_style$Html$Style$backgroundSize = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-size', value);
 };
-var $author$project$View$Color$red200 = 'rgb(255 203 177)';
 var $author$project$View$Background$wood = function (attrs) {
 	return $author$project$View$Background$toHtml(
 		_Utils_ap(
@@ -10326,43 +10283,8 @@ var $author$project$Screen$Menu$toHtml = F2(
 				]),
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$displayFlex,
-							$Orasund$elm_html_style$Html$Style$gapPx(8),
-							$Orasund$elm_html_style$Html$Style$widthPx(300)
-						]),
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var tab = _v0.a;
-							var icon = _v0.b;
-							var label = _v0.c;
-							return _Utils_eq(
-								$elm$core$Maybe$Just(tab),
-								args.selected) ? A2(
-								$author$project$View$Button$fake,
-								_List_fromArray(
-									[
-										$Orasund$elm_html_style$Html$Style$justifyContentCenter,
-										$Orasund$elm_html_style$Html$Style$flex('1')
-									]),
-								icon + (' ' + label)) : A2(
-								$author$project$View$Button$toHtml,
-								$author$project$View$Button$asIcon,
-								{
-									label: icon,
-									onPress: args.onSelectTab(tab)
-								});
-						},
-						_List_fromArray(
-							[
-								_Utils_Tuple3($author$project$Screen$Menu$CalenderTab, '📅', 'Calender'),
-								_Utils_Tuple3($author$project$Screen$Menu$MarketTab, '🪙', 'Market'),
-								_Utils_Tuple3($author$project$Screen$Menu$MailTab, '✉️', 'Messages')
-							]))),
+					$author$project$Screen$Menu$asTabs(
+					{onSelectTab: args.onSelectTab, selected: args.selected, unansweredMessages: args.unansweredMessages}),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -10496,7 +10418,8 @@ var $author$project$Screen$BetweenDays$showEndscreen = A2(
 					$Orasund$elm_html_style$Html$Style$fontSizePx(100)
 				]),
 			$elm$core$List$singleton(
-				$elm$html$Html$text('Year 3'))),
+				$elm$html$Html$text(
+					'Year ' + $elm$core$String$fromInt($author$project$Data$Date$maxYears)))),
 			A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10660,18 +10583,24 @@ var $author$project$Main$view = function (model) {
 				{
 					items: model.items,
 					level: model.level,
-					onOpenMenu: $author$project$Main$OpenMessages,
 					onPointerDown: $author$project$Main$PointerDown,
 					onPointerEnd: $author$project$Main$PointerEnd,
 					onPointerUp: $author$project$Main$PointerUp,
 					onReset: $author$project$Main$Reset,
+					onSelectTab: $author$project$Main$OpenMenu,
 					onUndo: $author$project$Main$Undo,
 					pointerZero: model.pointerZero,
 					unansweredMessages: $elm$core$Dict$size(model.messages) - $elm$core$Set$size(model.answeredMessages)
 				}),
 				A2(
 				$author$project$Screen$Menu$toHtml,
-				{onClose: $author$project$Main$CloseCalender, onSelectTab: $author$project$Main$SetMenuTab, selected: model.menu, show: model.showMenu},
+				{
+					onClose: $author$project$Main$CloseCalender,
+					onSelectTab: $author$project$Main$SetMenuTab,
+					selected: model.menu,
+					show: model.showMenu,
+					unansweredMessages: $elm$core$Dict$size(model.messages) - $elm$core$Set$size(model.answeredMessages)
+				},
 				function () {
 					var _v0 = model.menu;
 					if (_v0.$ === 'Just') {

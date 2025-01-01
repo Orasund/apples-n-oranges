@@ -93,50 +93,38 @@ stylesheet =
         ++ """;
     }
 
-    .button.primary-button {
+    .button.primary {
         color: """
         ++ View.Color.white
         ++ """;
         background-color: """
         ++ View.Color.red600
         ++ """;
-        border-color: """
-        ++ View.Color.red600
-        ++ """;
     }
 
-    .button.primary-button:hover {
+    .button.primary:hover {
         color: """
         ++ View.Color.white
         ++ """;
         background-color: """
         ++ View.Color.red700
         ++ """;
-        border-color: """
-        ++ View.Color.red700
-        ++ """;
     }
 
-    .button.primary-button:active,.button.primary-button.active {
+    .button.primary:active,.button.primary.active {
         color: """
         ++ View.Color.white
         ++ """;
         background-color: """
         ++ View.Color.red800
         ++ """;
-        border-color: """
-        ++ View.Color.red800
-        ++ """;
     }
 
-    .button.primary-button:disabled {
+    .button.primary:disabled {
         color: """
         ++ View.Color.white
         ++ """;
         background-color: """
-        ++ View.Color.gray800
-        ++ """;
-        border-color: """
         ++ View.Color.gray800
         ++ """;
     }
@@ -151,9 +139,6 @@ stylesheet =
         color: """
         ++ View.Color.black
         ++ """;
-        background-color: """
-        ++ View.Color.red300
-        ++ """;
     }
 
     .button:active, .button.active {
@@ -163,9 +148,28 @@ stylesheet =
         background-color: """
         ++ View.Color.red400
         ++ """;
-        border-color: """
-        ++ View.Color.red400
+    }
+
+    .button.chip {
+        color: """
+        ++ View.Color.black
         ++ """;
+        background-color: """
+        ++ View.Color.gray100
+        ++ """;
+        padding: 4px 8px;
+        height: 30px;
+        font-weight: normal;
+    }
+
+    .button.chip.active {
+        color: """
+        ++ View.Color.black
+        ++ """;
+        background-color: """
+        ++ View.Color.red200
+        ++ """;
+        padding: 4px 8px;
     }
     """
         |> Html.text

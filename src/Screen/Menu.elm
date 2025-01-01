@@ -1,9 +1,9 @@
-module Screen.Menu exposing (MenuTab(..), Trade, asTabs, calender, market, messages, toHtml)
+module Screen.Menu exposing (Filter(..), MenuTab(..), Trade, asTabs, calender, market, messages, toHtml)
 
 import Data.Block exposing (Block(..), Item(..))
 import Data.Date as Date exposing (Date)
 import Data.ItemBag exposing (ItemBag)
-import Data.Person exposing (Message, Person)
+import Data.Person exposing (Job, Message, Person)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Style
@@ -20,6 +20,11 @@ type MenuTab
     = CalenderTab
     | MarketTab
     | MailTab
+
+
+type Filter
+    = PersonFilter Job
+    | ItemFilter Item
 
 
 type alias Trade =
@@ -200,11 +205,48 @@ request args mail =
             )
 
 
+filter : { people : List Person, filter : Maybe Filter, onFilter : Maybe Filter -> msg } -> Html msg
+filter args =
+    args.people
+        |> List.map
+            (\person ->
+                if
+                    case args.filter of
+                        Just (PersonFilter job) ->
+                            person.job == job
+
+                        _ ->
+                            False
+                then
+                    View.Button.withIcons
+                        [ View.Button.active
+                        , View.Button.chip
+                        ]
+                        { label = person.name
+                        , onPress = args.onFilter Nothing
+                        }
+                        person.symbol
+
+                else
+                    View.Button.withIcons
+                        [ View.Button.chip ]
+                        { label = person.name
+                        , onPress = args.onFilter (Just (PersonFilter person.job))
+                        }
+                        person.symbol
+            )
+        |> Html.div
+            [ Html.Style.displayFlex
+            , Html.Style.alignItemsCenter
+            , Html.Style.gapPx 8
+            ]
+
+
 messages :
     { onAccept : Date -> msg
-    , onFilter : Maybe Person -> msg
+    , onFilter : Maybe Filter -> msg
     , items : ItemBag
-    , filter : Maybe Person
+    , filter : Maybe Filter
     , people : List Person
     }
     -> List { date : Date, person : Person, mail : Message, answered : Bool }
@@ -274,70 +316,24 @@ messages args list =
                         Html.Style.backgroundColor View.Color.white
                     ]
     in
-    {--(case args.filter of
-        Just person ->
-            [ [ View.Button.toHtml []
-                    { label = "Back"
-                    , onPress = args.onFilter Nothing
-                    }
-                    |> List.singleton
-                    |> Html.div [ Html.Style.flex "1" ]
-              , [ personBubble person
-                , Html.text person.name
-                ]
-                    |> Html.div
-                        [ Html.Style.fontWeightBold
-                        , Html.Style.displayFlex
-                        , Html.Style.flexDirectionRow
-                        , Html.Style.gapPx 8
-                        , Html.Style.alignItemsCenter
-                        ]
-              , "❤️"
-                    |> List.repeat (person.friendship // 3)
-                    |> String.concat
-                    |> Html.text
-                    |> List.singleton
-                    |> Html.div [ Html.Style.flex "1" ]
-              ]
-                |> Html.div
-                    [ Html.Style.displayFlex
-                    , Html.Style.width "100%"
-                    , Html.Style.alignItemsCenter
-                    ]
-            ]
-                |> Html.div
-                    [ Html.Style.displayFlex
-                    , Html.Style.flexDirectionColumn
-                    , Html.Style.alignItemsCenter
-                    , Html.Style.gapPx 8
-                    ]
+    filter
+        { people = args.people
+        , filter = args.filter
+        , onFilter = args.onFilter
+        }
+        :: ((case args.filter of
+                Just (PersonFilter job) ->
+                    List.filter (\message -> job == message.person.job) list
 
-        Nothing ->
-            args.people
-                |> List.map
-                    (\person ->
-                        View.Button.withIcons []
-                            { label = person.name
-                            , onPress = args.onFilter (Just person)
-                            }
-                            person.symbol
-                    )
-                |> Html.div
-                    [ Html.Style.displayFlex
-                    , Html.Style.alignItemsCenter
-                    , Html.Style.gapPx 8
-                    ]
-    )
-        :: --}
-    (case args.filter of
-        Just filter ->
-            List.filter (\{ person } -> filter.job == person.job) list
+                Just (ItemFilter item) ->
+                    List.filter (\message -> Just item == message.mail.present || Just item == message.mail.request) list
 
-        Nothing ->
-            list
-    )
-        |> List.reverse
-        |> List.map viewMessage
+                Nothing ->
+                    list
+            )
+                |> List.reverse
+                |> List.map viewMessage
+           )
 
 
 market :
