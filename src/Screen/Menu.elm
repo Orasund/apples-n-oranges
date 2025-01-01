@@ -25,6 +25,7 @@ type MenuTab
 type Filter
     = PersonFilter Job
     | ItemFilter Item
+    | Unanswered
 
 
 type alias Trade =
@@ -50,6 +51,7 @@ personBubble person =
             [ Html.Style.positionAbsolute
             , Html.Style.bottom "-0.5em"
             , Html.Style.fontSizePx 9
+            , Html.Style.textShadow "0 0 1px black"
             ]
     , person.symbol
         |> Html.text
@@ -71,7 +73,7 @@ personBubble person =
 
                     else if person.friendship >= Data.Person.friendshipForLove // 2 then
                         [ Html.Style.backgroundColor View.Color.yellow100
-                        , Html.Style.border ("2px solid " ++ View.Color.yellow900)
+                        , Html.Style.border ("1px solid " ++ View.Color.yellow900)
                         , Html.Style.boxSizingBorderBox
                         ]
 
@@ -207,7 +209,23 @@ request args mail =
 
 filter : { people : List Person, filter : Maybe Filter, onFilter : Maybe Filter -> msg } -> Html msg
 filter args =
-    [ List.map
+    [ [ if args.filter == Just Unanswered then
+            View.Button.toHtml
+                [ View.Button.active
+                , View.Button.chip
+                ]
+                { label = "Unanswered"
+                , onPress = args.onFilter Nothing
+                }
+
+        else
+            View.Button.toHtml
+                [ View.Button.chip ]
+                { label = "Unanswered"
+                , onPress = args.onFilter (Just Unanswered)
+                }
+      ]
+    , List.map
         (\person ->
             if
                 case args.filter of
@@ -217,22 +235,20 @@ filter args =
                     _ ->
                         False
             then
-                View.Button.withIcons
+                View.Button.toHtml
                     [ View.Button.active
                     , View.Button.chip
                     ]
-                    { label = person.name
+                    { label = person.symbol
                     , onPress = args.onFilter Nothing
                     }
-                    person.symbol
 
             else
-                View.Button.withIcons
+                View.Button.toHtml
                     [ View.Button.chip ]
-                    { label = person.name
+                    { label = person.symbol
                     , onPress = args.onFilter (Just (PersonFilter person.job))
                     }
-                    person.symbol
         )
         args.people
     , List.map
@@ -263,6 +279,7 @@ filter args =
         [ Stone, Wood ]
     ]
         |> List.concat
+        |> (::) (Html.text "Filter: ")
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.alignItemsCenter
@@ -355,6 +372,9 @@ messages args list =
 
                 Just (ItemFilter item) ->
                     List.filter (\message -> Just item == message.mail.present || Just item == message.mail.request) list
+
+                Just Unanswered ->
+                    List.filter (\message -> not message.answered) list
 
                 Nothing ->
                     list

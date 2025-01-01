@@ -9097,37 +9097,9 @@ var $author$project$Screen$Menu$ItemFilter = function (a) {
 var $author$project$Screen$Menu$PersonFilter = function (a) {
 	return {$: 'PersonFilter', a: a};
 };
+var $author$project$Screen$Menu$Unanswered = {$: 'Unanswered'};
 var $author$project$View$Button$active = $elm$html$Html$Attributes$class('active');
 var $author$project$View$Button$chip = $elm$html$Html$Attributes$class('chip');
-var $author$project$View$Button$withIcons = F3(
-	function (attrs, args, content) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$Orasund$elm_layout$Layout$asButton(
-					{
-						label: args.label,
-						onPress: $elm$core$Maybe$Just(args.onPress)
-					}),
-				_Utils_ap(
-					attrs,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('button-base button')
-						]))),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
-						]),
-					$elm$core$List$singleton(
-						$elm$html$Html$text(content))),
-					$elm$html$Html$text(args.label)
-				]));
-	});
 var $author$project$Screen$Menu$filter = function (args) {
 	return A2(
 		$elm$html$Html$div,
@@ -9137,75 +9109,97 @@ var $author$project$Screen$Menu$filter = function (args) {
 				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
 				$Orasund$elm_html_style$Html$Style$gapPx(8)
 			]),
-		$elm$core$List$concat(
-			_List_fromArray(
-				[
-					A2(
-					$elm$core$List$map,
-					function (person) {
-						return function () {
-							var _v0 = args.filter;
-							if ((_v0.$ === 'Just') && (_v0.a.$ === 'PersonFilter')) {
-								var job = _v0.a.a;
-								return _Utils_eq(person.job, job);
-							} else {
-								return false;
-							}
-						}() ? A3(
-							$author$project$View$Button$withIcons,
-							_List_fromArray(
-								[$author$project$View$Button$active, $author$project$View$Button$chip]),
-							{
-								label: person.name,
-								onPress: args.onFilter($elm$core$Maybe$Nothing)
-							},
-							person.symbol) : A3(
-							$author$project$View$Button$withIcons,
-							_List_fromArray(
-								[$author$project$View$Button$chip]),
-							{
-								label: person.name,
-								onPress: args.onFilter(
-									$elm$core$Maybe$Just(
-										$author$project$Screen$Menu$PersonFilter(person.job)))
-							},
-							person.symbol);
-					},
-					args.people),
-					A2(
-					$elm$core$List$map,
-					function (target) {
-						return function () {
-							var _v1 = args.filter;
-							if ((_v1.$ === 'Just') && (_v1.a.$ === 'ItemFilter')) {
-								var item = _v1.a.a;
-								return _Utils_eq(target, item);
-							} else {
-								return false;
-							}
-						}() ? A2(
+		A2(
+			$elm$core$List$cons,
+			$elm$html$Html$text('Filter: '),
+			$elm$core$List$concat(
+				_List_fromArray(
+					[
+						_List_fromArray(
+						[
+							_Utils_eq(
+							args.filter,
+							$elm$core$Maybe$Just($author$project$Screen$Menu$Unanswered)) ? A2(
 							$author$project$View$Button$toHtml,
 							_List_fromArray(
 								[$author$project$View$Button$active, $author$project$View$Button$chip]),
 							{
-								label: $author$project$Data$Block$toString(
-									$author$project$Data$Block$ItemBlock(target)),
+								label: 'Unanswered',
 								onPress: args.onFilter($elm$core$Maybe$Nothing)
 							}) : A2(
 							$author$project$View$Button$toHtml,
 							_List_fromArray(
 								[$author$project$View$Button$chip]),
 							{
-								label: $author$project$Data$Block$toString(
-									$author$project$Data$Block$ItemBlock(target)),
+								label: 'Unanswered',
 								onPress: args.onFilter(
-									$elm$core$Maybe$Just(
-										$author$project$Screen$Menu$ItemFilter(target)))
-							});
-					},
-					_List_fromArray(
-						[$author$project$Data$Block$Stone, $author$project$Data$Block$Wood]))
-				])));
+									$elm$core$Maybe$Just($author$project$Screen$Menu$Unanswered))
+							})
+						]),
+						A2(
+						$elm$core$List$map,
+						function (person) {
+							return function () {
+								var _v0 = args.filter;
+								if ((_v0.$ === 'Just') && (_v0.a.$ === 'PersonFilter')) {
+									var job = _v0.a.a;
+									return _Utils_eq(person.job, job);
+								} else {
+									return false;
+								}
+							}() ? A2(
+								$author$project$View$Button$toHtml,
+								_List_fromArray(
+									[$author$project$View$Button$active, $author$project$View$Button$chip]),
+								{
+									label: person.symbol,
+									onPress: args.onFilter($elm$core$Maybe$Nothing)
+								}) : A2(
+								$author$project$View$Button$toHtml,
+								_List_fromArray(
+									[$author$project$View$Button$chip]),
+								{
+									label: person.symbol,
+									onPress: args.onFilter(
+										$elm$core$Maybe$Just(
+											$author$project$Screen$Menu$PersonFilter(person.job)))
+								});
+						},
+						args.people),
+						A2(
+						$elm$core$List$map,
+						function (target) {
+							return function () {
+								var _v1 = args.filter;
+								if ((_v1.$ === 'Just') && (_v1.a.$ === 'ItemFilter')) {
+									var item = _v1.a.a;
+									return _Utils_eq(target, item);
+								} else {
+									return false;
+								}
+							}() ? A2(
+								$author$project$View$Button$toHtml,
+								_List_fromArray(
+									[$author$project$View$Button$active, $author$project$View$Button$chip]),
+								{
+									label: $author$project$Data$Block$toString(
+										$author$project$Data$Block$ItemBlock(target)),
+									onPress: args.onFilter($elm$core$Maybe$Nothing)
+								}) : A2(
+								$author$project$View$Button$toHtml,
+								_List_fromArray(
+									[$author$project$View$Button$chip]),
+								{
+									label: $author$project$Data$Block$toString(
+										$author$project$Data$Block$ItemBlock(target)),
+									onPress: args.onFilter(
+										$elm$core$Maybe$Just(
+											$author$project$Screen$Menu$ItemFilter(target)))
+								});
+						},
+						_List_fromArray(
+							[$author$project$Data$Block$Stone, $author$project$Data$Block$Wood]))
+					]))));
 };
 var $Orasund$elm_html_style$Html$Style$border = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border', value);
@@ -9224,6 +9218,9 @@ var $Orasund$elm_html_style$Html$Style$heightPx = function (value) {
 var $Orasund$elm_html_style$Html$Style$justifyContentStart = $Orasund$elm_html_style$Html$Style$justifyContent('start');
 var $Orasund$elm_html_style$Html$Style$positionAbsolute = $Orasund$elm_html_style$Html$Style$position('absolute');
 var $author$project$View$Color$red100 = 'rgb(255 216 196)';
+var $Orasund$elm_html_style$Html$Style$textShadow = function (value) {
+	return A2($elm$html$Html$Attributes$style, 'text-shadow', value);
+};
 var $author$project$View$Color$yellow100 = 'rgb(232 232 180)';
 var $author$project$View$Color$yellow900 = 'rgb(159 159 1)';
 var $author$project$Screen$Menu$personBubble = function (person) {
@@ -9239,7 +9236,8 @@ var $author$project$Screen$Menu$personBubble = function (person) {
 					[
 						$Orasund$elm_html_style$Html$Style$positionAbsolute,
 						$Orasund$elm_html_style$Html$Style$bottom('-0.5em'),
-						$Orasund$elm_html_style$Html$Style$fontSizePx(9)
+						$Orasund$elm_html_style$Html$Style$fontSizePx(9),
+						$Orasund$elm_html_style$Html$Style$textShadow('0 0 1px black')
 					]),
 				$elm$core$List$singleton(
 					$elm$html$Html$text(
@@ -9265,7 +9263,7 @@ var $author$project$Screen$Menu$personBubble = function (person) {
 						]) : ((_Utils_cmp(person.friendship, ($author$project$Data$Person$friendshipForLove / 2) | 0) > -1) ? _List_fromArray(
 						[
 							$Orasund$elm_html_style$Html$Style$backgroundColor($author$project$View$Color$yellow100),
-							$Orasund$elm_html_style$Html$Style$border('2px solid ' + $author$project$View$Color$yellow900),
+							$Orasund$elm_html_style$Html$Style$border('1px solid ' + $author$project$View$Color$yellow900),
 							$Orasund$elm_html_style$Html$Style$boxSizingBorderBox
 						]) : _List_fromArray(
 						[
@@ -9339,11 +9337,11 @@ var $author$project$Screen$Menu$request = F2(
 	});
 var $author$project$Screen$Menu$messages = F2(
 	function (args, list) {
-		var viewMessage = function (_v1) {
-			var date = _v1.date;
-			var person = _v1.person;
-			var mail = _v1.mail;
-			var answered = _v1.answered;
+		var viewMessage = function (_v2) {
+			var date = _v2.date;
+			var person = _v2.person;
+			var mail = _v2.mail;
+			var answered = _v2.answered;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -9449,26 +9447,35 @@ var $author$project$Screen$Menu$messages = F2(
 					function () {
 						var _v0 = args.filter;
 						if (_v0.$ === 'Just') {
-							if (_v0.a.$ === 'PersonFilter') {
-								var job = _v0.a.a;
-								return A2(
-									$elm$core$List$filter,
-									function (message) {
-										return _Utils_eq(job, message.person.job);
-									},
-									list);
-							} else {
-								var item = _v0.a.a;
-								return A2(
-									$elm$core$List$filter,
-									function (message) {
-										return _Utils_eq(
-											$elm$core$Maybe$Just(item),
-											message.mail.present) || _Utils_eq(
-											$elm$core$Maybe$Just(item),
-											message.mail.request);
-									},
-									list);
+							switch (_v0.a.$) {
+								case 'PersonFilter':
+									var job = _v0.a.a;
+									return A2(
+										$elm$core$List$filter,
+										function (message) {
+											return _Utils_eq(job, message.person.job);
+										},
+										list);
+								case 'ItemFilter':
+									var item = _v0.a.a;
+									return A2(
+										$elm$core$List$filter,
+										function (message) {
+											return _Utils_eq(
+												$elm$core$Maybe$Just(item),
+												message.mail.present) || _Utils_eq(
+												$elm$core$Maybe$Just(item),
+												message.mail.request);
+										},
+										list);
+								default:
+									var _v1 = _v0.a;
+									return A2(
+										$elm$core$List$filter,
+										function (message) {
+											return !message.answered;
+										},
+										list);
 							}
 						} else {
 							return list;
@@ -9599,6 +9606,35 @@ var $author$project$View$Button$withIconAndContent = F3(
 						$elm$html$Html$text(args.icon))),
 					$elm$html$Html$text(args.label),
 					content
+				]));
+	});
+var $author$project$View$Button$withIcons = F3(
+	function (attrs, args, content) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				$Orasund$elm_layout$Layout$asButton(
+					{
+						label: args.label,
+						onPress: $elm$core$Maybe$Just(args.onPress)
+					}),
+				_Utils_ap(
+					attrs,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('button-base button')
+						]))),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$Orasund$elm_html_style$Html$Style$fontSizePx(20)
+						]),
+					$elm$core$List$singleton(
+						$elm$html$Html$text(content))),
+					$elm$html$Html$text(args.label)
 				]));
 	});
 var $author$project$Screen$Menu$asTabs = function (args) {
