@@ -207,34 +207,62 @@ request args mail =
 
 filter : { people : List Person, filter : Maybe Filter, onFilter : Maybe Filter -> msg } -> Html msg
 filter args =
-    args.people
-        |> List.map
-            (\person ->
-                if
-                    case args.filter of
-                        Just (PersonFilter job) ->
-                            person.job == job
+    [ List.map
+        (\person ->
+            if
+                case args.filter of
+                    Just (PersonFilter job) ->
+                        person.job == job
 
-                        _ ->
-                            False
-                then
-                    View.Button.withIcons
-                        [ View.Button.active
-                        , View.Button.chip
-                        ]
-                        { label = person.name
-                        , onPress = args.onFilter Nothing
-                        }
-                        person.symbol
+                    _ ->
+                        False
+            then
+                View.Button.withIcons
+                    [ View.Button.active
+                    , View.Button.chip
+                    ]
+                    { label = person.name
+                    , onPress = args.onFilter Nothing
+                    }
+                    person.symbol
 
-                else
-                    View.Button.withIcons
-                        [ View.Button.chip ]
-                        { label = person.name
-                        , onPress = args.onFilter (Just (PersonFilter person.job))
-                        }
-                        person.symbol
-            )
+            else
+                View.Button.withIcons
+                    [ View.Button.chip ]
+                    { label = person.name
+                    , onPress = args.onFilter (Just (PersonFilter person.job))
+                    }
+                    person.symbol
+        )
+        args.people
+    , List.map
+        (\target ->
+            if
+                case args.filter of
+                    Just (ItemFilter item) ->
+                        target == item
+
+                    _ ->
+                        False
+            then
+                View.Button.toHtml
+                    [ View.Button.active
+                    , View.Button.chip
+                    ]
+                    { label = Data.Block.toString (ItemBlock target)
+                    , onPress = args.onFilter Nothing
+                    }
+
+            else
+                View.Button.toHtml
+                    [ View.Button.chip ]
+                    { label = Data.Block.toString (ItemBlock target)
+                    , onPress = args.onFilter (Just (ItemFilter target))
+                    }
+        )
+        [ Stone, Wood ]
+    ]
+        |> List.concat
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.alignItemsCenter

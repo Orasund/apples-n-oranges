@@ -9091,6 +9091,9 @@ var $author$project$Screen$Menu$attachment = F2(
 			},
 			mail.present);
 	});
+var $author$project$Screen$Menu$ItemFilter = function (a) {
+	return {$: 'ItemFilter', a: a};
+};
 var $author$project$Screen$Menu$PersonFilter = function (a) {
 	return {$: 'PersonFilter', a: a};
 };
@@ -9134,38 +9137,75 @@ var $author$project$Screen$Menu$filter = function (args) {
 				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
 				$Orasund$elm_html_style$Html$Style$gapPx(8)
 			]),
-		A2(
-			$elm$core$List$map,
-			function (person) {
-				return function () {
-					var _v0 = args.filter;
-					if ((_v0.$ === 'Just') && (_v0.a.$ === 'PersonFilter')) {
-						var job = _v0.a.a;
-						return _Utils_eq(person.job, job);
-					} else {
-						return false;
-					}
-				}() ? A3(
-					$author$project$View$Button$withIcons,
-					_List_fromArray(
-						[$author$project$View$Button$active, $author$project$View$Button$chip]),
-					{
-						label: person.name,
-						onPress: args.onFilter($elm$core$Maybe$Nothing)
+		$elm$core$List$concat(
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$List$map,
+					function (person) {
+						return function () {
+							var _v0 = args.filter;
+							if ((_v0.$ === 'Just') && (_v0.a.$ === 'PersonFilter')) {
+								var job = _v0.a.a;
+								return _Utils_eq(person.job, job);
+							} else {
+								return false;
+							}
+						}() ? A3(
+							$author$project$View$Button$withIcons,
+							_List_fromArray(
+								[$author$project$View$Button$active, $author$project$View$Button$chip]),
+							{
+								label: person.name,
+								onPress: args.onFilter($elm$core$Maybe$Nothing)
+							},
+							person.symbol) : A3(
+							$author$project$View$Button$withIcons,
+							_List_fromArray(
+								[$author$project$View$Button$chip]),
+							{
+								label: person.name,
+								onPress: args.onFilter(
+									$elm$core$Maybe$Just(
+										$author$project$Screen$Menu$PersonFilter(person.job)))
+							},
+							person.symbol);
 					},
-					person.symbol) : A3(
-					$author$project$View$Button$withIcons,
-					_List_fromArray(
-						[$author$project$View$Button$chip]),
-					{
-						label: person.name,
-						onPress: args.onFilter(
-							$elm$core$Maybe$Just(
-								$author$project$Screen$Menu$PersonFilter(person.job)))
+					args.people),
+					A2(
+					$elm$core$List$map,
+					function (target) {
+						return function () {
+							var _v1 = args.filter;
+							if ((_v1.$ === 'Just') && (_v1.a.$ === 'ItemFilter')) {
+								var item = _v1.a.a;
+								return _Utils_eq(target, item);
+							} else {
+								return false;
+							}
+						}() ? A2(
+							$author$project$View$Button$toHtml,
+							_List_fromArray(
+								[$author$project$View$Button$active, $author$project$View$Button$chip]),
+							{
+								label: $author$project$Data$Block$toString(
+									$author$project$Data$Block$ItemBlock(target)),
+								onPress: args.onFilter($elm$core$Maybe$Nothing)
+							}) : A2(
+							$author$project$View$Button$toHtml,
+							_List_fromArray(
+								[$author$project$View$Button$chip]),
+							{
+								label: $author$project$Data$Block$toString(
+									$author$project$Data$Block$ItemBlock(target)),
+								onPress: args.onFilter(
+									$elm$core$Maybe$Just(
+										$author$project$Screen$Menu$ItemFilter(target)))
+							});
 					},
-					person.symbol);
-			},
-			args.people));
+					_List_fromArray(
+						[$author$project$Data$Block$Stone, $author$project$Data$Block$Wood]))
+				])));
 };
 var $Orasund$elm_html_style$Html$Style$border = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'border', value);
