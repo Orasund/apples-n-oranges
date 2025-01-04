@@ -14,6 +14,7 @@ import View.Button
 import View.CalenderDay
 import View.Color
 import View.DayOfTheWeek
+import View.Person
 
 
 type MenuTab
@@ -32,64 +33,6 @@ type alias Trade =
     { remove : List ( Item, Int )
     , add : Item
     }
-
-
-personBubble : Person -> Html msg
-personBubble person =
-    [ (if person.friendship >= Data.Person.friendshipForLove then
-        "❤️"
-
-       else if person.friendship >= Data.Person.friendshipForLove // 2 then
-        "🧡"
-
-       else
-        ""
-      )
-        |> Html.text
-        |> List.singleton
-        |> Html.div
-            [ Html.Style.positionAbsolute
-            , Html.Style.bottom "-0.5em"
-            , Html.Style.fontSizePx 9
-            , Html.Style.textShadow "0 0 1px black"
-            ]
-    , person.symbol
-        |> Html.text
-        |> List.singleton
-        |> Html.div
-            ([ Html.Style.displayFlex
-             , Html.Style.alignItemsCenter
-             , Html.Style.justifyContentCenter
-             , Html.Style.heightPx 35
-             , Html.Style.aspectRatio "1"
-             , Html.Style.borderRadius "100%"
-             , Html.Style.fontSizePx 20
-             ]
-                ++ (if person.friendship >= Data.Person.friendshipForLove then
-                        [ Html.Style.backgroundColor View.Color.red100
-                        , Html.Style.border ("2px solid " ++ View.Color.red900)
-                        , Html.Style.boxSizingBorderBox
-                        ]
-
-                    else if person.friendship >= Data.Person.friendshipForLove // 2 then
-                        [ Html.Style.backgroundColor View.Color.yellow100
-                        , Html.Style.border ("1px solid " ++ View.Color.yellow900)
-                        , Html.Style.boxSizingBorderBox
-                        ]
-
-                    else
-                        [ Html.Style.backgroundColor View.Color.gray100
-                        ]
-                   )
-            )
-    ]
-        |> Html.div
-            [ Html.Style.displayFlex
-            , Html.Style.flexDirectionColumn
-            , Html.Style.alignItemsCenter
-            , Html.Style.justifyContentStart
-            , Html.Style.positionRelative
-            ]
 
 
 attachment : { onAccept : msg, items : ItemBag, answered : Bool } -> Message -> Maybe (Html msg)
@@ -299,7 +242,8 @@ messages :
 messages args list =
     let
         viewMessage { date, person, mail, answered } =
-            [ personBubble person
+            [ person
+                |> View.Person.toHtml []
                 |> List.singleton
                 |> Html.div []
             , [ [ [ [ person.name

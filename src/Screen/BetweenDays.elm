@@ -2,6 +2,7 @@ module Screen.BetweenDays exposing (..)
 
 import Data.Block exposing (Block(..), Item)
 import Data.Date as Date exposing (Date)
+import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Keyed
@@ -11,6 +12,7 @@ import Screen.Menu
 import View.Background
 import View.CalenderDay
 import View.DayOfTheWeek
+import View.Person
 
 
 type BetweenDaysAction
@@ -23,6 +25,8 @@ type BetweenDaysAction
     | ShowYear
     | AdvanceYear
     | ShowEndscreen
+    | ShowFriendship Person
+    | ShowLover Person
 
 
 showEndscreen : Html msg
@@ -47,6 +51,32 @@ showEndscreen =
 showNothing : Html msg
 showNothing =
     [] |> default []
+
+
+showFriendship : Person -> Html msg
+showFriendship person =
+    [ "You are friends with "
+        ++ person.name
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 50 ]
+    , person
+        |> View.Person.toHtml [ View.Person.big ]
+    ]
+        |> default []
+
+
+showLover : Person -> Html msg
+showLover person =
+    [ person.name
+        ++ " likes you"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 50 ]
+    , person
+        |> View.Person.toHtml [ View.Person.big ]
+    ]
+        |> default []
 
 
 showMail : Html msg

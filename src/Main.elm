@@ -299,6 +299,16 @@ acceptMail date model =
                                 model.answeredMessages
                                     |> Set.insert date
                         }
+                            |> addBetweenDaysActions
+                                (if (Data.Person.increaseFriendship person).friendship == Data.Person.friendshipForLove then
+                                    [ ShowLover person ]
+
+                                 else if (Data.Person.increaseFriendship person).friendship == Data.Person.friendshipForLove // 2 then
+                                    [ ShowFriendship person ]
+
+                                 else
+                                    []
+                                )
                     )
     in
     model.messages
@@ -657,6 +667,12 @@ applyAction action model =
         ShowEndscreen ->
             model
 
+        ShowFriendship _ ->
+            model
+
+        ShowLover _ ->
+            model
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -913,6 +929,12 @@ viewBetweenDays action model =
 
         ShowEndscreen ->
             Screen.BetweenDays.showEndscreen
+
+        ShowFriendship person ->
+            Screen.BetweenDays.showFriendship person
+
+        ShowLover person ->
+            Screen.BetweenDays.showLover person
 
 
 view : Model -> Html Msg
