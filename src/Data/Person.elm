@@ -107,7 +107,7 @@ major =
       , accepted = False
       }
     ]--}
-    [ defaultRequest Data.Block.Stone ]
+    [ defaultRequest Data.Block.Wood ]
         |> Array.fromList
 
 

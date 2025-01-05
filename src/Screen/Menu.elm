@@ -562,7 +562,7 @@ asTabs args =
             [ Html.Style.displayFlex
             , Html.Style.gapPx 8
             , Html.Style.widthPx 350
-            , Html.Style.justifyContentCenter
+            , Html.Style.justifyContentSpaceBetween
             ]
 
 

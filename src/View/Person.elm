@@ -38,18 +38,18 @@ toHtml attrs person =
              , Html.Style.alignItemsCenter
              , Html.Style.justifyContentCenter
              , Html.Style.width "100%"
-             , Html.Style.aspectRatio "1"
+             , Html.Style.height "100%"
              , Html.Style.borderRadius "100%"
              ]
                 ++ (if person.friendship >= Data.Person.friendshipForLove then
                         [ Html.Style.backgroundColor View.Color.red100
-                        , Html.Style.border ("1em solid " ++ View.Color.red900)
+                        , Html.Style.border ("0.1em solid " ++ View.Color.red900)
                         , Html.Style.boxSizingBorderBox
                         ]
 
                     else if person.friendship >= Data.Person.friendshipForLove // 2 then
                         [ Html.Style.backgroundColor View.Color.yellow100
-                        , Html.Style.border ("0.5em solid " ++ View.Color.yellow900)
+                        , Html.Style.border ("0.05em solid " ++ View.Color.yellow900)
                         , Html.Style.boxSizingBorderBox
                         ]
 
@@ -67,6 +67,7 @@ toHtml attrs person =
              , Html.Style.positionRelative
              , Html.Style.fontSizePx 20
              , Html.Style.width "1.5em"
+             , Html.Style.height "1.5em"
              ]
                 ++ attrs
             )

@@ -57,6 +57,7 @@ type alias Model =
     , filterMessages : Maybe Filter
     , pointerZero : ( Float, Float )
     , pointer : Maybe ( Float, Float )
+    , stopGame : Bool
     }
 
 
@@ -80,6 +81,7 @@ type Msg
     | AcceptMail Date
     | NextActionBetweenDays
     | SetFilterMessages (Maybe Filter)
+    | ContinueGame
 
 
 addBetweenDaysActions : List BetweenDaysAction -> Model -> Model
@@ -301,10 +303,14 @@ acceptMail date model =
                         }
                             |> addBetweenDaysActions
                                 (if (Data.Person.increaseFriendship person).friendship == Data.Person.friendshipForLove then
-                                    [ ShowLover person ]
+                                    [ ShowLover (Data.Person.increaseFriendship person)
+                                    , ShowLover (Data.Person.increaseFriendship person)
+                                    ]
 
                                  else if (Data.Person.increaseFriendship person).friendship == Data.Person.friendshipForLove // 2 then
-                                    [ ShowFriendship person ]
+                                    [ ShowFriendship (Data.Person.increaseFriendship person)
+                                    , ShowFriendship (Data.Person.increaseFriendship person)
+                                    ]
 
                                  else
                                     []
@@ -449,6 +455,7 @@ init () =
                         )
                     |> List.indexedMap Tuple.pair
                     |> Dict.fromList
+            , stopGame = False
             }
     in
     ( model
@@ -552,6 +559,8 @@ endDay model =
                         []
                      , if not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
                         [ ShowNothing
+                        , ShowEndscreen
+                        , ShowEndscreen
                         , AdvanceYear
                         , ShowYear
                         ]
@@ -665,13 +674,13 @@ applyAction action model =
             model
 
         ShowEndscreen ->
-            model
+            { model | stopGame = True }
 
         ShowFriendship _ ->
             model
 
         ShowLover _ ->
-            model
+            { model | stopGame = True }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -760,23 +769,13 @@ update msg model =
             )
 
         EndDay ->
-            if Date.year model.date + 1 == Date.maxYears && not (Date.summer model.date) && Date.day model.date == Date.daysInAMonth then
-                ( { model
-                    | betweenDays = [ ShowEndscreen ]
-                    , betweenDaysLast = ShowEndscreen
-                  }
-                    |> showBetweenDays
-                , Cmd.none
-                )
-
-            else
-                ( model
-                    |> endDay
-                    |> setMenuTab Nothing
-                , NextActionBetweenDays
-                    |> Task.succeed
-                    |> Task.perform identity
-                )
+            ( model
+                |> endDay
+                |> setMenuTab Nothing
+            , NextActionBetweenDays
+                |> Task.succeed
+                |> Task.perform identity
+            )
 
         SetSeed seed ->
             ( generateNextMonth model
@@ -864,25 +863,33 @@ update msg model =
             ( model, Cmd.none )
 
         NextActionBetweenDays ->
-            case model.betweenDays of
-                [ _ ] ->
-                    ( { model | showBetweenDays = False }
-                        |> loadNextLevel
-                        |> applyGenerator model.seed
-                    , Process.sleep 1000 |> Task.perform (\() -> StartDay)
-                    )
+            if model.stopGame then
+                ( model, Cmd.none )
 
-                head :: tail ->
-                    ( { model
-                        | betweenDaysLast = head
-                        , betweenDays = tail
-                      }
-                        |> applyAction head
-                    , Process.sleep 700 |> Task.perform (\() -> NextActionBetweenDays)
-                    )
+            else
+                case model.betweenDays of
+                    [ _ ] ->
+                        ( { model | showBetweenDays = False }
+                            |> loadNextLevel
+                            |> applyGenerator model.seed
+                        , Process.sleep 1000 |> Task.perform (\() -> StartDay)
+                        )
 
-                [] ->
-                    ( model, Cmd.none )
+                    head :: tail ->
+                        ( { model
+                            | betweenDaysLast = head
+                            , betweenDays = tail
+                          }
+                            |> applyAction head
+                        , Process.sleep 700 |> Task.perform (\() -> NextActionBetweenDays)
+                        )
+
+                    [] ->
+                        ( model, Cmd.none )
+
+        ContinueGame ->
+            { model | stopGame = False, betweenDays = List.drop 1 model.betweenDays }
+                |> update NextActionBetweenDays
 
         SetFilterMessages person ->
             ( { model | filterMessages = person }, Cmd.none )
@@ -929,12 +936,13 @@ viewBetweenDays action model =
 
         ShowEndscreen ->
             Screen.BetweenDays.showEndscreen
+                { onContinue = ContinueGame }
 
         ShowFriendship person ->
             Screen.BetweenDays.showFriendship person
 
         ShowLover person ->
-            Screen.BetweenDays.showLover person
+            Screen.BetweenDays.showLover { onReject = ContinueGame } person
 
 
 view : Model -> Html Msg

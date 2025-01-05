@@ -1,7 +1,7 @@
 module Screen.BetweenDays exposing (..)
 
 import Data.Block exposing (Block(..), Item)
-import Data.Date as Date exposing (Date)
+import Data.Date exposing (Date)
 import Data.Person exposing (Person)
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
@@ -10,6 +10,7 @@ import Html.Style
 import Puzzle.Setting exposing (Event)
 import Screen.Menu
 import View.Background
+import View.Button
 import View.CalenderDay
 import View.DayOfTheWeek
 import View.Person
@@ -29,14 +30,14 @@ type BetweenDaysAction
     | ShowLover Person
 
 
-showEndscreen : Html msg
-showEndscreen =
+showEndscreen : { onContinue : msg } -> Html msg
+showEndscreen args =
     [ "You reached the end of"
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 30 ]
     , "Year "
-        ++ String.fromInt Date.maxYears
+        ++ String.fromInt Data.Date.maxYears
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 100 ]
@@ -44,6 +45,10 @@ showEndscreen =
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 30 ]
+    , View.Button.toHtml []
+        { label = "Continue"
+        , onPress = args.onContinue
+        }
     ]
         |> default []
 
@@ -55,8 +60,7 @@ showNothing =
 
 showFriendship : Person -> Html msg
 showFriendship person =
-    [ "You are friends with "
-        ++ person.name
+    [ "New friend"
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 50 ]
@@ -66,15 +70,22 @@ showFriendship person =
         |> default []
 
 
-showLover : Person -> Html msg
-showLover person =
-    [ person.name
-        ++ " likes you"
+showLover : { onReject : msg } -> Person -> Html msg
+showLover args person =
+    [ "You found love"
         |> Html.text
         |> List.singleton
         |> Html.div [ Html.Style.fontSizePx 50 ]
     , person
         |> View.Person.toHtml [ View.Person.big ]
+    , "Thanks for playing"
+        |> Html.text
+        |> List.singleton
+        |> Html.div [ Html.Style.fontSizePx 30 ]
+    , View.Button.toHtml []
+        { label = "Reject"
+        , onPress = args.onReject
+        }
     ]
         |> default []
 
@@ -145,13 +156,13 @@ showCalenderDay args =
         calenderSize =
             300
     in
-    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Date.day args.date)) ]
-    , [ args.date, args.date |> Date.next ]
+    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Data.Date.day args.date)) ]
+    , [ args.date, args.date |> Data.Date.next ]
         |> List.map
             (\date ->
                 args.nextEvents
                     |> Dict.get date
-                    |> Maybe.map (\event -> ( Date.day date, event ))
+                    |> Maybe.map (\event -> ( Data.Date.day date, event ))
                     |> Maybe.map List.singleton
                     |> Maybe.withDefault []
             )
@@ -164,7 +175,7 @@ showCalenderDay args =
                     , day = i
                     }
                     [ Html.Style.positionAbsolute
-                    , Html.Style.bottomPx (0 - toFloat (i - Date.day args.date) * (calenderSize + toFloat 64))
+                    , Html.Style.bottomPx (0 - toFloat (i - Data.Date.day args.date) * (calenderSize + toFloat 64))
                     , Html.Style.transition "bottom 1s"
                     ]
                     event
@@ -188,7 +199,7 @@ showCalender :
     }
     -> Html msg
 showCalender args =
-    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Date.day args.date)) ]
+    [ Html.div [ Html.Style.fontSizePx 60 ] [ Html.text (View.DayOfTheWeek.toLongString (Data.Date.day args.date)) ]
     , Screen.Menu.calender
         { date = args.date
         , events = args.events
