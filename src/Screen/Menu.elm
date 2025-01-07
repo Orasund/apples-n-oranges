@@ -226,7 +226,7 @@ filter args =
         |> Html.div
             [ Html.Style.displayFlex
             , Html.Style.alignItemsCenter
-            , Html.Style.gapPx 8
+            , Html.Style.gapPx 4
             ]
 
 
@@ -304,13 +304,9 @@ messages args list =
                       else
                         Html.Style.backgroundColor View.Color.white
                     ]
-    in
-    filter
-        { people = args.people
-        , filter = args.filter
-        , onFilter = args.onFilter
-        }
-        :: ((case args.filter of
+
+        filteredMessages =
+            (case args.filter of
                 Just (PersonFilter job) ->
                     List.filter (\message -> job == message.person.job) list
 
@@ -324,7 +320,19 @@ messages args list =
                     list
             )
                 |> List.reverse
-                |> List.map viewMessage
+    in
+    filter
+        { people = args.people
+        , filter = args.filter
+        , onFilter = args.onFilter
+        }
+        :: (if filteredMessages /= [] then
+                filteredMessages
+                    |> List.map viewMessage
+
+            else
+                Html.div [] [ Html.text "You don't have any messages" ]
+                    |> List.singleton
            )
 
 

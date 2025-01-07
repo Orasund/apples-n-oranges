@@ -87,7 +87,7 @@ stylesheet =
         font-weight: bold;
         color: white;
         box-sizing: border-box;
-        font-family: sans-serif;
+        font-family: sans-serif, "NotoColorEmoji";
         background-color: """
         ++ View.Color.white
         ++ """;

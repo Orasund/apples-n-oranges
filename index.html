@@ -9142,7 +9142,7 @@ var $author$project$Screen$Menu$filter = function (args) {
 			[
 				$Orasund$elm_html_style$Html$Style$displayFlex,
 				$Orasund$elm_html_style$Html$Style$alignItemsCenter,
-				$Orasund$elm_html_style$Html$Style$gapPx(8)
+				$Orasund$elm_html_style$Html$Style$gapPx(4)
 			]),
 		A2(
 			$elm$core$List$cons,
@@ -9474,51 +9474,56 @@ var $author$project$Screen$Menu$messages = F2(
 								])))
 					]));
 		};
+		var filteredMessages = $elm$core$List$reverse(
+			function () {
+				var _v0 = args.filter;
+				if (_v0.$ === 'Just') {
+					switch (_v0.a.$) {
+						case 'PersonFilter':
+							var job = _v0.a.a;
+							return A2(
+								$elm$core$List$filter,
+								function (message) {
+									return _Utils_eq(job, message.person.job);
+								},
+								list);
+						case 'ItemFilter':
+							var item = _v0.a.a;
+							return A2(
+								$elm$core$List$filter,
+								function (message) {
+									return _Utils_eq(
+										$elm$core$Maybe$Just(item),
+										message.mail.present) || _Utils_eq(
+										$elm$core$Maybe$Just(item),
+										message.mail.request);
+								},
+								list);
+						default:
+							var _v1 = _v0.a;
+							return A2(
+								$elm$core$List$filter,
+								function (message) {
+									return !message.answered;
+								},
+								list);
+					}
+				} else {
+					return list;
+				}
+			}());
 		return A2(
 			$elm$core$List$cons,
 			$author$project$Screen$Menu$filter(
 				{filter: args.filter, onFilter: args.onFilter, people: args.people}),
-			A2(
-				$elm$core$List$map,
-				viewMessage,
-				$elm$core$List$reverse(
-					function () {
-						var _v0 = args.filter;
-						if (_v0.$ === 'Just') {
-							switch (_v0.a.$) {
-								case 'PersonFilter':
-									var job = _v0.a.a;
-									return A2(
-										$elm$core$List$filter,
-										function (message) {
-											return _Utils_eq(job, message.person.job);
-										},
-										list);
-								case 'ItemFilter':
-									var item = _v0.a.a;
-									return A2(
-										$elm$core$List$filter,
-										function (message) {
-											return _Utils_eq(
-												$elm$core$Maybe$Just(item),
-												message.mail.present) || _Utils_eq(
-												$elm$core$Maybe$Just(item),
-												message.mail.request);
-										},
-										list);
-								default:
-									var _v1 = _v0.a;
-									return A2(
-										$elm$core$List$filter,
-										function (message) {
-											return !message.answered;
-										},
-										list);
-							}
-						} else {
-							return list;
-						}
-					}())));
+			(!_Utils_eq(filteredMessages, _List_Nil)) ? A2($elm$core$List$map, viewMessage, filteredMessages) : $elm$core$List$singleton(
+				A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('You don\'t have any messages')
+						]))));
 	});
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
@@ -9538,7 +9543,7 @@ var $author$project$Stylesheet$stylesheet = A3(
 	'style',
 	_List_Nil,
 	$elm$core$List$singleton(
-		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    .button-base.blackWhiteEmoji {\n        font-family: sans-serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif;\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary:active,.button.primary.active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active, .button.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red400 + (';\n    }\n\n    .button.chip {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$gray100 + (';\n        padding: 4px 8px;\n        height: 30px;\n        font-weight: normal;\n    }\n\n    .button.chip.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red200 + ';\n        padding: 4px 8px;\n    }\n    '))))))))))))))))))))))))))))))))))));
+		$elm$html$Html$text('\n    @font-face {\n        font-family: "NotoEmoji";\n        src: url("fonts/NotoEmoji-Regular.ttf");\n    }\n\n    @font-face {\n        font-family: "NotoColorEmoji";\n        src: url("fonts/NotoColorEmoji-Regular.ttf");\n    }\n\n    .blackWhiteEmoji {\n        font-family: serif, "NotoEmoji";\n    }\n\n    .button-base.blackWhiteEmoji {\n        font-family: sans-serif, "NotoEmoji";\n    }\n\n    html, body {\n        overscroll-behavior: contain;\n    }\n\n    html {\n        height: 100%\n    }\n\n    body {\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        justify-content: center;\n        font-family: serif, "NotoColorEmoji";\n        \n    }\n\n    .no-events > * {\n        pointer-events: none\n    }\n\n    @keyframes rocking {\n        from { rotate:-15deg }\n        50% { rotate:15deg }\n        to { rotate:-15deg }\n    }\n\n     .day {\n        background-color: rgba(171,188,246,1);\n    }\n\n    @keyframes toDay {\n        from {\n             background-color: rgba(96,114,175,1);\n        }\n        to {\n              background-color: rgba(171,188,246,1);\n        }\n    }\n\n    @keyframes movingBackground {\n        from {\n            background-position-y: 0px;\n        }\n        to {\n            background-position-y: 200px;\n        }\n    }\n\n    .button-base {\n        border-radius: 20px;\n        border: 0px solid;\n        padding: 8px 16px;\n        height: 40px;\n        font-size: 16px;\n        display: flex;\n        gap: 8px;\n        align-items: center;\n        font-weight: bold;\n        color: white;\n        box-sizing: border-box;\n        font-family: sans-serif, "NotoColorEmoji";\n        background-color: ' + ($author$project$View$Color$white + (';\n    }\n\n    .button.primary {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button.primary:hover {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red700 + (';\n    }\n\n    .button.primary:active,.button.primary.active {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$red800 + (';\n    }\n\n    .button.primary:disabled {\n        color: ' + ($author$project$View$Color$white + (';\n        background-color: ' + ($author$project$View$Color$gray800 + (';\n    }\n\n    .button {\n        color: ' + ($author$project$View$Color$red600 + (';\n    }\n\n    .button:hover {\n        color: ' + ($author$project$View$Color$black + (';\n    }\n\n    .button:active, .button.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red400 + (';\n    }\n\n    .button.chip {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$gray100 + (';\n        padding: 4px 8px;\n        height: 30px;\n        font-weight: normal;\n    }\n\n    .button.chip.active {\n        color: ' + ($author$project$View$Color$black + (';\n        background-color: ' + ($author$project$View$Color$red200 + ';\n        padding: 4px 8px;\n    }\n    '))))))))))))))))))))))))))))))))))));
 var $Orasund$elm_html_style$Html$Style$backgroundImage = function (value) {
 	return A2($elm$html$Html$Attributes$style, 'background-image', value);
 };
